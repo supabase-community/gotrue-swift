@@ -3,7 +3,7 @@
 TODO:
 
 - [x] signUp
-- [ ] signIn
+- [x] signIn
 - [ ] refreshSession
 - [ ] getSessionFromUrl
 - [ ] update
