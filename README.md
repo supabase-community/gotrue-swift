@@ -1,7 +1,5 @@
 # gotrue-swift
 
-TODO:
-
 - [x] signUp
 - [x] signIn
 - [x] refreshSession
