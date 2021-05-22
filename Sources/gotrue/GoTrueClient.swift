@@ -76,6 +76,24 @@ public class GoTrueClient {
             completion(.failure(error))
         }
     }
+    
+    public func update(emailChangeToken: String? = nil, password: String? = nil, data: [String:Any]? = nil, completion: @escaping (Result<User, Error>) -> Void) {
+        guard let accessToken = currentSession?.accessToken else {
+            completion(.failure(GoTrueError(message: "current session not found")))
+            return
+        }
+        
+        api.updateUser(accessToken: accessToken, emailChangeToken: emailChangeToken, password: password, data: data) { [unowned self] result in
+            switch result {
+            case let .success(user):
+                self.onAuthStateChange?(.USER_UPDATED)
+                completion(.success(user))
+            case let .failure(error):
+                completion(.failure(error))
+            }
+        }
+    }
+
 
     func saveSession(session: Session) {
         currentSession = session

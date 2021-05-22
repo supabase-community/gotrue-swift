@@ -6,7 +6,7 @@ func main() {
 
     let client = GoTrueClient(url: "https://satishbabariya-gotrue-dart-vg6x-9999.githubpreview.dev")
 
-    client.signIn(email: "email@example.com", password: "secret") { result in
+    client.signIn(email: "email@example.com", password: "password") { result in
         switch result {
         case let .success(session):
             print(session)
@@ -40,7 +40,7 @@ func main() {
             client.signOut { result in
                 switch result {
                 case let .success(session):
-                    print(session)
+                    print(session as Any)
                 case let .failure(error):
                     print(error.localizedDescription)
                 }

@@ -140,6 +140,38 @@ class GoTrueApi {
             }
         }
     }
+    
+    func updateUser(accessToken: String,emailChangeToken: String?, password: String?, data: [String:Any]? = nil, completion: @escaping (Result<User, Error>) -> Void) {
+        guard let url = URL(string: "\(url)/user") else {
+            completion(.failure(GoTrueError(message: "badURL")))
+            return
+        }
+        var parameters: [String:Any] = [:]
+        if let emailChangeToken = emailChangeToken {
+            parameters["email_change_token"] = emailChangeToken
+        }
+        
+        if let password = password {
+            parameters["password"] = password
+        }
+        
+        if let data = data {
+            parameters["data"] = data
+        }
+
+        fetch(url: url, method: .put, parameters: parameters, headers: ["Authorization": "Bearer \(accessToken)"]) { result in
+            switch result {
+            case let .success(response):
+                guard let dict: [String: Any] = response as? [String: Any], let user = User(from: dict) else {
+                    completion(.failure(GoTrueError(message: "failed to parse response")))
+                    return
+                }
+                completion(.success(user))
+            case let .failure(error):
+                completion(.failure(error))
+            }
+        }
+    }
 
     private func fetch(url: URL, method: HTTPMethod = .get, parameters: [String: Any]?, headers: [String: String]? = nil, completion: @escaping (Result<Any, Error>) -> Void) {
         var request = URLRequest(url: url)
