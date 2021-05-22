@@ -1,0 +1,85 @@
+import Foundation.NSTimer
+
+public class GoTrueClient {
+    var api: GoTrueApi
+    var currentUser: User?
+    var currentSession: Session?
+    var autoRefreshToken: Bool
+    var refreshTokenTimer: Timer?
+
+    public typealias StateChangeEvent = (AuthChangeEvent) -> Void
+    public var onAuthStateChange: StateChangeEvent?
+
+    public init(url: String = GoTrueConstants.defaultGotrueUrl, headers: [String: String] = GoTrueConstants.defaultHeaders, autoRefreshToken: Bool = true, cookieOptions: CookieOptions? = nil) {
+        api = GoTrueApi(url: url, headers: headers, cookieOptions: cookieOptions)
+        self.autoRefreshToken = autoRefreshToken
+    }
+
+    public func signUp(email: String, password: String, completion: @escaping (Result<Session, Error>) -> Void) {
+        removeSession()
+
+        api.signUpWithEmail(email: email, password: password) { [unowned self] result in
+            switch result {
+            case let .success(session):
+                if let session = session {
+                    self.saveSession(session: session)
+                    self.onAuthStateChange?(.SIGNED_IN)
+                    completion(.success(session))
+                } else {
+                    completion(.failure(GoTrueError(message: "failed to get session")))
+                }
+            case let .failure(error):
+                completion(.failure(error))
+            }
+        }
+    }
+
+    func saveSession(session: Session) {
+        currentSession = session
+        currentUser = session.user
+
+        if let tokenExpirySeconds = session.expiresIn, autoRefreshToken {
+            if refreshTokenTimer != nil {
+                refreshTokenTimer?.invalidate()
+                refreshTokenTimer = nil
+            }
+
+            refreshTokenTimer = Timer(fire: Date().addingTimeInterval(TimeInterval(tokenExpirySeconds)), interval: 0, repeats: false, block: { [unowned self] _ in
+                callRefreshToken(refreshToken: self.currentSession?.refreshToken) { [unowned self] result in
+                    switch result {
+                    case let .success(session):
+                        self.saveSession(session: session)
+                        self.onAuthStateChange?(.SIGNED_IN)
+                    case let .failure(error):
+                        print(error.localizedDescription)
+                    }
+                }
+            })
+        }
+    }
+
+    func removeSession() {
+        currentUser = nil
+        currentSession = nil
+    }
+
+    func callRefreshToken(refreshToken: String?, completion: @escaping (Result<Session, Error>) -> Void) {
+        guard let refreshToken = refreshToken else {
+            completion(.failure(GoTrueError(message: "current session not found")))
+            return
+        }
+
+        api.refreshAccessToken(refreshToken: refreshToken) { result in
+            switch result {
+            case let .success(session):
+                if let session = session {
+                    completion(.success(session))
+                } else {
+                    completion(.failure(GoTrueError(message: "failed to get session")))
+                }
+            case let .failure(error):
+                completion(.failure(error))
+            }
+        }
+    }
+}
