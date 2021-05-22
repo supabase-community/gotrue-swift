@@ -4,11 +4,11 @@ TODO:
 
 - [x] signUp
 - [x] signIn
-- [ ] refreshSession
+- [x] refreshSession
 - [ ] getSessionFromUrl
 - [ ] update
 - [ ] signOut
-- [ ] onAuthStateChange
+- [x] onAuthStateChange
 - [ ] recoverSession
 - [x] removeSession
 - [x] callRefreshToken
