@@ -116,6 +116,19 @@ public class GoTrueClient {
         }
     }
 
+    public func signOut(completion: @escaping (Result<Any?, Error>) -> Void) {
+        guard let accessToken = currentSession?.accessToken else {
+            completion(.failure(GoTrueError(message: "current session not found")))
+            return
+        }
+
+        removeSession()
+        onAuthStateChange?(.SIGNED_OUT)
+        api.signOut(accessToken: accessToken) { result in
+            completion(result)
+        }
+    }
+
     func callRefreshToken(refreshToken: String?, completion: @escaping (Result<Session, Error>) -> Void) {
         guard let refreshToken = refreshToken else {
             completion(.failure(GoTrueError(message: "current session not found")))

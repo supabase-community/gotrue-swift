@@ -13,7 +13,6 @@ func main() {
         case let .failure(error):
             print(error.localizedDescription)
         }
-        semaphore.signal()
     }
 
 //    client.signIn(provider: .google, options: ProviderOptions(redirectTo: "xx", scopes: "xx")) { result in
@@ -37,6 +36,17 @@ func main() {
 
     client.onAuthStateChange = { event in
         print(event)
+        if event == .SIGNED_IN {
+            client.signOut { result in
+                switch result {
+                case let .success(session):
+                    print(session)
+                case let .failure(error):
+                    print(error.localizedDescription)
+                }
+                semaphore.signal()
+            }
+        }
     }
 
 //    client.signUp(email: "1@example.com", password: "password") { result in

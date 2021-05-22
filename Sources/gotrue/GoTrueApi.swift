@@ -125,11 +125,32 @@ class GoTrueApi {
         }
     }
 
-    private func fetch(url: URL, method: HTTPMethod = .get, parameters: [String: Any]?, completion: @escaping (Result<Any, Error>) -> Void) {
+    func signOut(accessToken: String, completion: @escaping (Result<Any?, Error>) -> Void) {
+        guard let url = URL(string: "\(url)/logout") else {
+            completion(.failure(GoTrueError(message: "badURL")))
+            return
+        }
+
+        fetch(url: url, method: .post, parameters: [:], headers: ["Authorization": "Bearer \(accessToken)"]) { result in
+            switch result {
+            case let .success(response):
+                completion(.success(response))
+            case let .failure(error):
+                completion(.failure(error))
+            }
+        }
+    }
+
+    private func fetch(url: URL, method: HTTPMethod = .get, parameters: [String: Any]?, headers: [String: String]? = nil, completion: @escaping (Result<Any, Error>) -> Void) {
         var request = URLRequest(url: url)
         request.httpMethod = method.rawValue
-        request.allHTTPHeaderFields = headers
-//        request.cachePolicy = .reloadIgnoringLocalAndRemoteCacheData
+
+        if var headers = headers {
+            headers.merge(self.headers) { $1 }
+            request.allHTTPHeaderFields = headers
+        } else {
+            request.allHTTPHeaderFields = self.headers
+        }
 
         if let parameters = parameters {
             do {
@@ -150,13 +171,26 @@ class GoTrueApi {
             if let resp = response as? HTTPURLResponse {
                 if let data = data {
                     do {
-                        completion(.success(try self.parse(response: try JSONSerialization.jsonObject(with: data, options: []), statusCode: resp.statusCode)))
+                        let json = try JSONSerialization.jsonObject(with: data, options: [])
+                        do {
+                            completion(.success(try self.parse(response: json, statusCode: resp.statusCode)))
+                        } catch {
+                            completion(.failure(error))
+                            return
+                        }
                     } catch {
-                        completion(.failure(error))
-                        return
+                        if let dataString = String(data: data, encoding: .utf8) {
+                            completion(.success(dataString))
+                            return
+                        } else {
+                            completion(.failure(error))
+                            return
+                        }
                     }
                 }
-            } else {}
+            } else {
+                completion(.failure(GoTrueError(message: "failed to get response")))
+            }
 
         })
 
