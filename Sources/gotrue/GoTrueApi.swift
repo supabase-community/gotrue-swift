@@ -64,6 +64,47 @@ class GoTrueApi {
         }
     }
 
+    func sendMagicLinkEmail(email: String, completion: @escaping (Result<Any?, Error>) -> Void) {
+        guard let url = URL(string: "\(url)/magiclink") else {
+            completion(.failure(GoTrueError(message: "badURL")))
+            return
+        }
+
+        fetch(url: url, method: .post, parameters: ["email": email]) { result in
+            switch result {
+            case let .success(response):
+                completion(.success(response))
+            case let .failure(error):
+                completion(.failure(error))
+            }
+        }
+    }
+
+    func getUrlForProvider(provider: Provider, options: ProviderOptions?) throws -> URL {
+        guard var components = URLComponents(string: "\(url)/authorize") else {
+            throw GoTrueError(message: "badURL")
+        }
+
+        var queryItems: [URLQueryItem] = []
+        queryItems.append(URLQueryItem(name: "provider", value: provider.rawValue))
+        if let options = options {
+            if let scopes = options.scopes {
+                queryItems.append(URLQueryItem(name: "scopes", value: scopes))
+            }
+            if let redirectTo = options.redirectTo {
+                queryItems.append(URLQueryItem(name: "redirect_to", value: redirectTo))
+            }
+        }
+
+        components.queryItems = queryItems
+
+        guard let url = components.url else {
+            throw GoTrueError(message: "badURL")
+        }
+
+        return url
+    }
+
     func refreshAccessToken(refreshToken: String, completion: @escaping (Result<Session?, Error>) -> Void) {
         guard let url = URL(string: "\(url)/token?grant_type=refresh_token") else {
             completion(.failure(GoTrueError(message: "badURL")))
@@ -88,7 +129,7 @@ class GoTrueApi {
         var request = URLRequest(url: url)
         request.httpMethod = method.rawValue
         request.allHTTPHeaderFields = headers
-        request.cachePolicy = .reloadIgnoringLocalAndRemoteCacheData
+//        request.cachePolicy = .reloadIgnoringLocalAndRemoteCacheData
 
         if let parameters = parameters {
             do {

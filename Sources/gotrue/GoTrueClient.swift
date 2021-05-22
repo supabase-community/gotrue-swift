@@ -34,6 +34,49 @@ public class GoTrueClient {
         }
     }
 
+    public func signIn(email: String, password: String, completion: @escaping (Result<Session, Error>) -> Void) {
+        removeSession()
+
+        api.signInWithEmail(email: email, password: password) { [unowned self] result in
+            switch result {
+            case let .success(session):
+                if let session = session {
+                    self.saveSession(session: session)
+                    self.onAuthStateChange?(.SIGNED_IN)
+                    completion(.success(session))
+                } else {
+                    completion(.failure(GoTrueError(message: "failed to get session")))
+                }
+            case let .failure(error):
+                completion(.failure(error))
+            }
+        }
+    }
+
+    public func signIn(email: String, completion: @escaping (Result<Any?, Error>) -> Void) {
+        removeSession()
+
+        api.sendMagicLinkEmail(email: email) { result in
+            switch result {
+            case let .success(data):
+                completion(.success(data))
+            case let .failure(error):
+                completion(.failure(error))
+            }
+        }
+    }
+
+    public func signIn(provider: Provider, options: ProviderOptions? = nil, completion: @escaping (Result<URL, Error>) -> Void) {
+        removeSession()
+
+        do {
+            let providerURL = try api.getUrlForProvider(provider: provider, options: options)
+            completion(.success(providerURL))
+        } catch {
+            completion(.failure(error))
+        }
+    }
+
     func saveSession(session: Session) {
         currentSession = session
         currentUser = session.user
