@@ -6,7 +6,7 @@ TODO:
 - [x] signIn
 - [x] refreshSession
 - [ ] getSessionFromUrl
-- [ ] update
+- [x] update
 - [x] signOut
 - [x] onAuthStateChange
 - [ ] recoverSession
