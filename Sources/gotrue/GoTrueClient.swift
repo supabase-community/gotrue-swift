@@ -106,6 +106,16 @@ public class GoTrueClient {
         currentSession = nil
     }
 
+    public func refreshSession(completion: @escaping (Result<Session, Error>) -> Void) {
+        guard let refreshToken = currentSession?.refreshToken else {
+            completion(.failure(GoTrueError(message: "Not logged in.")))
+            return
+        }
+        callRefreshToken(refreshToken: refreshToken) { result in
+            completion(result)
+        }
+    }
+
     func callRefreshToken(refreshToken: String?, completion: @escaping (Result<Session, Error>) -> Void) {
         guard let refreshToken = refreshToken else {
             completion(.failure(GoTrueError(message: "current session not found")))
