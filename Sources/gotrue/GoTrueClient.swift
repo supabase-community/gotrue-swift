@@ -1,4 +1,4 @@
-import Foundation.NSTimer
+import Foundation
 
 public class GoTrueClient {
     var api: GoTrueApi
@@ -10,8 +10,16 @@ public class GoTrueClient {
     public typealias StateChangeEvent = (AuthChangeEvent) -> Void
     public var onAuthStateChange: StateChangeEvent?
 
-    public init(url: String = GoTrueConstants.defaultGotrueUrl, headers: [String: String] = GoTrueConstants.defaultHeaders, autoRefreshToken: Bool = true, cookieOptions: CookieOptions? = nil) {
-        api = GoTrueApi(url: url, headers: headers, cookieOptions: cookieOptions)
+    public var user: User? {
+        return currentUser
+    }
+
+    public var session: Session? {
+        return currentSession
+    }
+
+    public init(url: String = GoTrueConstants.defaultGotrueUrl, headers: [String: String] = GoTrueConstants.defaultHeaders, autoRefreshToken: Bool = true) {
+        api = GoTrueApi(url: url, headers: headers)
         self.autoRefreshToken = autoRefreshToken
     }
 
@@ -76,13 +84,13 @@ public class GoTrueClient {
             completion(.failure(error))
         }
     }
-    
-    public func update(emailChangeToken: String? = nil, password: String? = nil, data: [String:Any]? = nil, completion: @escaping (Result<User, Error>) -> Void) {
+
+    public func update(emailChangeToken: String? = nil, password: String? = nil, data: [String: Any]? = nil, completion: @escaping (Result<User, Error>) -> Void) {
         guard let accessToken = currentSession?.accessToken else {
             completion(.failure(GoTrueError(message: "current session not found")))
             return
         }
-        
+
         api.updateUser(accessToken: accessToken, emailChangeToken: emailChangeToken, password: password, data: data) { [unowned self] result in
             switch result {
             case let .success(user):
@@ -93,7 +101,6 @@ public class GoTrueClient {
             }
         }
     }
-
 
     func saveSession(session: Session) {
         currentSession = session

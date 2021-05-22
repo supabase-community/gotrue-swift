@@ -1,4 +1,4 @@
-import Foundation.FoundationErrors
+import Foundation
 
 struct GoTrueError: Error {
     var statusCode: Int?

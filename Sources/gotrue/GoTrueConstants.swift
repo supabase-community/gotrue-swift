@@ -5,11 +5,11 @@ public enum GoTrueConstants {
     public static var defaultExpiryMargin = 60 * 1000
     public static var defaultStorageKey = "supabase.auth.token"
 
-    enum Cookie {
-        static var name = "sb:token"
-        static var lifetime: Int = 60 * 60 * 8
-        static var domain: String = ""
-        static var path: String = ""
-        static var sameSite: String = "lax"
+    public enum Cookie {
+        public static var name = "sb:token"
+        public static var lifetime: Int = 60 * 60 * 8
+        public static var domain: String = ""
+        public static var path: String = ""
+        public static var sameSite: String = "lax"
     }
 }

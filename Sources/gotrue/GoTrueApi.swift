@@ -1,14 +1,12 @@
-import Foundation.NSURL
+import Foundation
 
 class GoTrueApi {
     var url: String
     var headers: [String: String]
-    var cookieOptions: CookieOptions?
 
-    init(url: String, headers: [String: String], cookieOptions: CookieOptions?) {
+    init(url: String, headers: [String: String]) {
         self.url = url
         self.headers = headers
-        self.cookieOptions = cookieOptions
     }
 
     /// HTTP Methods
@@ -140,21 +138,21 @@ class GoTrueApi {
             }
         }
     }
-    
-    func updateUser(accessToken: String,emailChangeToken: String?, password: String?, data: [String:Any]? = nil, completion: @escaping (Result<User, Error>) -> Void) {
+
+    func updateUser(accessToken: String, emailChangeToken: String?, password: String?, data: [String: Any]? = nil, completion: @escaping (Result<User, Error>) -> Void) {
         guard let url = URL(string: "\(url)/user") else {
             completion(.failure(GoTrueError(message: "badURL")))
             return
         }
-        var parameters: [String:Any] = [:]
+        var parameters: [String: Any] = [:]
         if let emailChangeToken = emailChangeToken {
             parameters["email_change_token"] = emailChangeToken
         }
-        
+
         if let password = password {
             parameters["password"] = password
         }
-        
+
         if let data = data {
             parameters["data"] = data
         }
