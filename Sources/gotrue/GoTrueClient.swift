@@ -17,7 +17,7 @@ public class GoTrueClient {
         return currentSession
     }
 
-    public init(url: String = GoTrueConstants.defaultGotrueUrl, headers: [String: String] = GoTrueConstants.defaultHeaders, autoRefreshToken: Bool = true) {
+    public init(url: String = GoTrueConstants.defaultGotrueUrl, headers: [String: String] = [:], autoRefreshToken: Bool = true) {
         api = GoTrueApi(url: url, headers: headers)
         self.autoRefreshToken = autoRefreshToken
 
@@ -27,19 +27,17 @@ public class GoTrueClient {
         }
     }
 
-    public func signUp(email: String, password: String, completion: @escaping (Result<Session, Error>) -> Void) {
+    public func signUp(email: String, password: String, completion: @escaping (Result<(session: Session?, user: User?), Error>) -> Void) {
         removeSession()
 
         api.signUpWithEmail(email: email, password: password) { [unowned self] result in
             switch result {
-            case let .success(session):
-                if let session = session {
+            case let .success(data):
+                if let session = data.session {
                     self.saveSession(session: session)
                     self.onAuthStateChange?(.SIGNED_IN)
-                    completion(.success(session))
-                } else {
-                    completion(.failure(GoTrueError(message: "failed to get session")))
                 }
+                completion(.success(data))
             case let .failure(error):
                 completion(.failure(error))
             }

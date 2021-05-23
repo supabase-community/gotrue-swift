@@ -7,6 +7,7 @@ class GoTrueApi {
     init(url: String, headers: [String: String]) {
         self.url = url
         self.headers = headers
+        self.headers.merge(GoTrueConstants.defaultHeaders) { $1 }
     }
 
     /// HTTP Methods
@@ -22,7 +23,7 @@ class GoTrueApi {
         case patch = "PATCH"
     }
 
-    func signUpWithEmail(email: String, password: String, completion: @escaping (Result<Session?, Error>) -> Void) {
+    func signUpWithEmail(email: String, password: String, completion: @escaping (Result<(session: Session?, user: User?), Error>) -> Void) {
         guard let url = URL(string: "\(url)/signup") else {
             completion(.failure(GoTrueError(message: "badURL")))
             return
@@ -31,11 +32,22 @@ class GoTrueApi {
         fetch(url: url, method: .post, parameters: ["email": email, "password": password]) { result in
             switch result {
             case let .success(response):
-                guard let dict: [String: Any] = response as? [String: Any], let session = Session(from: dict) else {
+                guard let dict: [String: Any] = response as? [String: Any] else {
                     completion(.failure(GoTrueError(message: "failed to parse response")))
                     return
                 }
-                completion(.success(session))
+
+                if let session = Session(from: dict) {
+                    completion(.success((session: session, user: session.user)))
+                    return
+                }
+
+                if let user = User(from: dict) {
+                    completion(.success((session: nil, user: user)))
+                    return
+                }
+
+                completion(.success((session: nil, user: nil)))
             case let .failure(error):
                 completion(.failure(error))
             }
@@ -129,7 +141,7 @@ class GoTrueApi {
             return
         }
 
-        fetch(url: url, method: .post, parameters: [:], headers: ["Authorization": "Bearer \(accessToken)"]) { result in
+        fetch(url: url, method: .post, parameters: [:], headers: ["Authorization": "Bearer \(accessToken)"], jsonSerialization: false) { result in
             switch result {
             case let .success(response):
                 completion(.success(response))
@@ -191,7 +203,7 @@ class GoTrueApi {
         }
     }
 
-    private func fetch(url: URL, method: HTTPMethod = .get, parameters: [String: Any]?, headers: [String: String]? = nil, completion: @escaping (Result<Any, Error>) -> Void) {
+    private func fetch(url: URL, method: HTTPMethod = .get, parameters: [String: Any]?, headers: [String: String]? = nil, jsonSerialization: Bool = true, completion: @escaping (Result<Any, Error>) -> Void) {
         var request = URLRequest(url: url)
         request.httpMethod = method.rawValue
 
@@ -220,20 +232,17 @@ class GoTrueApi {
 
             if let resp = response as? HTTPURLResponse {
                 if let data = data {
-                    do {
-                        let json = try JSONSerialization.jsonObject(with: data, options: [])
+                    if jsonSerialization {
                         do {
+                            let json = try JSONSerialization.jsonObject(with: data, options: [])
                             completion(.success(try self.parse(response: json, statusCode: resp.statusCode)))
                         } catch {
                             completion(.failure(error))
                             return
                         }
-                    } catch {
+                    } else {
                         if let dataString = String(data: data, encoding: .utf8) {
                             completion(.success(dataString))
-                            return
-                        } else {
-                            completion(.failure(error))
                             return
                         }
                     }

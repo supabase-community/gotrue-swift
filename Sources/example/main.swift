@@ -4,7 +4,7 @@ import gotrue
 func main() {
     let semaphore = DispatchSemaphore(value: 0)
 
-    let client = GoTrueClient(url: "https://satishbabariya-gotrue-dart-vg6x-9999.githubpreview.dev")
+    let client = GoTrueClient(url: "https://galflylhyokjtdotwnde.supabase.co/auth/v1")
 
     client.signIn(email: "email@example.com", password: "password") { result in
         switch result {
