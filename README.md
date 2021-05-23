@@ -3,7 +3,7 @@
 - [x] signUp
 - [x] signIn
 - [x] refreshSession
-- [ ] getSessionFromUrl
+- [x] getSessionFromUrl
 - [x] update
 - [x] signOut
 - [x] onAuthStateChange
