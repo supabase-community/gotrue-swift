@@ -4,7 +4,7 @@
 import PackageDescription
 
 let package = Package(
-    name: "gotrue-swift",
+    name: "gotrue",
     platforms: [
         .macOS(.v10_12),
         .iOS(.v10),
