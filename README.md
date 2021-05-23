@@ -10,6 +10,6 @@
 - [x] recoverSession (Implemented local storage option)
 - [x] removeSession
 - [x] callRefreshToken
-
+-------------------------
 - [ ] Documentation 
 - [ ] Tests
