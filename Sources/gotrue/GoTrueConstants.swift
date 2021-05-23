@@ -3,7 +3,7 @@ public enum GoTrueConstants {
     public static var defaultAudience = ""
     public static var defaultHeaders: [String: String] = ["Content-Type": "application/json"]
     public static var defaultExpiryMargin = 60 * 1000
-    public static var defaultStorageKey = "supabase.auth.token"
+    public static var defaultStorageKey = "supabase.auth"
 
     public enum Cookie {
         public static var name = "sb:token"

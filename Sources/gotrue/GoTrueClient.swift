@@ -21,6 +21,12 @@ public class GoTrueClient {
     public init(url: String = GoTrueConstants.defaultGotrueUrl, headers: [String: String] = GoTrueConstants.defaultHeaders, autoRefreshToken: Bool = true) {
         api = GoTrueApi(url: url, headers: headers)
         self.autoRefreshToken = autoRefreshToken
+
+        // recover session from storage
+        if let session = UserDefaults.standard.value(Session.self, forKey: "\(GoTrueConstants.defaultStorageKey).session") {
+            currentSession = session
+            currentUser = session.user
+        }
     }
 
     public func signUp(email: String, password: String, completion: @escaping (Result<Session, Error>) -> Void) {
@@ -106,6 +112,9 @@ public class GoTrueClient {
         currentSession = session
         currentUser = session.user
 
+        // save session to storage
+        UserDefaults.standard.set(encodable: session, forKey: "\(GoTrueConstants.defaultStorageKey).session")
+
         if let tokenExpirySeconds = session.expiresIn, autoRefreshToken {
             if refreshTokenTimer != nil {
                 refreshTokenTimer?.invalidate()
@@ -129,6 +138,8 @@ public class GoTrueClient {
     func removeSession() {
         currentUser = nil
         currentSession = nil
+
+        UserDefaults.standard.removeObject(forKey: "\(GoTrueConstants.defaultStorageKey).session")
     }
 
     public func refreshSession(completion: @escaping (Result<Session, Error>) -> Void) {
