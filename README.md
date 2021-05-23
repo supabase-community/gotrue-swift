@@ -7,6 +7,6 @@
 - [x] update
 - [x] signOut
 - [x] onAuthStateChange
-- [ ] recoverSession
+- [x] recoverSession (Implemented local storage option)
 - [x] removeSession
 - [x] callRefreshToken
