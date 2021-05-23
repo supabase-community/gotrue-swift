@@ -36,17 +36,17 @@ func main() {
 
     client.onAuthStateChange = { event in
         print(event)
-        if event == .SIGNED_IN {
-            client.signOut { result in
-                switch result {
-                case let .success(session):
-                    print(session as Any)
-                case let .failure(error):
-                    print(error.localizedDescription)
-                }
-                semaphore.signal()
-            }
-        }
+//        if event == .SIGNED_IN {
+//            client.signOut { result in
+//                switch result {
+//                case let .success(session):
+//                    print(session as Any)
+//                case let .failure(error):
+//                    print(error.localizedDescription)
+//                }
+//                semaphore.signal()
+//            }
+//        }
     }
 
 //    client.signUp(email: "1@example.com", password: "password") { result in

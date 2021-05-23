@@ -171,6 +171,26 @@ class GoTrueApi {
         }
     }
 
+    func getUser(accessToken: String, completion: @escaping (Result<User, Error>) -> Void) {
+        guard let url = URL(string: "\(url)/user") else {
+            completion(.failure(GoTrueError(message: "badURL")))
+            return
+        }
+
+        fetch(url: url, method: .get, parameters: nil, headers: ["Authorization": "Bearer \(accessToken)"]) { result in
+            switch result {
+            case let .success(response):
+                guard let dict: [String: Any] = response as? [String: Any], let user = User(from: dict) else {
+                    completion(.failure(GoTrueError(message: "failed to parse response")))
+                    return
+                }
+                completion(.success(user))
+            case let .failure(error):
+                completion(.failure(error))
+            }
+        }
+    }
+
     private func fetch(url: URL, method: HTTPMethod = .get, parameters: [String: Any]?, headers: [String: String]? = nil, completion: @escaping (Result<Any, Error>) -> Void) {
         var request = URLRequest(url: url)
         request.httpMethod = method.rawValue

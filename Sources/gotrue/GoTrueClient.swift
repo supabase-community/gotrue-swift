@@ -2,7 +2,6 @@ import Foundation
 
 public class GoTrueClient {
     var api: GoTrueApi
-    var currentUser: User?
     var currentSession: Session?
     var autoRefreshToken: Bool
     var refreshTokenTimer: Timer?
@@ -11,7 +10,7 @@ public class GoTrueClient {
     public var onAuthStateChange: StateChangeEvent?
 
     public var user: User? {
-        return currentUser
+        return currentSession?.user
     }
 
     public var session: Session? {
@@ -25,7 +24,6 @@ public class GoTrueClient {
         // recover session from storage
         if let session = UserDefaults.standard.value(Session.self, forKey: "\(GoTrueConstants.defaultStorageKey).session") {
             currentSession = session
-            currentUser = session.user
         }
     }
 
@@ -101,6 +99,10 @@ public class GoTrueClient {
             switch result {
             case let .success(user):
                 self.onAuthStateChange?(.USER_UPDATED)
+                self.currentSession?.user = user
+                if let currentSession = self.currentSession {
+                    self.saveSessionToStorage(currentSession)
+                }
                 completion(.success(user))
             case let .failure(error):
                 completion(.failure(error))
@@ -108,12 +110,47 @@ public class GoTrueClient {
         }
     }
 
-    func saveSession(session: Session) {
-        currentSession = session
-        currentUser = session.user
+    public func getSessionFromUrl(url: String, completion: @escaping (Result<Session, Error>) -> Void) {
+        let components = URLComponents(string: url)
 
+        guard let queryItems = components?.queryItems,
+              let accessToken: String = queryItems.first(where: { item in item.name == "access_token" })?.value,
+              let expiresIn: String = queryItems.first(where: { item in item.name == "expires_in" })?.value,
+              let refreshToken: String = queryItems.first(where: { item in item.name == "refresh_token" })?.value,
+              let tokenType: String = queryItems.first(where: { item in item.name == "token_type" })?.value,
+              let providerToken: String = queryItems.first(where: { item in item.name == "provider_token" })?.value
+        else {
+            completion(.failure(GoTrueError(message: "bad credentials")))
+            return
+        }
+
+        api.getUser(accessToken: accessToken) { [unowned self] result in
+            switch result {
+            case let .success(user):
+                let session = Session(accessToken: accessToken, tokenType: tokenType, expiresIn: Int(expiresIn), refreshToken: refreshToken, providerToken: providerToken, user: user)
+                saveSession(session: session)
+                self.onAuthStateChange?(.SIGNED_IN)
+
+                if let type: String = queryItems.first(where: { item in item.name == "type" })?.value, type == "recovery" {
+                    self.onAuthStateChange?(.PASSWORD_RECOVERY)
+                }
+
+                completion(.success(session))
+            case let .failure(error):
+                completion(.failure(error))
+            }
+        }
+    }
+
+    fileprivate func saveSessionToStorage(_ session: Session) {
         // save session to storage
         UserDefaults.standard.set(encodable: session, forKey: "\(GoTrueConstants.defaultStorageKey).session")
+    }
+
+    func saveSession(session: Session) {
+        currentSession = session
+
+        saveSessionToStorage(session)
 
         if let tokenExpirySeconds = session.expiresIn, autoRefreshToken {
             if refreshTokenTimer != nil {
@@ -136,7 +173,6 @@ public class GoTrueClient {
     }
 
     func removeSession() {
-        currentUser = nil
         currentSession = nil
 
         UserDefaults.standard.removeObject(forKey: "\(GoTrueConstants.defaultStorageKey).session")
