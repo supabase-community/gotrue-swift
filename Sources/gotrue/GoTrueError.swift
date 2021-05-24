@@ -1,12 +1,12 @@
 import Foundation
 
-struct GoTrueError: Error {
-    var statusCode: Int?
-    var message: String?
+public struct GoTrueError: Error {
+    public var statusCode: Int?
+    public var message: String?
 }
 
 extension GoTrueError: LocalizedError {
-    var errorDescription: String? {
+    public var errorDescription: String? {
         return message
     }
 }
