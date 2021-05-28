@@ -156,17 +156,20 @@ public class GoTrueClient {
                 refreshTokenTimer = nil
             }
 
-            refreshTokenTimer = Timer(fire: Date().addingTimeInterval(TimeInterval(tokenExpirySeconds)), interval: 0, repeats: false, block: { [unowned self] _ in
-                callRefreshToken(refreshToken: self.currentSession?.refreshToken) { [unowned self] result in
-                    switch result {
-                    case let .success(session):
-                        self.saveSession(session: session)
-                        self.onAuthStateChange?(.SIGNED_IN)
-                    case let .failure(error):
-                        print(error.localizedDescription)
-                    }
-                }
-            })
+            refreshTokenTimer = Timer(fireAt: Date().addingTimeInterval(TimeInterval(tokenExpirySeconds)), interval: 0, target: self, selector: #selector(refreshToken), userInfo: nil, repeats: false)
+        }
+    }
+
+    @objc
+    func refreshToken() {
+        callRefreshToken(refreshToken: currentSession?.refreshToken) { [unowned self] result in
+            switch result {
+            case let .success(session):
+                self.saveSession(session: session)
+                self.onAuthStateChange?(.SIGNED_IN)
+            case let .failure(error):
+                print(error.localizedDescription)
+            }
         }
     }
 

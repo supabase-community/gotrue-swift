@@ -4,18 +4,12 @@
 import PackageDescription
 
 let package = Package(
-    name: "gotrue",
-    platforms: [
-        .macOS(.v10_12),
-        .iOS(.v10),
-        .watchOS(.v3),
-    ],
+    name: "GoTrue",
     products: [
-        .library(name: "gotrue", targets: ["gotrue"]),
-        .executable(name: "example", targets: ["example"]),
+        .library(name: "GoTrue", targets: ["GoTrue"]),
     ],
     targets: [
-        .target(name: "gotrue"),
-        .target(name: "example", dependencies: ["gotrue"]),
+        .target(name: "GoTrue", dependencies: []),
+        .testTarget(name: "GoTrueTests", dependencies: ["GoTrue"]),
     ]
 )
