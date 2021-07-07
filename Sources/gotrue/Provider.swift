@@ -1,10 +1,13 @@
 public enum Provider: String {
+    case apple
     case azure
     case bitbucket
+    case discord
     case facebook
     case github
     case gitlab
     case google
+    case twitter
 }
 
 public struct ProviderOptions {
