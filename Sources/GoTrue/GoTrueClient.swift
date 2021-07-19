@@ -35,7 +35,7 @@ public class GoTrueClient {
             case let .success(data):
                 if let session = data.session {
                     self.saveSession(session: session)
-                    self.onAuthStateChange?(.SIGNED_IN)
+                    self.onAuthStateChange?(.signedIn)
                 }
                 completion(.success(data))
             case let .failure(error):
@@ -52,7 +52,7 @@ public class GoTrueClient {
             case let .success(session):
                 if let session = session {
                     self.saveSession(session: session)
-                    self.onAuthStateChange?(.SIGNED_IN)
+                    self.onAuthStateChange?(.signedIn)
                     completion(.success(session))
                 } else {
                     completion(.failure(GoTrueError(message: "failed to get session")))
@@ -96,7 +96,7 @@ public class GoTrueClient {
         api.updateUser(accessToken: accessToken, emailChangeToken: emailChangeToken, password: password, data: data) { [unowned self] result in
             switch result {
             case let .success(user):
-                self.onAuthStateChange?(.USER_UPDATED)
+                self.onAuthStateChange?(.userUpdated)
                 self.currentSession?.user = user
                 if let currentSession = self.currentSession {
                     self.saveSessionToStorage(currentSession)
@@ -127,10 +127,10 @@ public class GoTrueClient {
             case let .success(user):
                 let session = Session(accessToken: accessToken, tokenType: tokenType, expiresIn: Int(expiresIn), refreshToken: refreshToken, providerToken: providerToken, user: user)
                 saveSession(session: session)
-                self.onAuthStateChange?(.SIGNED_IN)
+                self.onAuthStateChange?(.signedIn)
 
                 if let type: String = queryItems.first(where: { item in item.name == "type" })?.value, type == "recovery" {
-                    self.onAuthStateChange?(.PASSWORD_RECOVERY)
+                    self.onAuthStateChange?(.passwordRecovery)
                 }
 
                 completion(.success(session))
@@ -166,7 +166,7 @@ public class GoTrueClient {
             switch result {
             case let .success(session):
                 self.saveSession(session: session)
-                self.onAuthStateChange?(.SIGNED_IN)
+                self.onAuthStateChange?(.signedIn)
             case let .failure(error):
                 print(error.localizedDescription)
             }
@@ -196,7 +196,7 @@ public class GoTrueClient {
         }
 
         removeSession()
-        onAuthStateChange?(.SIGNED_OUT)
+        onAuthStateChange?(.signedOut)
         api.signOut(accessToken: accessToken) { result in
             completion(result)
         }

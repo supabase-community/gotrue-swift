@@ -1,8 +1,8 @@
 
 public enum AuthChangeEvent: String {
-    case SIGNED_IN
-    case SIGNED_OUT
-    case USER_UPDATED
-    case USER_DELETED
-    case PASSWORD_RECOVERY
+    case signedIn = "SIGNED_IN"
+    case signedOut = "SIGNED_OUT"
+    case userUpdated = "USER_UPDATED"
+    case userDeleted = "USER_DELETED"
+    case passwordRecovery = "PASSWORD_RECOVERY"
 }
