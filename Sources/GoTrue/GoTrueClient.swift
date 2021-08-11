@@ -1,13 +1,36 @@
 import Foundation
 
+public typealias AuthStateChangeCallback = (_ event: AuthChangeEvent, _ session: Session?) -> Void
+
+public struct Subscription {
+    let callback: AuthStateChangeCallback
+
+    public let unsubscribe: () -> Void
+}
+
 public class GoTrueClient {
     var api: GoTrueApi
     var currentSession: Session?
     var autoRefreshToken: Bool
     var refreshTokenTimer: Timer?
 
-    public typealias StateChangeEvent = (AuthChangeEvent) -> Void
-    public var onAuthStateChange: StateChangeEvent?
+    private var stateChangeListeners: [String: Subscription] = [:]
+
+    /// Receive a notification every time an auth event happens.
+    /// - Returns: A subscription object which can be used to unsubscribe itself.
+    public func onAuthStateChange(_ callback: @escaping (_ event: AuthChangeEvent, _ session: Session?) -> Void) -> Subscription {
+        let id = UUID().uuidString
+
+        let subscription = Subscription(
+            callback: callback,
+            unsubscribe: { [weak self] in
+                self?.stateChangeListeners[id] = nil
+            }
+        )
+
+        stateChangeListeners[id] = subscription
+        return subscription
+    }
 
     public var user: User? {
         return currentSession?.user
@@ -35,7 +58,7 @@ public class GoTrueClient {
             case let .success(data):
                 if let session = data.session {
                     self.saveSession(session: session)
-                    self.onAuthStateChange?(.signedIn)
+                    self.notifyAllStateChangeListeners(.signedIn)
                 }
                 completion(.success(data))
             case let .failure(error):
@@ -52,7 +75,7 @@ public class GoTrueClient {
             case let .success(session):
                 if let session = session {
                     self.saveSession(session: session)
-                    self.onAuthStateChange?(.signedIn)
+                    self.notifyAllStateChangeListeners(.signedIn)
                     completion(.success(session))
                 } else {
                     completion(.failure(GoTrueError(message: "failed to get session")))
@@ -96,7 +119,7 @@ public class GoTrueClient {
         api.updateUser(accessToken: accessToken, emailChangeToken: emailChangeToken, password: password, data: data) { [unowned self] result in
             switch result {
             case let .success(user):
-                self.onAuthStateChange?(.userUpdated)
+                self.notifyAllStateChangeListeners(.userUpdated)
                 self.currentSession?.user = user
                 if let currentSession = self.currentSession {
                     self.saveSessionToStorage(currentSession)
@@ -127,10 +150,10 @@ public class GoTrueClient {
             case let .success(user):
                 let session = Session(accessToken: accessToken, tokenType: tokenType, expiresIn: Int(expiresIn), refreshToken: refreshToken, providerToken: providerToken, user: user)
                 saveSession(session: session)
-                self.onAuthStateChange?(.signedIn)
+                self.notifyAllStateChangeListeners(.signedIn)
 
                 if let type: String = queryItems.first(where: { item in item.name == "type" })?.value, type == "recovery" {
-                    self.onAuthStateChange?(.passwordRecovery)
+                    self.notifyAllStateChangeListeners(.passwordRecovery)
                 }
 
                 completion(.success(session))
@@ -166,7 +189,7 @@ public class GoTrueClient {
             switch result {
             case let .success(session):
                 self.saveSession(session: session)
-                self.onAuthStateChange?(.signedIn)
+                self.notifyAllStateChangeListeners(.signedIn)
             case let .failure(error):
                 print(error.localizedDescription)
             }
@@ -196,7 +219,7 @@ public class GoTrueClient {
         }
 
         removeSession()
-        onAuthStateChange?(.signedOut)
+        notifyAllStateChangeListeners(.signedOut)
         api.signOut(accessToken: accessToken) { result in
             completion(result)
         }
@@ -219,6 +242,12 @@ public class GoTrueClient {
             case let .failure(error):
                 completion(.failure(error))
             }
+        }
+    }
+
+    private func notifyAllStateChangeListeners(_ event: AuthChangeEvent) {
+        stateChangeListeners.values.forEach {
+            $0.callback(event, session)
         }
     }
 }
