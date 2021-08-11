@@ -138,12 +138,13 @@ public class GoTrueClient {
               let accessToken: String = queryItems.first(where: { item in item.name == "access_token" })?.value,
               let expiresIn: String = queryItems.first(where: { item in item.name == "expires_in" })?.value,
               let refreshToken: String = queryItems.first(where: { item in item.name == "refresh_token" })?.value,
-              let tokenType: String = queryItems.first(where: { item in item.name == "token_type" })?.value,
-              let providerToken: String = queryItems.first(where: { item in item.name == "provider_token" })?.value
+              let tokenType: String = queryItems.first(where: { item in item.name == "token_type" })?.value
         else {
             completion(.failure(GoTrueError(message: "bad credentials")))
             return
         }
+
+        let providerToken = queryItems.first(where: { item in item.name == "provider_token" })?.value
 
         api.getUser(accessToken: accessToken) { [unowned self] result in
             switch result {
