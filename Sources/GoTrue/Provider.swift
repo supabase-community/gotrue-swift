@@ -7,6 +7,8 @@ public enum Provider: String {
     case github
     case gitlab
     case google
+    case slack
+    case spotify
     case twitter
 }
 
