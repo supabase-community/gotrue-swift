@@ -243,74 +243,73 @@ public class GoTrueClient {
 }
 
 #if compiler(>=5.5)
-@available(iOS 15.0.0, macOS 12.0.0, *)
-extension GoTrueClient {
+    @available(iOS 15.0.0, macOS 12.0.0, *)
+    public extension GoTrueClient {
+        func onAuthStateChange() -> AsyncStream<(AuthChangeEvent, Session?)> {
+            AsyncStream { continuation in
+                _ = onAuthStateChange { event, session in
+                    continuation.yield((event, session))
+                }
 
-    public func onAuthStateChange() -> AsyncStream<(AuthChangeEvent, Session?)> {
-        AsyncStream { continuation in
-            _ = onAuthStateChange { event, session in
-                continuation.yield((event, session))
-            }
-
-            // How to stop subscription?
-            // continuation.onTermination = { subscription.unsubscribe() }
-        }
-    }
-
-    public func signUp(email: String, password: String) async throws -> (session: Session?, user: User?) {
-        try await withCheckedThrowingContinuation { continuation in
-            signUp(email: email, password: password) { result in
-                continuation.resume(with: result)
+                // How to stop subscription?
+                // continuation.onTermination = { subscription.unsubscribe() }
             }
         }
-    }
 
-    public func signIn(email: String, password: String) async throws -> Session {
-        try await withCheckedThrowingContinuation { continuation in
-            signIn(email: email, password: password) { result in
-                continuation.resume(with: result)
+        func signUp(email: String, password: String) async throws -> (session: Session?, user: User?) {
+            try await withCheckedThrowingContinuation { continuation in
+                signUp(email: email, password: password) { result in
+                    continuation.resume(with: result)
+                }
+            }
+        }
+
+        func signIn(email: String, password: String) async throws -> Session {
+            try await withCheckedThrowingContinuation { continuation in
+                signIn(email: email, password: password) { result in
+                    continuation.resume(with: result)
+                }
+            }
+        }
+
+        func signIn(email: String) async throws -> Any? {
+            try await withCheckedThrowingContinuation { continuation in
+                signIn(email: email) { result in
+                    continuation.resume(with: result)
+                }
+            }
+        }
+
+        func update(emailChangeToken: String? = nil, password: String? = nil, data: [String: Any]? = nil) async throws -> User {
+            try await withCheckedThrowingContinuation { continuation in
+                update(emailChangeToken: emailChangeToken, password: password, data: data) { result in
+                    continuation.resume(with: result)
+                }
+            }
+        }
+
+        func getSessionFromUrl(url: String) async throws -> Session {
+            try await withCheckedThrowingContinuation { continuation in
+                getSessionFromUrl(url: url) { result in
+                    continuation.resume(with: result)
+                }
+            }
+        }
+
+        func refreshSession() async throws -> Session {
+            try await withCheckedThrowingContinuation { continuation in
+                refreshSession { result in
+                    continuation.resume(with: result)
+                }
+            }
+        }
+
+        func signOut() async throws -> Any? {
+            try await withCheckedThrowingContinuation { continuation in
+                signOut { result in
+                    continuation.resume(with: result)
+                }
             }
         }
     }
-
-    public func signIn(email: String) async throws -> Any? {
-        try await withCheckedThrowingContinuation { continuation in
-            signIn(email: email) { result in
-                continuation.resume(with: result)
-            }
-        }
-    }
-
-    public func update(emailChangeToken: String? = nil, password: String? = nil, data: [String: Any]? = nil) async throws -> User {
-        try await withCheckedThrowingContinuation { continuation in
-            update(emailChangeToken: emailChangeToken, password: password, data: data) { result in
-                continuation.resume(with: result)
-            }
-        }
-    }
-
-    public func getSessionFromUrl(url: String) async throws -> Session {
-        try await withCheckedThrowingContinuation { continuation in
-            getSessionFromUrl(url: url) { result in
-                continuation.resume(with: result)
-            }
-        }
-    }
-
-    public func refreshSession() async throws -> Session {
-        try await withCheckedThrowingContinuation { continuation in
-            refreshSession { result in
-                continuation.resume(with: result)
-            }
-        }
-    }
-
-    public func signOut() async throws -> Any? {
-        try await withCheckedThrowingContinuation { continuation in
-            signOut { result in
-                continuation.resume(with: result)
-            }
-        }
-    }
-}
 #endif

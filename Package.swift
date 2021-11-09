@@ -10,9 +10,9 @@ let package = Package(
     ],
     dependencies: [
         .package(
-                url: "https://github.com/Flight-School/AnyCodable",
-                from: "0.6.0"
-            )
+            url: "https://github.com/Flight-School/AnyCodable",
+            from: "0.6.0"
+        ),
     ],
     targets: [
         .target(name: "GoTrue", dependencies: ["AnyCodable"]),

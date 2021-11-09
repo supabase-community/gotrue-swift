@@ -1,5 +1,5 @@
-import Foundation
 import AnyCodable
+import Foundation
 
 class GoTrueApi {
     var url: String
@@ -209,7 +209,7 @@ class GoTrueApi {
             }
         }
 
-        let dataTask = URLSession.shared.dataTask(with: request) { [weak self] (data, response, error) -> Void in
+        let dataTask = URLSession.shared.dataTask(with: request) { [weak self] data, response, error -> Void in
             guard let self = self else { return }
 
             do {
@@ -231,7 +231,7 @@ class GoTrueApi {
     }
 
     private func parse(response: Data, statusCode: Int) throws -> Data {
-        if 200..<300 ~= statusCode {
+        if 200 ..< 300 ~= statusCode {
             return response
         }
 
