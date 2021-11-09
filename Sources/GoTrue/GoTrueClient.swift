@@ -53,7 +53,8 @@ public class GoTrueClient {
     public func signUp(email: String, password: String, completion: @escaping (Result<(session: Session?, user: User?), Error>) -> Void) {
         removeSession()
 
-        api.signUpWithEmail(email: email, password: password) { [unowned self] result in
+        api.signUpWithEmail(email: email, password: password) { [weak self] result in
+            guard let self = self else { return }
             switch result {
             case let .success(data):
                 if let session = data.session {
@@ -70,7 +71,8 @@ public class GoTrueClient {
     public func signIn(email: String, password: String, completion: @escaping (Result<Session, Error>) -> Void) {
         removeSession()
 
-        api.signInWithEmail(email: email, password: password) { [unowned self] result in
+        api.signInWithEmail(email: email, password: password) { [weak self] result in
+            guard let self = self else { return }
             switch result {
             case let .success(session):
                 if let session = session {
@@ -116,7 +118,8 @@ public class GoTrueClient {
             return
         }
 
-        api.updateUser(accessToken: accessToken, emailChangeToken: emailChangeToken, password: password, data: data) { [unowned self] result in
+        api.updateUser(accessToken: accessToken, emailChangeToken: emailChangeToken, password: password, data: data) { [weak self] result in
+            guard let self = self else { return }
             switch result {
             case let .success(user):
                 self.notifyAllStateChangeListeners(.userUpdated)
@@ -146,11 +149,12 @@ public class GoTrueClient {
 
         let providerToken = queryItems.first(where: { item in item.name == "provider_token" })?.value
 
-        api.getUser(accessToken: accessToken) { [unowned self] result in
+        api.getUser(accessToken: accessToken) { [weak self] result in
+            guard let self = self else { return }
             switch result {
             case let .success(user):
                 let session = Session(accessToken: accessToken, tokenType: tokenType, expiresIn: Int(expiresIn), refreshToken: refreshToken, providerToken: providerToken, user: user)
-                saveSession(session: session)
+                self.saveSession(session: session)
                 self.notifyAllStateChangeListeners(.signedIn)
 
                 if let type: String = queryItems.first(where: { item in item.name == "type" })?.value, type == "recovery" {
@@ -185,7 +189,8 @@ public class GoTrueClient {
 
     @objc
     private func refreshToken() {
-        callRefreshToken(refreshToken: currentSession?.refreshToken) { [unowned self] result in
+        callRefreshToken(refreshToken: currentSession?.refreshToken) { [weak self] result in
+            guard let self = self else { return }
             switch result {
             case let .success(session):
                 self.saveSession(session: session)
