@@ -75,13 +75,9 @@ public class GoTrueClient {
             guard let self = self else { return }
             switch result {
             case let .success(session):
-                if let session = session {
-                    self.saveSession(session: session)
-                    self.notifyAllStateChangeListeners(.signedIn)
-                    completion(.success(session))
-                } else {
-                    completion(.failure(GoTrueError(message: "failed to get session")))
-                }
+                self.saveSession(session: session)
+                self.notifyAllStateChangeListeners(.signedIn)
+                completion(.success(session))
             case let .failure(error):
                 completion(.failure(error))
             }
@@ -153,7 +149,7 @@ public class GoTrueClient {
             guard let self = self else { return }
             switch result {
             case let .success(user):
-                let session = Session(accessToken: accessToken, tokenType: tokenType, expiresIn: Int(expiresIn), refreshToken: refreshToken, providerToken: providerToken, user: user)
+                let session = Session(accessToken: accessToken, tokenType: tokenType, user: user, expiresIn: Int(expiresIn), refreshToken: refreshToken, providerToken: providerToken)
                 self.saveSession(session: session)
                 self.notifyAllStateChangeListeners(.signedIn)
 
@@ -217,7 +213,7 @@ public class GoTrueClient {
         }
     }
 
-    public func signOut(completion: @escaping (Result<Any?, Error>) -> Void) {
+    public func signOut(completion: @escaping (Result<Data, Error>) -> Void) {
         guard let accessToken = currentSession?.accessToken else {
             completion(.failure(GoTrueError(message: "current session not found")))
             return
@@ -236,18 +232,7 @@ public class GoTrueClient {
             return
         }
 
-        api.refreshAccessToken(refreshToken: refreshToken) { result in
-            switch result {
-            case let .success(session):
-                if let session = session {
-                    completion(.success(session))
-                } else {
-                    completion(.failure(GoTrueError(message: "failed to get session")))
-                }
-            case let .failure(error):
-                completion(.failure(error))
-            }
-        }
+        api.refreshAccessToken(refreshToken: refreshToken, completion: completion)
     }
 
     private func notifyAllStateChangeListeners(_ event: AuthChangeEvent) {
@@ -263,7 +248,7 @@ extension GoTrueClient {
 
     public func onAuthStateChange() -> AsyncStream<(AuthChangeEvent, Session?)> {
         AsyncStream { continuation in
-            let subscription = onAuthStateChange { event, session in
+            _ = onAuthStateChange { event, session in
                 continuation.yield((event, session))
             }
 

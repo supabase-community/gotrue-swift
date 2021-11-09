@@ -6,43 +6,6 @@ public struct Session {
     var expiresIn: Int?
     var refreshToken: String?
     var providerToken: String?
-
-    init(accessToken: String, tokenType: String?, expiresIn: Int?, refreshToken: String?, providerToken: String?, user: User?) {
-        self.accessToken = accessToken
-        self.tokenType = tokenType
-        self.expiresIn = expiresIn
-        self.refreshToken = refreshToken
-        self.providerToken = providerToken
-        self.user = user
-    }
-
-    init?(from dictionary: [String: Any]) {
-        guard let accessToken: String = dictionary["access_token"] as? String else {
-            return nil
-        }
-
-        self.accessToken = accessToken
-
-        if let tokenType: String = dictionary["token_type"] as? String {
-            self.tokenType = tokenType
-        }
-
-        if let expiresIn: Int = dictionary["expires_in"] as? Int {
-            self.expiresIn = expiresIn
-        }
-
-        if let refreshToken: String = dictionary["refresh_token"] as? String {
-            self.refreshToken = refreshToken
-        }
-
-        if let providerToken: String = dictionary["provider_token"] as? String {
-            self.providerToken = providerToken
-        }
-
-        if let user: [String: Any] = dictionary["user"] as? [String: Any] {
-            self.user = User(from: user)
-        }
-    }
 }
 
 extension Session: Codable {

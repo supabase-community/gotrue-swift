@@ -8,8 +8,14 @@ let package = Package(
     products: [
         .library(name: "GoTrue", targets: ["GoTrue"]),
     ],
+    dependencies: [
+        .package(
+                url: "https://github.com/Flight-School/AnyCodable",
+                from: "0.6.0"
+            )
+    ],
     targets: [
-        .target(name: "GoTrue", dependencies: []),
+        .target(name: "GoTrue", dependencies: ["AnyCodable"]),
         .testTarget(name: "GoTrueTests", dependencies: ["GoTrue"]),
     ]
 )

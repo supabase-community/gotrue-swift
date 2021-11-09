@@ -1,3 +1,4 @@
+import AnyCodable
 public struct User {
     public var id: String
     public var aud: String
@@ -9,41 +10,6 @@ public struct User {
     public var userMetadata: [String: Any]?
     public var createdAt: String
     public var updatedAt: String
-
-    init?(from dictionary: [String: Any]) {
-        guard let id: String = dictionary["id"] as? String,
-              let aud: String = dictionary["aud"] as? String,
-              let email: String = dictionary["email"] as? String,
-              let createdAt: String = dictionary["created_at"] as? String,
-              let updatedAt: String = dictionary["updated_at"] as? String,
-              let role: String = dictionary["role"] as? String
-        else {
-            return nil
-        }
-
-        self.id = id
-        self.aud = aud
-        self.email = email
-        self.role = role
-        self.createdAt = createdAt
-        self.updatedAt = updatedAt
-
-        if let confirmedAt: String = dictionary["confirmed_at"] as? String {
-            self.confirmedAt = confirmedAt
-        }
-
-        if let lastSignInAt: String = dictionary["last_sign_in_at"] as? String {
-            self.lastSignInAt = lastSignInAt
-        }
-
-        if let appMetadata: [String: Any] = dictionary["app_metadata"] as? [String: Any] {
-            self.appMetadata = appMetadata
-        }
-
-        if let userMetadata: [String: Any] = dictionary["user_metadata"] as? [String: Any] {
-            self.userMetadata = userMetadata
-        }
-    }
 }
 
 extension User: Codable {
@@ -70,9 +36,8 @@ extension User: Codable {
         lastSignInAt = try container.decode(String.self, forKey: .lastSignInAt)
         createdAt = try container.decode(String.self, forKey: .createdAt)
         updatedAt = try container.decode(String.self, forKey: .updatedAt)
-
-        appMetadata = try? container.decode([String: Any].self, forKey: .appMetadata)
-        userMetadata = try? container.decode([String: Any].self, forKey: .userMetadata)
+        appMetadata = try container.decodeIfPresent([String: AnyDecodable].self, forKey: .appMetadata)?.mapValues(\.value)
+        userMetadata = try container.decodeIfPresent([String: AnyDecodable].self, forKey: .userMetadata)?.mapValues(\.value)
     }
 
     public func encode(to encoder: Encoder) throws {
@@ -85,8 +50,7 @@ extension User: Codable {
         try container.encode(lastSignInAt, forKey: .lastSignInAt)
         try container.encode(createdAt, forKey: .createdAt)
         try container.encode(updatedAt, forKey: .updatedAt)
-
-        try? container.encode(appMetadata, forKey: .appMetadata)
-        try? container.encode(userMetadata, forKey: .userMetadata)
+        try container.encodeIfPresent(appMetadata?.mapValues(AnyEncodable.init), forKey: .appMetadata)
+        try container.encodeIfPresent(userMetadata?.mapValues(AnyEncodable.init), forKey: .userMetadata)
     }
 }
