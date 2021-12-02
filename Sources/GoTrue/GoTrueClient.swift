@@ -138,7 +138,7 @@ public class GoTrueClient {
                 self.notifyAllStateChangeListeners(.userUpdated)
                 self.currentSession?.user = user
                 if let currentSession = self.currentSession {
-                    sessionManager.saveSession(currentSession)
+                    self.sessionManager.saveSession(currentSession)
                 }
                 completion(.success(user))
             case let .failure(error):
@@ -227,7 +227,9 @@ public class GoTrueClient {
         }
 
         sessionManager.removeSession()
+        currentSession = nil
         notifyAllStateChangeListeners(.signedOut)
+        
         api.signOut(accessToken: accessToken) { result in
             completion(result)
         }
@@ -266,7 +268,7 @@ extension GoTrueClient {
 
     public func onAuthStateChange() -> AsyncStream<(AuthChangeEvent, Session?)> {
         AsyncStream { continuation in
-            let subscription = onAuthStateChange { event, session in
+            _ = onAuthStateChange { event, session in
                 continuation.yield((event, session))
             }
 
