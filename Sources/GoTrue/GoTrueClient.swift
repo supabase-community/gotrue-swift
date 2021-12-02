@@ -66,7 +66,8 @@ public class GoTrueClient {
     public func signUp(email: String, password: String, completion: @escaping (Result<(session: Session?, user: User?), Error>) -> Void) {
         sessionManager.removeSession()
 
-        api.signUpWithEmail(email: email, password: password) { [unowned self] result in
+        api.signUpWithEmail(email: email, password: password) { [weak self] result in
+            guard let self = self else { return }
             switch result {
             case let .success(data):
                 if let session = data.session {
@@ -83,7 +84,8 @@ public class GoTrueClient {
     public func signIn(email: String, password: String, completion: @escaping (Result<Session, Error>) -> Void) {
         sessionManager.removeSession()
 
-        api.signInWithEmail(email: email, password: password) { [unowned self] result in
+        api.signInWithEmail(email: email, password: password) { [weak self] result in
+            guard let self = self else { return }
             switch result {
             case let .success(session):
                 if let session = session {
@@ -129,7 +131,8 @@ public class GoTrueClient {
             return
         }
 
-        api.updateUser(accessToken: accessToken, emailChangeToken: emailChangeToken, password: password, data: data) { [unowned self] result in
+        api.updateUser(accessToken: accessToken, emailChangeToken: emailChangeToken, password: password, data: data) { [weak self] result in
+            guard let self = self else { return }
             switch result {
             case let .success(user):
                 self.notifyAllStateChangeListeners(.userUpdated)
@@ -159,11 +162,12 @@ public class GoTrueClient {
 
         let providerToken = queryItems.first(where: { item in item.name == "provider_token" })?.value
 
-        api.getUser(accessToken: accessToken) { [unowned self] result in
+        api.getUser(accessToken: accessToken) { [weak self] result in
+            guard let self = self else { return }
             switch result {
             case let .success(user):
                 let session = Session(accessToken: accessToken, tokenType: tokenType, expiresIn: Int(expiresIn), refreshToken: refreshToken, providerToken: providerToken, user: user)
-                saveSession(session: session)
+                self.saveSession(session: session)
                 self.notifyAllStateChangeListeners(.signedIn)
 
                 if let type: String = queryItems.first(where: { item in item.name == "type" })?.value, type == "recovery" {
@@ -193,8 +197,9 @@ public class GoTrueClient {
     }
 
     @objc
-    func refreshToken() {
-        callRefreshToken(refreshToken: currentSession?.refreshToken) { [unowned self] result in
+    private func refreshToken() {
+        callRefreshToken(refreshToken: currentSession?.refreshToken) { [weak self] result in
+            guard let self = self else { return }
             switch result {
             case let .success(session):
                 self.saveSession(session: session)
@@ -228,7 +233,7 @@ public class GoTrueClient {
         }
     }
 
-    func callRefreshToken(refreshToken: String?, completion: @escaping (Result<Session, Error>) -> Void) {
+    private func callRefreshToken(refreshToken: String?, completion: @escaping (Result<Session, Error>) -> Void) {
         guard let refreshToken = refreshToken else {
             completion(.failure(GoTrueError(message: "current session not found")))
             return
@@ -254,3 +259,76 @@ public class GoTrueClient {
         }
     }
 }
+
+#if compiler(>=5.5)
+@available(iOS 15.0.0, macOS 12.0.0, *)
+extension GoTrueClient {
+
+    public func onAuthStateChange() -> AsyncStream<(AuthChangeEvent, Session?)> {
+        AsyncStream { continuation in
+            let subscription = onAuthStateChange { event, session in
+                continuation.yield((event, session))
+            }
+
+            // How to stop subscription?
+            // continuation.onTermination = { subscription.unsubscribe() }
+        }
+    }
+
+    public func signUp(email: String, password: String) async throws -> (session: Session?, user: User?) {
+        try await withCheckedThrowingContinuation { continuation in
+            signUp(email: email, password: password) { result in
+                continuation.resume(with: result)
+            }
+        }
+    }
+
+    public func signIn(email: String, password: String) async throws -> Session {
+        try await withCheckedThrowingContinuation { continuation in
+            signIn(email: email, password: password) { result in
+                continuation.resume(with: result)
+            }
+        }
+    }
+
+    public func signIn(email: String) async throws -> Any? {
+        try await withCheckedThrowingContinuation { continuation in
+            signIn(email: email) { result in
+                continuation.resume(with: result)
+            }
+        }
+    }
+
+    public func update(emailChangeToken: String? = nil, password: String? = nil, data: [String: Any]? = nil) async throws -> User {
+        try await withCheckedThrowingContinuation { continuation in
+            update(emailChangeToken: emailChangeToken, password: password, data: data) { result in
+                continuation.resume(with: result)
+            }
+        }
+    }
+
+    public func getSessionFromUrl(url: String) async throws -> Session {
+        try await withCheckedThrowingContinuation { continuation in
+            getSessionFromUrl(url: url) { result in
+                continuation.resume(with: result)
+            }
+        }
+    }
+
+    public func refreshSession() async throws -> Session {
+        try await withCheckedThrowingContinuation { continuation in
+            refreshSession { result in
+                continuation.resume(with: result)
+            }
+        }
+    }
+
+    public func signOut() async throws -> Any? {
+        try await withCheckedThrowingContinuation { continuation in
+            signOut { result in
+                continuation.resume(with: result)
+            }
+        }
+    }
+}
+#endif
