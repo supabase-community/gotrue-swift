@@ -22,10 +22,8 @@ class GoTrueKeychain {
     }
     
     func getSession() throws -> Session? {
-        if let encodedData = getData() {
-            return try decoder.decode(Session.self, from: encodedData)
-        } else {
-            return nil
+        try getData().map {
+            try decoder.decode(Session.self, from: $0)
         }
     }
     
