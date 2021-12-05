@@ -13,7 +13,8 @@ public class GoTrueClient {
     var currentSession: Session?
     var autoRefreshToken: Bool
     var refreshTokenTimer: Timer?
-
+    
+    private let sessionManager: GoTrueSessionManager
     private var stateChangeListeners: [String: Subscription] = [:]
 
     /// Receive a notification every time an auth event happens.
@@ -39,19 +40,31 @@ public class GoTrueClient {
     public var session: Session? {
         return currentSession
     }
-
-    public init(url: String = GoTrueConstants.defaultGotrueUrl, headers: [String: String] = [:], autoRefreshToken: Bool = true) {
+    
+    /// Initializes the GoTrue Client with the provided parameters.
+    /// - Parameters:
+    ///   - url: URL of the GoTrue server.
+    ///   - headers: Any headers to include with network requests.
+    ///   - autoRefreshToken: Auto-refresh expired tokens.
+    ///   - keychainAccessGroup: A shared keychain access group to use (Optional).
+    public init(url: String = GoTrueConstants.defaultGotrueUrl,
+                headers: [String: String] = [:],
+                autoRefreshToken: Bool = true,
+                keychainAccessGroup: String? = nil) {
         api = GoTrueApi(url: url, headers: headers)
         self.autoRefreshToken = autoRefreshToken
+        
+        sessionManager = GoTrueSessionManager(accessGroup: keychainAccessGroup)
 
-        // recover session from storage
-        if let session = UserDefaults.standard.value(Session.self, forKey: "\(GoTrueConstants.defaultStorageKey).session") {
-            currentSession = session
-        }
+        // Migrate any old session storage *ASAP*
+        sessionManager.checkForOldStorage()
+        
+        // Recover session from storage
+        currentSession = sessionManager.getSession()
     }
 
     public func signUp(email: String, password: String, completion: @escaping (Result<(session: Session?, user: User?), Error>) -> Void) {
-        removeSession()
+        sessionManager.removeSession()
 
         api.signUpWithEmail(email: email, password: password) { [weak self] result in
             guard let self = self else { return }
@@ -69,7 +82,7 @@ public class GoTrueClient {
     }
 
     public func signIn(email: String, password: String, completion: @escaping (Result<Session, Error>) -> Void) {
-        removeSession()
+        sessionManager.removeSession()
 
         api.signInWithEmail(email: email, password: password) { [weak self] result in
             guard let self = self else { return }
@@ -89,7 +102,7 @@ public class GoTrueClient {
     }
 
     public func signIn(email: String, completion: @escaping (Result<Any?, Error>) -> Void) {
-        removeSession()
+        sessionManager.removeSession()
 
         api.sendMagicLinkEmail(email: email) { result in
             switch result {
@@ -102,7 +115,7 @@ public class GoTrueClient {
     }
 
     public func signIn(provider: Provider, options: ProviderOptions? = nil, completion: @escaping (Result<URL, Error>) -> Void) {
-        removeSession()
+        sessionManager.removeSession()
 
         do {
             let providerURL = try api.getUrlForProvider(provider: provider, options: options)
@@ -125,7 +138,7 @@ public class GoTrueClient {
                 self.notifyAllStateChangeListeners(.userUpdated)
                 self.currentSession?.user = user
                 if let currentSession = self.currentSession {
-                    self.saveSessionToStorage(currentSession)
+                    self.sessionManager.saveSession(currentSession)
                 }
                 completion(.success(user))
             case let .failure(error):
@@ -168,14 +181,10 @@ public class GoTrueClient {
         }
     }
 
-    private func saveSessionToStorage(_ session: Session) {
-        UserDefaults.standard.set(encodable: session, forKey: "\(GoTrueConstants.defaultStorageKey).session")
-    }
-
-    private func saveSession(session: Session) {
+    func saveSession(session: Session) {
         currentSession = session
 
-        saveSessionToStorage(session)
+        sessionManager.saveSession(session)
 
         if let tokenExpirySeconds = session.expiresIn, autoRefreshToken {
             if refreshTokenTimer != nil {
@@ -201,12 +210,6 @@ public class GoTrueClient {
         }
     }
 
-    private func removeSession() {
-        currentSession = nil
-
-        UserDefaults.standard.removeObject(forKey: "\(GoTrueConstants.defaultStorageKey).session")
-    }
-
     public func refreshSession(completion: @escaping (Result<Session, Error>) -> Void) {
         guard let refreshToken = currentSession?.refreshToken else {
             completion(.failure(GoTrueError(message: "Not logged in.")))
@@ -223,8 +226,10 @@ public class GoTrueClient {
             return
         }
 
-        removeSession()
+        sessionManager.removeSession()
+        currentSession = nil
         notifyAllStateChangeListeners(.signedOut)
+        
         api.signOut(accessToken: accessToken) { result in
             completion(result)
         }
@@ -263,7 +268,7 @@ extension GoTrueClient {
 
     public func onAuthStateChange() -> AsyncStream<(AuthChangeEvent, Session?)> {
         AsyncStream { continuation in
-            let subscription = onAuthStateChange { event, session in
+            _ = onAuthStateChange { event, session in
                 continuation.yield((event, session))
             }
 
