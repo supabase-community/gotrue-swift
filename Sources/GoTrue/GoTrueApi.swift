@@ -1,98 +1,70 @@
+import AnyCodable
 import Foundation
+import SimpleHTTP
+
+struct APIKeyRequestAdapter: RequestAdapter {
+    let apiKey: String
+
+    func adapt(_ client: HTTPClient, _ request: URLRequest) async throws -> URLRequest {
+    var request = request
+        request.setValue(apiKey, forHTTPHeaderField: "apikey")
+        return request
+    }
+}
+
+struct Authenticator: RequestAdapter {
+    func adapt(_ client: HTTPClient, _ request: URLRequest) async throws -> URLRequest {
+        var request = request
+        let session = try await Env.sessionManager.session()
+        request.setValue("Bearer \(session.accessToken)", forHTTPHeaderField: "Authorization")
+        return request
+    }
+}
+
+struct APIErrorInterceptor: ResponseInterceptor {
+    func intercept(_ client: HTTPClient, _ result: Result<Response, Error>) async throws -> Response {
+        do {
+            return try result.get()
+        } catch let error as APIError {
+            let response = try error.response.decoded(to: ErrorResponse.self)
+            throw GoTrueError(
+                statusCode: error.response.statusCode,
+                message: response.msg ?? response.message ?? "Error: status_code=\(error.response.statusCode)"
+            )
+        } catch {
+            throw error
+        }
+    }
+
+    private struct ErrorResponse: Decodable {
+        let msg: String?
+        let message: String?
+    }
+}
 
 class GoTrueApi {
-    var url: String
-    var headers: [String: String]
-
-    init(url: String, headers: [String: String]) {
-        self.url = url
-        self.headers = headers
-        self.headers.merge(GoTrueConstants.defaultHeaders) { $1 }
+    func signUpWithEmail(email: String, password: String) async throws -> User {
+        try await Env.httpClient.request(
+            Endpoint(path: "signup", method: .post, body: try JSONEncoder().encode(["email": email, "password": password]))
+        ).decoded(to: User.self)
     }
 
-    /// HTTP Methods
-    private enum HTTPMethod: String {
-        case get = "GET"
-        case head = "HEAD"
-        case post = "POST"
-        case put = "PUT"
-        case delete = "DELETE"
-        case connect = "CONNECT"
-        case options = "OPTIONS"
-        case trace = "TRACE"
-        case patch = "PATCH"
+    func signInWithEmail(email: String, password: String) async throws -> Session {
+        try await Env.httpClient.request(
+            Endpoint(
+                path: "/token", method: .post, query: [URLQueryItem(name: "grant_type", value: "password")],
+                body: try JSONEncoder().encode(["email": email, "password": password])
+            )
+        ).decoded(to: Session.self)
     }
 
-    func signUpWithEmail(email: String, password: String, completion: @escaping (Result<(session: Session?, user: User?), Error>) -> Void) {
-        guard let url = URL(string: "\(url)/signup") else {
-            completion(.failure(GoTrueError(message: "badURL")))
-            return
-        }
-
-        fetch(url: url, method: .post, parameters: ["email": email, "password": password]) { result in
-            switch result {
-            case let .success(response):
-                guard let dict: [String: Any] = response as? [String: Any] else {
-                    completion(.failure(GoTrueError(message: "failed to parse response")))
-                    return
-                }
-
-                if let session = Session(from: dict) {
-                    completion(.success((session: session, user: session.user)))
-                    return
-                }
-
-                if let user = User(from: dict) {
-                    completion(.success((session: nil, user: user)))
-                    return
-                }
-
-                completion(.success((session: nil, user: nil)))
-            case let .failure(error):
-                completion(.failure(error))
-            }
-        }
-    }
-
-    func signInWithEmail(email: String, password: String, completion: @escaping (Result<Session?, Error>) -> Void) {
-        guard let url = URL(string: "\(url)/token?grant_type=password") else {
-            completion(.failure(GoTrueError(message: "badURL")))
-            return
-        }
-
-        fetch(url: url, method: .post, parameters: ["email": email, "password": password]) { result in
-            switch result {
-            case let .success(response):
-                guard let dict: [String: Any] = response as? [String: Any], let session = Session(from: dict) else {
-                    completion(.failure(GoTrueError(message: "failed to parse response")))
-                    return
-                }
-                completion(.success(session))
-            case let .failure(error):
-                completion(.failure(error))
-            }
-        }
-    }
-
-    func sendMagicLinkEmail(email: String, completion: @escaping (Result<Any?, Error>) -> Void) {
-        guard let url = URL(string: "\(url)/magiclink") else {
-            completion(.failure(GoTrueError(message: "badURL")))
-            return
-        }
-
-        fetch(url: url, method: .post, parameters: ["email": email]) { result in
-            switch result {
-            case let .success(response):
-                completion(.success(response))
-            case let .failure(error):
-                completion(.failure(error))
-            }
-        }
+    func sendMagicLinkEmail(email: String) async throws {
+        _ = try await Env.httpClient.request(Endpoint(path: "magiclink", method: .post, body: try JSONEncoder().encode(["email": email])))
     }
 
     func getUrlForProvider(provider: Provider, options: ProviderOptions?) throws -> URL {
-        guard var components = URLComponents(string: "\(url)/authorize") else {
-            throw GoTrueError(message: "badURL")
+        guard var components = URLComponents(url: Env.url().appendingPathComponent("authorize"), resolvingAgainstBaseURL: false) else {
+            throw GoTrueError.badURL
         }
 
         var queryItems: [URLQueryItem] = []
@@ -109,162 +81,33 @@ class GoTrueApi {
         components.queryItems = queryItems
 
         guard let url = components.url else {
-            throw GoTrueError(message: "badURL")
+            throw GoTrueError.badURL
         }
 
         return url
     }
 
-    func refreshAccessToken(refreshToken: String, completion: @escaping (Result<Session?, Error>) -> Void) {
-        guard let url = URL(string: "\(url)/token?grant_type=refresh_token") else {
-            completion(.failure(GoTrueError(message: "badURL")))
-            return
-        }
-
-        fetch(url: url, method: .post, parameters: ["refresh_token": refreshToken]) { result in
-            switch result {
-            case let .success(response):
-                guard let dict: [String: Any] = response as? [String: Any], let session = Session(from: dict) else {
-                    completion(.failure(GoTrueError(message: "failed to parse response")))
-                    return
-                }
-                completion(.success(session))
-            case let .failure(error):
-                completion(.failure(error))
-            }
-        }
+    func refreshAccessToken(refreshToken: String) async throws -> Session {
+        try await Env.httpClient.request(
+            Endpoint(
+                path: "/token", method: .post, query: [URLQueryItem(name: "grant_type", value: "refresh_token")],
+                body: try JSONEncoder().encode(["refresh_token": refreshToken])
+            )
+        )
+        .decoded(to: Session.self)
     }
 
-    func signOut(accessToken: String, completion: @escaping (Result<Any?, Error>) -> Void) {
-        guard let url = URL(string: "\(url)/logout") else {
-            completion(.failure(GoTrueError(message: "badURL")))
-            return
-        }
-
-        fetch(url: url, method: .post, parameters: [:], headers: ["Authorization": "Bearer \(accessToken)"], jsonSerialization: false) { result in
-            switch result {
-            case let .success(response):
-                completion(.success(response))
-            case let .failure(error):
-                completion(.failure(error))
-            }
-        }
+    func signOut() async throws {
+        _ = try await Env.httpClient.request(Endpoint(path: "/logout", method: .post))
     }
 
-    func updateUser(accessToken: String, emailChangeToken: String?, password: String?, data: [String: Any]? = nil, completion: @escaping (Result<User, Error>) -> Void) {
-        guard let url = URL(string: "\(url)/user") else {
-            completion(.failure(GoTrueError(message: "badURL")))
-            return
-        }
-        var parameters: [String: Any] = [:]
-        if let emailChangeToken = emailChangeToken {
-            parameters["email_change_token"] = emailChangeToken
-        }
-
-        if let password = password {
-            parameters["password"] = password
-        }
-
-        if let data = data {
-            parameters["data"] = data
-        }
-
-        fetch(url: url, method: .put, parameters: parameters, headers: ["Authorization": "Bearer \(accessToken)"]) { result in
-            switch result {
-            case let .success(response):
-                guard let dict: [String: Any] = response as? [String: Any], let user = User(from: dict) else {
-                    completion(.failure(GoTrueError(message: "failed to parse response")))
-                    return
-                }
-                completion(.success(user))
-            case let .failure(error):
-                completion(.failure(error))
-            }
-        }
+    func updateUser(params: UpdateUserParams) async throws -> User {
+        try await Env.httpClient.request(
+            Endpoint(path: "/user", method: .put, body: try JSONEncoder().encode(params))
+        ).decoded(to: User.self)
     }
 
-    func getUser(accessToken: String, completion: @escaping (Result<User, Error>) -> Void) {
-        guard let url = URL(string: "\(url)/user") else {
-            completion(.failure(GoTrueError(message: "badURL")))
-            return
-        }
-
-        fetch(url: url, method: .get, parameters: nil, headers: ["Authorization": "Bearer \(accessToken)"]) { result in
-            switch result {
-            case let .success(response):
-                guard let dict: [String: Any] = response as? [String: Any], let user = User(from: dict) else {
-                    completion(.failure(GoTrueError(message: "failed to parse response")))
-                    return
-                }
-                completion(.success(user))
-            case let .failure(error):
-                completion(.failure(error))
-            }
-        }
-    }
-
-    private func fetch(url: URL, method: HTTPMethod = .get, parameters: [String: Any]?, headers: [String: String]? = nil, jsonSerialization: Bool = true, completion: @escaping (Result<Any, Error>) -> Void) {
-        var request = URLRequest(url: url)
-        request.httpMethod = method.rawValue
-
-        if var headers = headers {
-            headers.merge(self.headers) { $1 }
-            request.allHTTPHeaderFields = headers
-        } else {
-            request.allHTTPHeaderFields = self.headers
-        }
-
-        if let parameters = parameters {
-            do {
-                request.httpBody = try JSONSerialization.data(withJSONObject: parameters, options: [])
-            } catch {
-                completion(.failure(error))
-                return
-            }
-        }
-
-        let session = URLSession.shared
-        let dataTask = session.dataTask(with: request, completionHandler: { [unowned self] (data, response, error) -> Void in
-            if let error = error {
-                completion(.failure(error))
-                return
-            }
-
-            if let resp = response as? HTTPURLResponse {
-                if let data = data {
-                    if jsonSerialization {
-                        do {
-                            let json = try JSONSerialization.jsonObject(with: data, options: [])
-                            completion(.success(try self.parse(response: json, statusCode: resp.statusCode)))
-                        } catch {
-                            completion(.failure(error))
-                            return
-                        }
-                    } else {
-                        if let dataString = String(data: data, encoding: .utf8) {
-                            completion(.success(dataString))
-                            return
-                        }
-                    }
-                }
-            } else {
-                completion(.failure(GoTrueError(message: "failed to get response")))
-            }
-
-        })
-
-        dataTask.resume()
-    }
-
-    private func parse(response: Any, statusCode: Int) throws -> Any {
-        if statusCode == 200 || 200 ..< 300 ~= statusCode {
-            return response
-        } else if let dict = response as? [String: Any], let message = dict["msg"] as? String {
-            throw GoTrueError(statusCode: statusCode, message: message)
-        } else if let dict = response as? [String: Any], let message = dict["error_description"] as? String {
-            throw GoTrueError(statusCode: statusCode, message: message)
-        } else {
-            return response
-        }
+    func getUser() async throws -> User {
+        try await Env.httpClient.request(Endpoint(path: "/user", method: .get)).decoded(to: User.self)
     }
 }
