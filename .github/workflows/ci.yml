@@ -13,6 +13,8 @@ jobs:
 
     steps:
     - uses: actions/checkout@v2
+    - name: Select Xcode 13.2
+      run: sudo xcode-select -p /Applications/Xcode_13.2.app
     - name: Build
       run: swift build
     - name: Run tests
