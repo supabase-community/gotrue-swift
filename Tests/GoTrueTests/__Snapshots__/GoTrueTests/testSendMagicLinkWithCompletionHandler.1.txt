@@ -1,0 +1,9 @@
+curl \
+	--request POST \
+	--header "Accept: application/json" \
+	--header "Accept-Encoding: br;q=1.0, gzip;q=0.9, deflate;q=0.8" \
+	--header "Accept-Language: en;q=1.0" \
+	--header "Content-Type: application/json" \
+	--header "apikey: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c" \
+	--data "{\"email\":\"test@test.com\"}" \
+	"https://localhost/auth/v1/magiclink"
