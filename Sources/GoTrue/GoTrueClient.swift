@@ -35,14 +35,14 @@ public class GoTrueClient {
   }
 
   public init(
-    url: String,
+    url: URL,
     apiKey: String,
+    additionalHeaders: [String: String] = [:],
     keychainAccessGroup: String? = nil
   ) {
-    let url = URL(string: url)!
     Env = Environment(
       url: { url },
-      httpClient: HTTPClient.goTrueClient(url: url, apiKey: apiKey),
+      httpClient: GoTrueClient.httpClient(url: url, apiKey: apiKey, additionalHeaders: additionalHeaders),
       api: GoTrueApi(),
       sessionStorage: .keychain(accessGroup: keychainAccessGroup),
       sessionManager: .live
@@ -117,18 +117,16 @@ public class GoTrueClient {
     try await Env.api.signOut()
   }
 
-  private func callRefreshToken(refreshToken: String?) async throws -> Session {
-    guard let refreshToken = refreshToken else {
-      throw GoTrueError(message: "current session not found")
-    }
-
-    return try await Env.api.refreshAccessToken(refreshToken: refreshToken)
-  }
-
   private func notifyAllStateChangeListeners(_ event: AuthChangeEvent) async {
     let session = try? await session
     stateChangeListeners.values.forEach {
       $0.callback(event, session)
     }
   }
+}
+
+extension GoTrueClient {
+    public static func httpClient(url: URL, apiKey: String, additionalHeaders: [String: String] = [:]) -> HTTPClientProtocol {
+        HTTPClient.goTrueClient(url: url, apiKey: apiKey, additionalHeaders: additionalHeaders)
+    }
 }

@@ -3,9 +3,14 @@ import Foundation
 import SimpleHTTP
 
 struct GoTrueHeaders: RequestAdapter {
+    var additionalHeaders: [String: String] = [:]
+
   func adapt(_ client: HTTPClientProtocol, _ request: inout URLRequest) async throws {
     request.setValue("application/json", forHTTPHeaderField: "Accept")
     request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+      additionalHeaders.forEach { field, value in
+          request.setValue(value, forHTTPHeaderField: field)
+      }
   }
 }
 
@@ -49,10 +54,14 @@ struct APIErrorInterceptor: ResponseInterceptor {
 }
 
 extension HTTPClient {
-  static func goTrueClient(url: URL, apiKey: String) -> HTTPClient {
+    static func goTrueClient(url: URL, apiKey: String, additionalHeaders: [String: String] = [:]) -> HTTPClient {
     HTTPClient(
       baseURL: url,
-      adapters: [DefaultHeaders(), GoTrueHeaders(), APIKeyRequestAdapter(apiKey: apiKey)],
+      adapters: [
+        DefaultHeaders(),
+        GoTrueHeaders(additionalHeaders: additionalHeaders),
+        APIKeyRequestAdapter(apiKey: apiKey)
+      ],
       interceptors: [StatusCodeValidator()]
     )
   }
