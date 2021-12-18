@@ -31,8 +31,9 @@ public class GoTrueClient {
     return subscription
   }
 
-  public var session: Session {
-    get async throws { try await Env.sessionManager.session() }
+  /// Returns the session data, if there is an active session.
+  public var session: Session? {
+    get async { try? await Env.sessionManager.session() }
   }
 
   public init(
@@ -48,6 +49,11 @@ public class GoTrueClient {
       sessionStorage: .keychain(accessGroup: keychainAccessGroup),
       sessionManager: .live
     )
+
+    Task {
+      guard await session != nil else { return }
+      await notifyAllStateChangeListeners(.signedIn)
+    }
   }
 
   /// Creates a new user.
@@ -76,11 +82,13 @@ public class GoTrueClient {
     return try await GoTrueApi.signUpWithEmail(email: email, password: password, options: options)
   }
 
+  /// Log in an existing user with magic link.
   public func signIn(email: String, redirectTo: URL? = nil) async throws {
     await Env.sessionManager.removeSession()
     try await GoTrueApi.sendMagicLinkEmail(email: email, redirectTo: redirectTo)
   }
 
+  /// Log in an existing user with an email and password.
   public func signIn(email: String, password: String, redirectTo: URL? = nil) async throws
     -> Session
   {
@@ -95,27 +103,51 @@ public class GoTrueClient {
     return session
   }
 
+  /// Log in an existing user with an OTP.
   public func signIn(phone: String) async throws {
     await Env.sessionManager.removeSession()
     try await GoTrueApi.sendMobileOTP(phone: phone)
   }
 
+  /// Log in an existing user with phone and password.
   public func signIn(phone: String, password: String) async throws -> Session {
     await Env.sessionManager.removeSession()
-    return try await GoTrueApi.signInWithPhone(phone: phone, password: password)
+    let session = try await GoTrueApi.signInWithPhone(phone: phone, password: password)
+    if session.user.phoneConfirmedAt != nil {
+      await Env.sessionManager.updateSession(session)
+      await notifyAllStateChangeListeners(.signedIn)
+    }
+    return session
   }
 
+  // Log in via a third-party provider.
   public func signIn(provider: Provider, options: ProviderOptions? = nil) async throws -> URL {
     await Env.sessionManager.removeSession()
     let providerURL = try GoTrueApi.getUrlForProvider(provider: provider, options: options)
     return providerURL
   }
 
+  /// Log in user given a User supplied OTP received via mobile.
+  public func verifyOTP(phone: String, token: String, redirectTo: URL? = nil) async throws
+    -> Session
+  {
+    await Env.sessionManager.removeSession()
+
+    let session = try await GoTrueApi.verifyMobileOTP(
+      phone: phone, token: token, redirectTo: redirectTo)
+
+    await Env.sessionManager.updateSession(session)
+    await notifyAllStateChangeListeners(.signedIn)
+
+    return session
+  }
+
   public func update(user: UpdateUserParams) async throws -> User {
     let user = try await GoTrueApi.updateUser(params: user)
 
-    await notifyAllStateChangeListeners(.userUpdated)
     await Env.sessionManager.updateUser(user)
+    await notifyAllStateChangeListeners(.userUpdated)
+
     return user
   }
 
@@ -150,13 +182,14 @@ public class GoTrueClient {
   }
 
   public func signOut() async throws {
-    await Env.sessionManager.removeSession()
-    await notifyAllStateChangeListeners(.signedOut)
     try await GoTrueApi.signOut()
+    await notifyAllStateChangeListeners(.signedOut)
+    await Env.sessionManager.removeSession()
   }
 
   private func notifyAllStateChangeListeners(_ event: AuthChangeEvent) async {
-    let session = try? await session
+    let session = await self.session
+
     stateChangeListeners.values.forEach {
       $0.callback(event, session)
     }

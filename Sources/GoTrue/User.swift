@@ -8,6 +8,7 @@ public struct User: Codable {
   public let email: String
   public let emailConfirmedAt: Date?
   public let phone: String
+  public let phoneConfirmedAt: Date?
   public let confirmationSentAt: Date?
   public let confirmedAt: Date?
   public let lastSignInAt: Date?
@@ -20,7 +21,7 @@ public struct User: Codable {
 #if DEBUG
   extension User {
     static let dummy = User(
-      id: "", aud: "", role: "", email: "", emailConfirmedAt: nil, phone: "",
+      id: "", aud: "", role: "", email: "", emailConfirmedAt: nil, phone: "", phoneConfirmedAt: nil,
       confirmationSentAt: nil, confirmedAt: nil, lastSignInAt: nil, appMetadata: nil,
       userMetadata: nil, createdAt: Date(), updatedAt: Date())
   }
