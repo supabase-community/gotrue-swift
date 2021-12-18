@@ -5,5 +5,5 @@ curl \
 	--header "Accept-Language: en;q=1.0" \
 	--header "Content-Type: application/json" \
 	--header "apikey: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c" \
-	--data "{\"email\":\"test@test.com\",\"data\":{\"dummy\":\"value\"},\"password\":\"test1234\"}" \
-	"https://localhost/auth/v1/signup?redirect_to=gotrue-swift://signup"
+	--data "{\"phone\":\"12345678910\",\"type\":\"sms\",\"token\":\"deadbeef\",\"redirect_to\":\"gotrue-swift:\/\/verify-otp\"}" \
+	"https://localhost/auth/v1/verify"

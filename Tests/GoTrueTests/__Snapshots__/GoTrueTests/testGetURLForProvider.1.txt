@@ -1,0 +1,1 @@
+- https://localhost/auth/v1/authorize?provider=apple&scopes=read,write&redirect_to=gotrue-swift://signin-provider

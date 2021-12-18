@@ -6,4 +6,4 @@ curl \
 	--header "Content-Type: application/json" \
 	--header "apikey: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c" \
 	--data "{\"email\":\"test@test.com\"}" \
-	"https://localhost/auth/v1/magiclink"
+	"https://localhost/auth/v1/magiclink?redirect_to=gotrue-swift://verify-email?token%3Ddeadbeef"

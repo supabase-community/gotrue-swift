@@ -58,10 +58,10 @@ public class GoTrueClient {
   ///   - options: Additional optionals for creating a new user.
   /// - Returns: A new user.
   public func signUp(phone: String, password: String, options: SignUpOptions = SignUpOptions())
-    async throws -> User
+    async throws -> Session
   {
     await Env.sessionManager.removeSession()
-    return try await Env.api.signUp(phone: phone, password: password, options: options)
+    return try await Env.api.signUpWithPhone(phone: phone, password: password, data: options.data)
   }
 
   /// Creates a new user.
@@ -71,13 +71,13 @@ public class GoTrueClient {
   ///   - options: Additional optionals for creating a new user.
   /// - Returns: A new user.
   public func signUp(email: String, password: String, options: SignUpOptions = SignUpOptions())
-    async throws -> User
+    async throws -> Session
   {
     await Env.sessionManager.removeSession()
     return try await Env.api.signUpWithEmail(email: email, password: password, options: options)
   }
 
-  public func signInWithMagicLink(email: String, redirectTo: URL? = nil) async throws {
+  public func signIn(email: String, redirectTo: URL? = nil) async throws {
     await Env.sessionManager.removeSession()
     try await Env.api.sendMagicLinkEmail(email: email, redirectTo: redirectTo)
   }
@@ -98,10 +98,12 @@ public class GoTrueClient {
 
   public func signIn(phone: String) async throws {
     await Env.sessionManager.removeSession()
+    try await Env.api.sendMobileOTP(phone: phone)
   }
 
   public func signIn(phone: String, password: String) async throws -> Session {
     await Env.sessionManager.removeSession()
+    return try await Env.api.signInWithPhone(phone: phone, password: password)
   }
 
   public func signIn(provider: Provider, options: ProviderOptions? = nil) async throws -> URL {

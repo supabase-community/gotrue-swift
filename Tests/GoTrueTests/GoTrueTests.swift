@@ -39,18 +39,60 @@ final class GoTrueTests: XCTestCase {
     }
   }
 
-  func testSignIn() async {
-    _ = try? await Env.api.signInWithEmail(email: "test@test.com", password: "test1234")
+  func testSignInWithEmail() async {
+    _ = try? await Env.api.signInWithEmail(
+      email: "test@test.com", password: "test1234",
+      redirectTo: URL(string: "gotrue-swift://signin")!)
   }
 
   func testSignUpWithEmail() async {
     _ = try? await Env.api.signUpWithEmail(
-      email: "test@test.com", password: "test1234", options: SignUpOptions())
+      email: "test@test.com", password: "test1234",
+      options: SignUpOptions(
+        redirectTo: URL(string: "gotrue-swift://signup")!, data: ["dummy": "value"]))
+  }
+
+  func testSignUpWithPhone() async {
+    _ = try? await Env.api.signUpWithPhone(
+      phone: "12345678910", password: "test1234", data: ["dummy": "value"])
+  }
+
+  func testSignInWithPhone() async {
+    _ = try? await Env.api.signInWithPhone(phone: "12345678910", password: "test1234")
   }
 
   func testSendMagicLink() async {
     try? await Env.api.sendMagicLinkEmail(
       email: "test@test.com", redirectTo: URL(string: "gotrue-swift://verify-email?token=deadbeef"))
+  }
+
+  func testSendMobileOTP() async {
+    try? await Env.api.sendMobileOTP(phone: "12345678910")
+  }
+
+  func testVerifyMobileOTP() async {
+    try? await Env.api.verifyMobileOTP(
+      phone: "12345678910", token: "deadbeef", redirectTo: URL(string: "gotrue-swift://verify-otp")!
+    )
+  }
+
+  func testInviteUserByEmail() async {
+    _ = try? await Env.api.inviteUserByEmail(
+      email: "test@tst.com",
+      options: SignUpOptions(
+        redirectTo: URL(string: "gotrue-swift://invite-user")!, data: ["dummy": "value"]))
+  }
+
+  func testResetPasswordForEmail() async {
+    try? await Env.api.resetPasswordForEmail(
+      email: "test@test.com", redirectTo: URL(string: "gotrue-swift://reset-password")!)
+  }
+
+  func testGetURLForProvider() throws {
+    let url = try Env.api.getUrlForProvider(
+      provider: .apple,
+      options: ProviderOptions(redirectTo: "gotrue-swift://signin-provider", scopes: "read,write"))
+    assertSnapshot(matching: url, as: .dump)
   }
 
   func testRefreshAccessToken() async {

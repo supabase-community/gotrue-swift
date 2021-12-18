@@ -133,7 +133,7 @@ class GoTrueApi {
   }
 
   func sendMagicLinkEmail(email: String, redirectTo: URL?) async throws {
-    _ = try await Env.httpClient.request(
+    try await Env.httpClient.request(
       Endpoint(
         path: "magiclink",
         method: .post,
@@ -143,24 +143,24 @@ class GoTrueApi {
   }
 
   func sendMobileOTP(phone: String) async throws {
-    _ = try await Env.httpClient.request(
+    try await Env.httpClient.request(
       Endpoint(path: "otp", method: .post, body: try JSONEncoder().encode(["phone": phone]))
     )
   }
 
   func verifyMobileOTP(phone: String, token: String, redirectTo: URL?) async throws -> Session {
-    struct Body: Encodable {
-      let phone: String
-      let token: String
-      let type = "sms"
-      let redirectTo: URL?
-    }
+    var body = [
+      "phone": phone,
+      "token": token,
+      "type": "sms",
+    ]
+    body["redirect_to"] = redirectTo?.absoluteString
 
     return try await Env.httpClient.request(
       Endpoint(
         path: "verify",
         method: .post,
-        body: try JSONEncoder().encode(Body(phone: phone, token: token, redirectTo: redirectTo))
+        body: try JSONEncoder().encode(body)
       )
     ).decoded(to: Session.self)
   }
@@ -184,7 +184,16 @@ class GoTrueApi {
   }
 
   func resetPasswordForEmail(email: String, redirectTo: URL?) async throws {
-
+    try await Env.httpClient.request(
+      Endpoint(
+        path: "recover",
+        method: .post,
+        query: redirectTo.map {
+          [URLQueryItem(name: "redirect_to", value: $0.absoluteString)]
+        },
+        body: try JSONEncoder().encode(["email": email])
+      )
+    )
   }
 
   func getUrlForProvider(provider: Provider, options: ProviderOptions?) throws -> URL {
@@ -195,16 +204,15 @@ class GoTrueApi {
       throw GoTrueError.badURL
     }
 
-    var queryItems: [URLQueryItem] = []
-    queryItems.append(URLQueryItem(name: "provider", value: provider.rawValue))
-    if let options = options {
-      if let scopes = options.scopes {
-        queryItems.append(URLQueryItem(name: "scopes", value: scopes))
-      }
-      if let redirectTo = options.redirectTo {
-        queryItems.append(URLQueryItem(name: "redirect_to", value: redirectTo))
-      }
-    }
+    let queryItems = [
+      URLQueryItem(name: "provider", value: provider.rawValue),
+      options?.scopes.map {
+        URLQueryItem(name: "scopes", value: $0)
+      },
+      options?.redirectTo.map {
+        URLQueryItem(name: "redirect_to", value: $0)
+      },
+    ].compactMap { $0 }
 
     components.queryItems = queryItems
 
