@@ -44,11 +44,13 @@ final class GoTrueTests: XCTestCase {
   }
 
   func testSignUpWithEmail() async {
-    _ = try? await Env.api.signUpWithEmail(email: "test@test.com", password: "test1234")
+    _ = try? await Env.api.signUpWithEmail(
+      email: "test@test.com", password: "test1234", options: SignUpOptions())
   }
 
   func testSendMagicLink() async {
-    try? await Env.api.sendMagicLinkEmail(email: "test@test.com")
+    try? await Env.api.sendMagicLinkEmail(
+      email: "test@test.com", redirectTo: URL(string: "gotrue-swift://verify-email?token=deadbeef"))
   }
 
   func testRefreshAccessToken() async {

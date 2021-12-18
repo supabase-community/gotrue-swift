@@ -1,3 +1,4 @@
+import AnyCodable
 import Foundation
 import SimpleHTTP
 
@@ -42,29 +43,65 @@ public class GoTrueClient {
   ) {
     Env = Environment(
       url: { url },
-      httpClient: GoTrueClient.httpClient(url: url, apiKey: apiKey, additionalHeaders: additionalHeaders),
+      httpClient: GoTrueClient.httpClient(
+        url: url, apiKey: apiKey, additionalHeaders: additionalHeaders),
       api: GoTrueApi(),
       sessionStorage: .keychain(accessGroup: keychainAccessGroup),
       sessionManager: .live
     )
   }
 
-  public func signUp(email: String, password: String) async throws -> User {
-    try await Env.api.signUpWithEmail(email: email, password: password)
+  /// Creates a new user.
+  /// - Parameters:
+  ///   - phone: The user's phone number.
+  ///   - password: The user's password.
+  ///   - options: Additional optionals for creating a new user.
+  /// - Returns: A new user.
+  public func signUp(phone: String, password: String, options: SignUpOptions = SignUpOptions())
+    async throws -> User
+  {
+    await Env.sessionManager.removeSession()
+    return try await Env.api.signUp(phone: phone, password: password, options: options)
   }
 
-  public func signIn(email: String, password: String) async throws -> Session {
+  /// Creates a new user.
+  /// - Parameters:
+  ///   - email: The user's email address.
+  ///   - password: The user's password.
+  ///   - options: Additional optionals for creating a new user.
+  /// - Returns: A new user.
+  public func signUp(email: String, password: String, options: SignUpOptions = SignUpOptions())
+    async throws -> User
+  {
+    await Env.sessionManager.removeSession()
+    return try await Env.api.signUpWithEmail(email: email, password: password, options: options)
+  }
+
+  public func signInWithMagicLink(email: String, redirectTo: URL? = nil) async throws {
+    await Env.sessionManager.removeSession()
+    try await Env.api.sendMagicLinkEmail(email: email, redirectTo: redirectTo)
+  }
+
+  public func signIn(email: String, password: String, redirectTo: URL? = nil) async throws
+    -> Session
+  {
     await Env.sessionManager.removeSession()
 
-    let session = try await Env.api.signInWithEmail(email: email, password: password)
-    await Env.sessionManager.updateSession(session)
-    await notifyAllStateChangeListeners(.signedIn)
+    let session = try await Env.api.signInWithEmail(
+      email: email, password: password, redirectTo: redirectTo)
+    if session.user.confirmedAt != nil || session.user.emailConfirmedAt != nil {
+      await Env.sessionManager.updateSession(session)
+      await notifyAllStateChangeListeners(.signedIn)
+    }
     return session
   }
 
-  public func signIn(email: String) async throws {
+  public func signIn(phone: String) async throws {
     await Env.sessionManager.removeSession()
-    try await Env.api.sendMagicLinkEmail(email: email)
+  }
+
+  public func signIn(phone: String, password: String) async throws -> Session {
+    await Env.sessionManager.removeSession()
   }
 
   public func signIn(provider: Provider, options: ProviderOptions? = nil) async throws -> URL {
@@ -126,7 +163,9 @@ public class GoTrueClient {
 }
 
 extension GoTrueClient {
-    public static func httpClient(url: URL, apiKey: String, additionalHeaders: [String: String] = [:]) -> HTTPClientProtocol {
-        HTTPClient.goTrueClient(url: url, apiKey: apiKey, additionalHeaders: additionalHeaders)
-    }
+  public static func httpClient(url: URL, apiKey: String, additionalHeaders: [String: String] = [:])
+    -> HTTPClientProtocol
+  {
+    HTTPClient.goTrueClient(url: url, apiKey: apiKey, additionalHeaders: additionalHeaders)
+  }
 }
