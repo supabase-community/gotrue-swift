@@ -69,8 +69,8 @@ extension HTTPClient {
   }
 }
 
-class GoTrueApi {
-  func signUpWithEmail(email: String, password: String, options: SignUpOptions) async throws
+enum GoTrueApi {
+  static func signUpWithEmail(email: String, password: String, options: SignUpOptions) async throws
     -> Session
   {
     struct Body: Encodable {
@@ -90,7 +90,9 @@ class GoTrueApi {
     ).decoded(to: Session.self)
   }
 
-  func signInWithEmail(email: String, password: String, redirectTo: URL?) async throws -> Session {
+  static func signInWithEmail(email: String, password: String, redirectTo: URL?) async throws
+    -> Session
+  {
     try await Env.httpClient.request(
       Endpoint(
         path: "/token",
@@ -104,7 +106,8 @@ class GoTrueApi {
     ).decoded(to: Session.self)
   }
 
-  func signUpWithPhone(phone: String, password: String, data: AnyEncodable?) async throws -> Session
+  static func signUpWithPhone(phone: String, password: String, data: AnyEncodable?) async throws
+    -> Session
   {
     struct Body: Encodable {
       let phone: String
@@ -121,7 +124,7 @@ class GoTrueApi {
     ).decoded(to: Session.self)
   }
 
-  func signInWithPhone(phone: String, password: String) async throws -> Session {
+  static func signInWithPhone(phone: String, password: String) async throws -> Session {
     try await Env.httpClient.request(
       Endpoint(
         path: "token",
@@ -132,8 +135,8 @@ class GoTrueApi {
     ).decoded(to: Session.self)
   }
 
-  func sendMagicLinkEmail(email: String, redirectTo: URL?) async throws {
-    try await Env.httpClient.request(
+  static func sendMagicLinkEmail(email: String, redirectTo: URL?) async throws {
+    _ = try await Env.httpClient.request(
       Endpoint(
         path: "magiclink",
         method: .post,
@@ -142,13 +145,15 @@ class GoTrueApi {
     )
   }
 
-  func sendMobileOTP(phone: String) async throws {
-    try await Env.httpClient.request(
+  static func sendMobileOTP(phone: String) async throws {
+    _ = try await Env.httpClient.request(
       Endpoint(path: "otp", method: .post, body: try JSONEncoder().encode(["phone": phone]))
     )
   }
 
-  func verifyMobileOTP(phone: String, token: String, redirectTo: URL?) async throws -> Session {
+  static func verifyMobileOTP(phone: String, token: String, redirectTo: URL?) async throws
+    -> Session
+  {
     var body = [
       "phone": phone,
       "token": token,
@@ -165,7 +170,7 @@ class GoTrueApi {
     ).decoded(to: Session.self)
   }
 
-  func inviteUserByEmail(email: String, options: SignUpOptions) async throws -> User {
+  static func inviteUserByEmail(email: String, options: SignUpOptions) async throws -> User {
     struct Body: Encodable {
       let email: String
       let data: AnyEncodable?
@@ -183,8 +188,8 @@ class GoTrueApi {
     ).decoded(to: User.self)
   }
 
-  func resetPasswordForEmail(email: String, redirectTo: URL?) async throws {
-    try await Env.httpClient.request(
+  static func resetPasswordForEmail(email: String, redirectTo: URL?) async throws {
+    _ = try await Env.httpClient.request(
       Endpoint(
         path: "recover",
         method: .post,
@@ -196,7 +201,7 @@ class GoTrueApi {
     )
   }
 
-  func getUrlForProvider(provider: Provider, options: ProviderOptions?) throws -> URL {
+  static func getUrlForProvider(provider: Provider, options: ProviderOptions?) throws -> URL {
     guard
       var components = URLComponents(
         url: Env.url().appendingPathComponent("authorize"), resolvingAgainstBaseURL: false)
@@ -223,7 +228,7 @@ class GoTrueApi {
     return url
   }
 
-  func refreshAccessToken(refreshToken: String) async throws -> Session {
+  static func refreshAccessToken(refreshToken: String) async throws -> Session {
     try await Env.httpClient.request(
       Endpoint(
         path: "/token", method: .post,
@@ -234,12 +239,12 @@ class GoTrueApi {
     .decoded(to: Session.self)
   }
 
-  func signOut() async throws {
+  static func signOut() async throws {
     _ = try await Env.httpClient.request(
       Endpoint(path: "/logout", method: .post, additionalAdapters: [Authenticator()]))
   }
 
-  func updateUser(params: UpdateUserParams) async throws -> User {
+  static func updateUser(params: UpdateUserParams) async throws -> User {
     try await Env.httpClient.request(
       Endpoint(
         path: "/user", method: .put, body: try JSONEncoder().encode(params),
@@ -247,7 +252,7 @@ class GoTrueApi {
     ).decoded(to: User.self)
   }
 
-  func getUser() async throws -> User {
+  static func getUser() async throws -> User {
     try await Env.httpClient.request(
       Endpoint(path: "/user", method: .get, additionalAdapters: [Authenticator()])
     ).decoded(to: User.self)
