@@ -73,10 +73,10 @@ private actor _SessionManager {
       throw GoTrueError(statusCode: nil, message: "Session not found.")
     }
 
-    // TODO: check if session is valid
-    // if currentSession.isValid {
-    //  return currentSession
-    // }
+    if currentSession.isValid {
+      return currentSession
+    }
+
     let task = Task { () async throws -> Session in
       defer { refreshTask = nil }
 
