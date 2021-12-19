@@ -14,7 +14,7 @@ let package = Package(
       from: "0.6.0"
     ),
     .package(url: "https://github.com/pointfreeco/swift-snapshot-testing", from: "1.9.0"),
-    .package(url: "https://github.com/grsouza/simple-http", .branch("main")),
+    .package(url: "https://github.com/grsouza/simple-http", from: "0.1.0"),
     .package(url: "https://github.com/pointfreeco/xctest-dynamic-overlay", from: "0.2.1"),
   ],
   targets: [

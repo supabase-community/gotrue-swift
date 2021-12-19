@@ -14,9 +14,9 @@
         "package": "SimpleHTTP",
         "repositoryURL": "https://github.com/grsouza/simple-http",
         "state": {
-          "branch": "main",
+          "branch": null,
           "revision": "a9fbe131a88f144d30dfa0ccf0b9582247de92bb",
-          "version": null
+          "version": "0.1.0"
         }
       },
       {
