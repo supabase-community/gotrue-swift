@@ -70,7 +70,7 @@ private actor _SessionManager {
     }
 
     guard let currentSession = currentSession else {
-      throw GoTrueError(statusCode: nil, message: "Session not found.")
+      throw GoTrueError.sessionNotFound
     }
 
     if currentSession.isValid {

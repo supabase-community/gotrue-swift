@@ -1,6 +1,6 @@
 import Foundation
 
-public struct Session: Codable {
+public struct Session: Codable, Equatable {
   public let accessToken: String
   public let tokenType: String
   public let expiresIn: Int
@@ -14,7 +14,7 @@ public struct Session: Codable {
     Date() < expireAt
   }
 
-  public init(
+  internal init(
     accessToken: String, tokenType: String, expiresIn: Int, refreshToken: String,
     providerToken: String?, user: User, expireAt: Date? = nil
   ) {

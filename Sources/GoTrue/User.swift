@@ -1,8 +1,8 @@
 import AnyCodable
 import Foundation
 
-public struct User: Codable {
-  public let id: String
+public struct User: Codable, Equatable {
+  public internal(set) var id: String
   public let aud: String
   public let role: String
   public let email: String
