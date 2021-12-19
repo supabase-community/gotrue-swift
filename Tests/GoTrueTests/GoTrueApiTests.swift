@@ -4,7 +4,7 @@ import XCTest
 
 @testable import GoTrue
 
-final class GoTrueTests: XCTestCase {
+final class GoTrueApiTests: XCTestCase {
 
   let apiKey =
     "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c"
@@ -24,6 +24,8 @@ final class GoTrueTests: XCTestCase {
         user: User.dummy)
     }
 
+    Env.api = .live
+
     SimpleHTTP.Current.session.request = { request in
       if let invocation = self.invocation {
         let testName = "\(invocation.selector)"
@@ -40,72 +42,67 @@ final class GoTrueTests: XCTestCase {
   }
 
   func testSignInWithEmail() async {
-    _ = try? await GoTrueApi.signInWithEmail(
-      email: "test@test.com", password: "test1234",
-      redirectTo: URL(string: "gotrue-swift://signin")!)
+    _ = try? await Env.api.signInWithEmail(
+      "test@test.com", "test1234", URL(string: "gotrue-swift://signin")!)
   }
 
   func testSignUpWithEmail() async {
-    _ = try? await GoTrueApi.signUpWithEmail(
-      email: "test@test.com", password: "test1234",
-      options: SignUpOptions(
-        redirectTo: URL(string: "gotrue-swift://signup")!, data: ["dummy": "value"]))
+    _ = try? await Env.api.signUpWithEmail(
+      "test@test.com", "test1234",
+      SignUpOptions(redirectTo: URL(string: "gotrue-swift://signup")!, data: ["dummy": "value"]))
   }
 
   func testSignUpWithPhone() async {
-    _ = try? await GoTrueApi.signUpWithPhone(
-      phone: "12345678910", password: "test1234", data: ["dummy": "value"])
+    _ = try? await Env.api.signUpWithPhone("12345678910", "test1234", ["dummy": "value"])
   }
 
   func testSignInWithPhone() async {
-    _ = try? await GoTrueApi.signInWithPhone(phone: "12345678910", password: "test1234")
+    _ = try? await Env.api.signInWithPhone("12345678910", "test1234")
   }
 
   func testSendMagicLink() async {
-    try? await GoTrueApi.sendMagicLinkEmail(
-      email: "test@test.com", redirectTo: URL(string: "gotrue-swift://verify-email?token=deadbeef"))
+    try? await Env.api.sendMagicLinkEmail(
+      "test@test.com", URL(string: "gotrue-swift://verify-email?token=deadbeef"))
   }
 
   func testSendMobileOTP() async {
-    try? await GoTrueApi.sendMobileOTP(phone: "12345678910")
+    try? await Env.api.sendMobileOTP("12345678910")
   }
 
   func testVerifyMobileOTP() async {
-    _ = try? await GoTrueApi.verifyMobileOTP(
-      phone: "12345678910", token: "deadbeef", redirectTo: URL(string: "gotrue-swift://verify-otp")!
-    )
+    _ = try? await Env.api.verifyMobileOTP(
+      "12345678910", "deadbeef", URL(string: "gotrue-swift://verify-otp")!)
   }
 
   func testInviteUserByEmail() async {
-    _ = try? await GoTrueApi.inviteUserByEmail(
-      email: "test@tst.com",
-      options: SignUpOptions(
+    _ = try? await Env.api.inviteUserByEmail(
+      "test@tst.com",
+      SignUpOptions(
         redirectTo: URL(string: "gotrue-swift://invite-user")!, data: ["dummy": "value"]))
   }
 
   func testResetPasswordForEmail() async {
-    try? await GoTrueApi.resetPasswordForEmail(
-      email: "test@test.com", redirectTo: URL(string: "gotrue-swift://reset-password")!)
+    try? await Env.api.resetPasswordForEmail(
+      "test@test.com", URL(string: "gotrue-swift://reset-password")!)
   }
 
   func testGetURLForProvider() throws {
-    let url = try GoTrueApi.getUrlForProvider(
-      provider: .apple,
-      options: ProviderOptions(redirectTo: "gotrue-swift://signin-provider", scopes: "read,write"))
+    let url = try Env.api.getUrlForProvider(
+      .apple, ProviderOptions(redirectTo: "gotrue-swift://signin-provider", scopes: "read,write"))
     assertSnapshot(matching: url, as: .dump)
   }
 
   func testRefreshAccessToken() async {
-    _ = try? await GoTrueApi.refreshAccessToken(refreshToken: refreshToken)
+    _ = try? await Env.api.refreshAccessToken(refreshToken)
   }
 
   func testSignOut() async {
-    _ = try? await GoTrueApi.signOut()
+    _ = try? await Env.api.signOut()
   }
 
   func testUpdateUser() async {
-    _ = try? await GoTrueApi.updateUser(
-      params: UpdateUserParams(
+    _ = try? await Env.api.updateUser(
+      UpdateUserParams(
         emailChangeToken: "26a0bab5-17f5-43cb-8bd5-384e5a44003e",
         password: "new.pass.1234",
         data: ["dummyData": 42]
@@ -114,7 +111,7 @@ final class GoTrueTests: XCTestCase {
   }
 
   func testGetUser() async {
-    _ = try? await GoTrueApi.getUser()
+    _ = try? await Env.api.getUser()
   }
 }
 

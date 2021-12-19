@@ -80,8 +80,7 @@ private actor _SessionManager {
     let task = Task { () async throws -> Session in
       defer { refreshTask = nil }
 
-      let newSession = try await GoTrueApi.refreshAccessToken(
-        refreshToken: currentSession.refreshToken)
+      let newSession = try await Env.api.refreshAccessToken(currentSession.refreshToken)
       self.update(session: newSession)
       return newSession
     }

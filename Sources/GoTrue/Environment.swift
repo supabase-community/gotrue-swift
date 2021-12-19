@@ -5,6 +5,7 @@ import XCTestDynamicOverlay
 struct Environment {
   var url: () -> URL
   var httpClient: HTTPClientProtocol
+  var api: API
   var sessionStorage: SessionStorage
   var sessionManager: SessionManager
 }
@@ -20,6 +21,7 @@ var Env: Environment!
           return URL(string: "https://example.com")!
         },
         httpClient: HTTPClient.failing,
+        api: .failing,
         sessionStorage: .failing,
         sessionManager: .failing
       )
@@ -31,6 +33,7 @@ var Env: Environment!
           URL(string: "https://example.com")!
         },
         httpClient: HTTPClient.noop,
+        api: .noop,
         sessionStorage: .noop,
         sessionManager: .noop
       )
