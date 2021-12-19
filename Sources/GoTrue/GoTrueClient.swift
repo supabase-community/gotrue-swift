@@ -170,6 +170,7 @@ public class GoTrueClient {
 }
 
 extension GoTrueClient {
+  /// Provides a HTTPClient capable of authenticating requests using `apiKey` and `GoTrue` token.
   public static func httpClient(url: URL, apiKey: String, additionalHeaders: [String: String] = [:])
     -> HTTPClientProtocol
   {
