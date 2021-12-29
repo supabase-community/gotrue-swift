@@ -29,9 +29,7 @@ var Env: Environment!
 
     static var noop: Environment {
       Environment(
-        url: {
-          URL(string: "https://example.com")!
-        },
+        url: { URL(string: "https://example.com")! },
         httpClient: HTTPClient.noop,
         api: .noop,
         sessionStorage: .noop,

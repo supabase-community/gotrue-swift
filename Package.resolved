@@ -11,12 +11,21 @@
         }
       },
       {
+        "package": "AsyncCompatibilityKit",
+        "repositoryURL": "https://github.com/JohnSundell/AsyncCompatibilityKit",
+        "state": {
+          "branch": null,
+          "revision": "c69c367042586a55977407bbca548f6867640bd5",
+          "version": "0.1.2"
+        }
+      },
+      {
         "package": "SimpleHTTP",
         "repositoryURL": "https://github.com/grsouza/simple-http",
         "state": {
           "branch": null,
-          "revision": "a9fbe131a88f144d30dfa0ccf0b9582247de92bb",
-          "version": "0.1.0"
+          "revision": "044251c4a09bdf835665c85db22f01607283bed0",
+          "version": "0.1.1"
         }
       },
       {

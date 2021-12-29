@@ -93,130 +93,25 @@ struct API {
 extension API {
   static var live: API {
     API(
-      signUpWithEmail: GoTrueApi.signUpWithEmail(email:password:options:),
-      signInWithEmail: GoTrueApi.signInWithEmail(email:password:redirectTo:),
-      signUpWithPhone: GoTrueApi.signUpWithPhone(phone:password:data:),
-      signInWithPhone: GoTrueApi.signInWithPhone(phone:password:),
-      sendMagicLinkEmail: GoTrueApi.sendMagicLinkEmail(email:redirectTo:),
-      sendMobileOTP: GoTrueApi.sendMobileOTP(phone:),
-      verifyMobileOTP: GoTrueApi.verifyMobileOTP(phone:token:redirectTo:),
-      inviteUserByEmail: GoTrueApi.inviteUserByEmail(email:options:),
-      resetPasswordForEmail: GoTrueApi.resetPasswordForEmail(email:redirectTo:),
-      getUrlForProvider: GoTrueApi.getUrlForProvider(provider:options:),
-      refreshAccessToken: GoTrueApi.refreshAccessToken(refreshToken:),
-      signOut: GoTrueApi.signOut,
-      updateUser: GoTrueApi.updateUser(params:),
-      getUser: GoTrueApi.getUser
+      signUpWithEmail: LiveAPI.signUpWithEmail(email:password:options:),
+      signInWithEmail: LiveAPI.signInWithEmail(email:password:redirectTo:),
+      signUpWithPhone: LiveAPI.signUpWithPhone(phone:password:data:),
+      signInWithPhone: LiveAPI.signInWithPhone(phone:password:),
+      sendMagicLinkEmail: LiveAPI.sendMagicLinkEmail(email:redirectTo:),
+      sendMobileOTP: LiveAPI.sendMobileOTP(phone:),
+      verifyMobileOTP: LiveAPI.verifyMobileOTP(phone:token:redirectTo:),
+      inviteUserByEmail: LiveAPI.inviteUserByEmail(email:options:),
+      resetPasswordForEmail: LiveAPI.resetPasswordForEmail(email:redirectTo:),
+      getUrlForProvider: LiveAPI.getUrlForProvider(provider:options:),
+      refreshAccessToken: LiveAPI.refreshAccessToken(refreshToken:),
+      signOut: LiveAPI.signOut,
+      updateUser: LiveAPI.updateUser(params:),
+      getUser: LiveAPI.getUser
     )
   }
 }
 
-#if DEBUG
-  import XCTestDynamicOverlay
-  extension API {
-    static var failing: API {
-      API(
-        signUpWithEmail: { _, _, _ in
-          XCTFail("API.signUpWithEmail was not implemented.")
-          return .dummy
-        },
-        signInWithEmail: { _, _, _ in
-          XCTFail("API.signInWithEmail was not implemented.")
-          return .dummy
-        },
-        signUpWithPhone: { _, _, _ in
-          XCTFail("API.signUpWithPhone was not implemented.")
-          return .dummy
-        },
-        signInWithPhone: { _, _ in
-          XCTFail("API.signInWithPhone was not implemented.")
-          return .dummy
-        },
-        sendMagicLinkEmail: { _, _ in
-          XCTFail("API.sendMagicLinkEmail was not implemented.")
-        },
-        sendMobileOTP: { _ in
-          XCTFail("API.sendMobileOTP was not implemented.")
-        },
-        verifyMobileOTP: { _, _, _ in
-          XCTFail("API.verifyMobileOTP was not implemented.")
-          return .dummy
-        },
-        inviteUserByEmail: { _, _ in
-          XCTFail("API.inviteUserByEmail was not implemented.")
-          return .dummy
-        },
-        resetPasswordForEmail: { _, _ in
-          XCTFail("API.resetPasswordForEmail was not implemented.")
-        },
-        getUrlForProvider: { _, _ in
-          XCTFail("API.getUrlForProvider was not implemented.")
-          return URL(string: "https://test.com")!
-        },
-        refreshAccessToken: { _ in
-          XCTFail("API.refreshAccessToken was not implemented.")
-          return .dummy
-        },
-        signOut: {
-          XCTFail("API.signOut was not implemented.")
-        },
-        updateUser: { _ in
-          XCTFail("API.updateUser was not implemented.")
-          return .dummy
-        },
-        getUser: {
-          XCTFail("API.getUser was not implemented.")
-          return .dummy
-        }
-      )
-    }
-
-    static var noop: API {
-      API(
-        signUpWithEmail: { _, _, _ in
-          return .dummy
-        },
-        signInWithEmail: { _, _, _ in
-          return .dummy
-        },
-        signUpWithPhone: { _, _, _ in
-          return .dummy
-        },
-        signInWithPhone: { _, _ in
-          return .dummy
-        },
-        sendMagicLinkEmail: { _, _ in
-        },
-        sendMobileOTP: { _ in
-        },
-        verifyMobileOTP: { _, _, _ in
-          return .dummy
-        },
-        inviteUserByEmail: { _, _ in
-          return .dummy
-        },
-        resetPasswordForEmail: { _, _ in
-        },
-        getUrlForProvider: { _, _ in
-          return URL(string: "https://test.com")!
-        },
-        refreshAccessToken: { _ in
-          return .dummy
-        },
-        signOut: {
-        },
-        updateUser: { _ in
-          return .dummy
-        },
-        getUser: {
-          return .dummy
-        }
-      )
-    }
-  }
-#endif
-
-private enum GoTrueApi {
+private enum LiveAPI {
   static func signUpWithEmail(email: String, password: String, options: SignUpOptions) async throws
     -> Session
   {
