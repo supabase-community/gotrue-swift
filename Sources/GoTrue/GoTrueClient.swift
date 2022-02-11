@@ -215,7 +215,16 @@ public class GoTrueClient {
             completion(.failure(GoTrueError(message: "Not logged in.")))
             return
         }
-        callRefreshToken(refreshToken: refreshToken) { result in
+        callRefreshToken(refreshToken: refreshToken) { [weak self] result in
+            guard let self = self else { return }
+
+            switch result {
+            case let .success(session):
+                self.saveSession(session: session)
+            case let .failure(error):
+                print(error.localizedDescription)
+            }
+
             completion(result)
         }
     }
