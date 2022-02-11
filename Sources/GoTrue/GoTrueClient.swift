@@ -181,7 +181,7 @@ public class GoTrueClient {
         }
     }
 
-    public func saveSession(session: Session) {
+    func saveSession(session: Session) {
         currentSession = session
 
         sessionManager.saveSession(session)
@@ -216,11 +216,9 @@ public class GoTrueClient {
             return
         }
         callRefreshToken(refreshToken: refreshToken) { [weak self] result in
-            guard let self = self else { return }
-
             switch result {
             case let .success(session):
-                self.saveSession(session: session)
+                self?.saveSession(session: session)
             case let .failure(error):
                 print(error.localizedDescription)
             }
