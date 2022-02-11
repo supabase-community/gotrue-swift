@@ -181,7 +181,7 @@ public class GoTrueClient {
         }
     }
 
-    func saveSession(session: Session) {
+    public func saveSession(session: Session) {
         currentSession = session
 
         sessionManager.saveSession(session)
