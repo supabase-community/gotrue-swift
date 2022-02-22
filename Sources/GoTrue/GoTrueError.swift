@@ -1,12 +1,15 @@
 import Foundation
 
-public struct GoTrueError: Error {
-    public var statusCode: Int?
-    public var message: String?
-}
+public struct GoTrueError: LocalizedError, Decodable {
+  public var message: String?
+  public var msg: String?
+  public var code: Int?
 
-extension GoTrueError: LocalizedError {
-    public var errorDescription: String? {
-        return message
-    }
+  private enum CodingKeys: String, CodingKey {
+    case message
+    case msg
+    case code
+  }
+
+  public var errorDescription: String? { message ?? msg }
 }

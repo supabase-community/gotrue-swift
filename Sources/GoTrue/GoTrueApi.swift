@@ -1,270 +1,247 @@
 import Foundation
 
 class GoTrueApi {
-    var url: String
-    var headers: [String: String]
+  var url: String
+  var headers: [String: String]
 
-    init(url: String, headers: [String: String]) {
-        self.url = url
-        self.headers = headers
-        self.headers.merge(GoTrueConstants.defaultHeaders) { $1 }
+  init(url: String, headers: [String: String]) {
+    self.url = url
+    self.headers = headers
+    self.headers.merge(GoTrueConstants.defaultHeaders) { $1 }
+  }
+
+  /// HTTP Methods
+  private enum HTTPMethod: String {
+    case get = "GET"
+    case head = "HEAD"
+    case post = "POST"
+    case put = "PUT"
+    case delete = "DELETE"
+    case connect = "CONNECT"
+    case options = "OPTIONS"
+    case trace = "TRACE"
+    case patch = "PATCH"
+  }
+
+  func signUpWithEmail(
+    email: String, password: String, completion: @escaping (Result<User, Error>) -> Void
+  ) {
+    guard let url = URL(string: "\(url)/signup") else {
+      completion(.failure(GoTrueError(message: "badURL")))
+      return
     }
 
-    /// HTTP Methods
-    private enum HTTPMethod: String {
-        case get = "GET"
-        case head = "HEAD"
-        case post = "POST"
-        case put = "PUT"
-        case delete = "DELETE"
-        case connect = "CONNECT"
-        case options = "OPTIONS"
-        case trace = "TRACE"
-        case patch = "PATCH"
+    fetch(url: url, method: .post, parameters: ["email": email, "password": password]) { result in
+      let user = result.flatMap { data in
+        Result { try decoder.decode(User.self, from: data) }
+      }
+      completion(user)
+    }
+  }
+
+  func signInWithEmail(
+    email: String, password: String, completion: @escaping (Result<Session, Error>) -> Void
+  ) {
+    guard let url = URL(string: "\(url)/token?grant_type=password") else {
+      completion(.failure(GoTrueError(message: "badURL")))
+      return
     }
 
-    func signUpWithEmail(email: String, password: String, completion: @escaping (Result<(session: Session?, user: User?), Error>) -> Void) {
-        guard let url = URL(string: "\(url)/signup") else {
-            completion(.failure(GoTrueError(message: "badURL")))
-            return
-        }
+    fetch(url: url, method: .post, parameters: ["email": email, "password": password]) { result in
+      let session = result.flatMap { data in
+        Result { try decoder.decode(Session.self, from: data) }
+      }
+      completion(session)
+    }
+  }
 
-        fetch(url: url, method: .post, parameters: ["email": email, "password": password]) { result in
-            switch result {
-            case let .success(response):
-                guard let dict: [String: Any] = response as? [String: Any] else {
-                    completion(.failure(GoTrueError(message: "failed to parse response")))
-                    return
-                }
-
-                if let session = Session(from: dict) {
-                    completion(.success((session: session, user: session.user)))
-                    return
-                }
-
-                if let user = User(from: dict) {
-                    completion(.success((session: nil, user: user)))
-                    return
-                }
-
-                completion(.success((session: nil, user: nil)))
-            case let .failure(error):
-                completion(.failure(error))
-            }
-        }
+  func sendMagicLinkEmail(email: String, completion: @escaping (Result<Void, Error>) -> Void) {
+    guard let url = URL(string: "\(url)/magiclink") else {
+      completion(.failure(GoTrueError(message: "badURL")))
+      return
     }
 
-    func signInWithEmail(email: String, password: String, completion: @escaping (Result<Session?, Error>) -> Void) {
-        guard let url = URL(string: "\(url)/token?grant_type=password") else {
-            completion(.failure(GoTrueError(message: "badURL")))
-            return
-        }
+    fetch(url: url, method: .post, parameters: ["email": email]) { result in
+      completion(result.map { _ in () })
+    }
+  }
 
-        fetch(url: url, method: .post, parameters: ["email": email, "password": password]) { result in
-            switch result {
-            case let .success(response):
-                guard let dict: [String: Any] = response as? [String: Any], let session = Session(from: dict) else {
-                    completion(.failure(GoTrueError(message: "failed to parse response")))
-                    return
-                }
-                completion(.success(session))
-            case let .failure(error):
-                completion(.failure(error))
-            }
-        }
+  func getUrlForProvider(provider: Provider, options: ProviderOptions?) throws -> URL {
+    guard var components = URLComponents(string: "\(url)/authorize") else {
+      throw GoTrueError(message: "badURL")
     }
 
-    func sendMagicLinkEmail(email: String, completion: @escaping (Result<Any?, Error>) -> Void) {
-        guard let url = URL(string: "\(url)/magiclink") else {
-            completion(.failure(GoTrueError(message: "badURL")))
-            return
-        }
-
-        fetch(url: url, method: .post, parameters: ["email": email]) { result in
-            switch result {
-            case let .success(response):
-                completion(.success(response))
-            case let .failure(error):
-                completion(.failure(error))
-            }
-        }
+    var queryItems: [URLQueryItem] = []
+    queryItems.append(URLQueryItem(name: "provider", value: provider.rawValue))
+    if let options = options {
+      if let scopes = options.scopes {
+        queryItems.append(URLQueryItem(name: "scopes", value: scopes))
+      }
+      if let redirectTo = options.redirectTo {
+        queryItems.append(URLQueryItem(name: "redirect_to", value: redirectTo))
+      }
     }
 
-    func getUrlForProvider(provider: Provider, options: ProviderOptions?) throws -> URL {
-        guard var components = URLComponents(string: "\(url)/authorize") else {
-            throw GoTrueError(message: "badURL")
-        }
+    components.queryItems = queryItems
 
-        var queryItems: [URLQueryItem] = []
-        queryItems.append(URLQueryItem(name: "provider", value: provider.rawValue))
-        if let options = options {
-            if let scopes = options.scopes {
-                queryItems.append(URLQueryItem(name: "scopes", value: scopes))
-            }
-            if let redirectTo = options.redirectTo {
-                queryItems.append(URLQueryItem(name: "redirect_to", value: redirectTo))
-            }
-        }
-
-        components.queryItems = queryItems
-
-        guard let url = components.url else {
-            throw GoTrueError(message: "badURL")
-        }
-
-        return url
+    guard let url = components.url else {
+      throw GoTrueError(message: "badURL")
     }
 
-    func refreshAccessToken(refreshToken: String, completion: @escaping (Result<Session?, Error>) -> Void) {
-        guard let url = URL(string: "\(url)/token?grant_type=refresh_token") else {
-            completion(.failure(GoTrueError(message: "badURL")))
-            return
-        }
+    return url
+  }
 
-        fetch(url: url, method: .post, parameters: ["refresh_token": refreshToken]) { result in
-            switch result {
-            case let .success(response):
-                guard let dict: [String: Any] = response as? [String: Any], let session = Session(from: dict) else {
-                    completion(.failure(GoTrueError(message: "failed to parse response")))
-                    return
-                }
-                completion(.success(session))
-            case let .failure(error):
-                completion(.failure(error))
-            }
-        }
+  func refreshAccessToken(
+    refreshToken: String, completion: @escaping (Result<Session, Error>) -> Void
+  ) {
+    guard let url = URL(string: "\(url)/token?grant_type=refresh_token") else {
+      completion(.failure(GoTrueError(message: "badURL")))
+      return
     }
 
-    func signOut(accessToken: String, completion: @escaping (Result<Any?, Error>) -> Void) {
-        guard let url = URL(string: "\(url)/logout") else {
-            completion(.failure(GoTrueError(message: "badURL")))
-            return
-        }
+    fetch(url: url, method: .post, parameters: ["refresh_token": refreshToken]) { result in
+      let session = result.flatMap { data in
+        Result { try decoder.decode(Session.self, from: data) }
+      }
+      completion(session)
+    }
+  }
 
-        fetch(url: url, method: .post, parameters: [:], headers: ["Authorization": "Bearer \(accessToken)"], jsonSerialization: false) { result in
-            switch result {
-            case let .success(response):
-                completion(.success(response))
-            case let .failure(error):
-                completion(.failure(error))
-            }
-        }
+  func signOut(accessToken: String, completion: @escaping (Result<Any?, Error>) -> Void) {
+    guard let url = URL(string: "\(url)/logout") else {
+      completion(.failure(GoTrueError(message: "badURL")))
+      return
     }
 
-    func updateUser(accessToken: String, emailChangeToken: String?, password: String?, data: [String: Any]? = nil, completion: @escaping (Result<User, Error>) -> Void) {
-        guard let url = URL(string: "\(url)/user") else {
-            completion(.failure(GoTrueError(message: "badURL")))
-            return
-        }
-        var parameters: [String: Any] = [:]
-        if let emailChangeToken = emailChangeToken {
-            parameters["email_change_token"] = emailChangeToken
-        }
+    fetch(
+      url: url, method: .post, parameters: [:], headers: ["Authorization": "Bearer \(accessToken)"],
+      jsonSerialization: false
+    ) { result in
+      switch result {
+      case let .success(response):
+        completion(.success(response))
+      case let .failure(error):
+        completion(.failure(error))
+      }
+    }
+  }
 
-        if let password = password {
-            parameters["password"] = password
-        }
-
-        if let data = data {
-            parameters["data"] = data
-        }
-
-        fetch(url: url, method: .put, parameters: parameters, headers: ["Authorization": "Bearer \(accessToken)"]) { result in
-            switch result {
-            case let .success(response):
-                guard let dict: [String: Any] = response as? [String: Any], let user = User(from: dict) else {
-                    completion(.failure(GoTrueError(message: "failed to parse response")))
-                    return
-                }
-                completion(.success(user))
-            case let .failure(error):
-                completion(.failure(error))
-            }
-        }
+  func updateUser(
+    accessToken: String, emailChangeToken: String?, password: String?, data: [String: Any]? = nil,
+    completion: @escaping (Result<User, Error>) -> Void
+  ) {
+    guard let url = URL(string: "\(url)/user") else {
+      completion(.failure(GoTrueError(message: "badURL")))
+      return
+    }
+    var parameters: [String: Any] = [:]
+    if let emailChangeToken = emailChangeToken {
+      parameters["email_change_token"] = emailChangeToken
     }
 
-    func getUser(accessToken: String, completion: @escaping (Result<User, Error>) -> Void) {
-        guard let url = URL(string: "\(url)/user") else {
-            completion(.failure(GoTrueError(message: "badURL")))
-            return
-        }
-
-        fetch(url: url, method: .get, parameters: nil, headers: ["Authorization": "Bearer \(accessToken)"]) { result in
-            switch result {
-            case let .success(response):
-                guard let dict: [String: Any] = response as? [String: Any], let user = User(from: dict) else {
-                    completion(.failure(GoTrueError(message: "failed to parse response")))
-                    return
-                }
-                completion(.success(user))
-            case let .failure(error):
-                completion(.failure(error))
-            }
-        }
+    if let password = password {
+      parameters["password"] = password
     }
 
-    private func fetch(url: URL, method: HTTPMethod = .get, parameters: [String: Any]?, headers: [String: String]? = nil, jsonSerialization: Bool = true, completion: @escaping (Result<Any, Error>) -> Void) {
-        var request = URLRequest(url: url)
-        request.httpMethod = method.rawValue
-
-        if var headers = headers {
-            headers.merge(self.headers) { $1 }
-            request.allHTTPHeaderFields = headers
-        } else {
-            request.allHTTPHeaderFields = self.headers
-        }
-
-        if let parameters = parameters {
-            do {
-                request.httpBody = try JSONSerialization.data(withJSONObject: parameters, options: [])
-            } catch {
-                completion(.failure(error))
-                return
-            }
-        }
-
-        let session = URLSession.shared
-        let dataTask = session.dataTask(with: request, completionHandler: { [unowned self] (data, response, error) -> Void in
-            if let error = error {
-                completion(.failure(error))
-                return
-            }
-
-            if let resp = response as? HTTPURLResponse {
-                if let data = data {
-                    if jsonSerialization {
-                        do {
-                            let json = try JSONSerialization.jsonObject(with: data, options: [])
-                            completion(.success(try self.parse(response: json, statusCode: resp.statusCode)))
-                        } catch {
-                            completion(.failure(error))
-                            return
-                        }
-                    } else {
-                        if let dataString = String(data: data, encoding: .utf8) {
-                            completion(.success(dataString))
-                            return
-                        }
-                    }
-                }
-            } else {
-                completion(.failure(GoTrueError(message: "failed to get response")))
-            }
-
-        })
-
-        dataTask.resume()
+    if let data = data {
+      parameters["data"] = data
     }
 
-    private func parse(response: Any, statusCode: Int) throws -> Any {
-        if statusCode == 200 || 200 ..< 300 ~= statusCode {
-            return response
-        } else if let dict = response as? [String: Any], let message = dict["msg"] as? String {
-            throw GoTrueError(statusCode: statusCode, message: message)
-        } else if let dict = response as? [String: Any], let message = dict["error_description"] as? String {
-            throw GoTrueError(statusCode: statusCode, message: message)
-        } else {
-            return response
-        }
+    fetch(
+      url: url, method: .put, parameters: parameters,
+      headers: ["Authorization": "Bearer \(accessToken)"]
+    ) { result in
+      let user = result.flatMap { data in
+        Result { try decoder.decode(User.self, from: data) }
+      }
+      completion(user)
     }
+  }
+
+  func getUser(accessToken: String, completion: @escaping (Result<User, Error>) -> Void) {
+    guard let url = URL(string: "\(url)/user") else {
+      completion(.failure(GoTrueError(message: "badURL")))
+      return
+    }
+
+    fetch(
+      url: url, method: .get, parameters: nil, headers: ["Authorization": "Bearer \(accessToken)"]
+    ) { result in
+      let user = result.flatMap { data in
+        Result { try decoder.decode(User.self, from: data) }
+      }
+      completion(user)
+    }
+  }
+
+  private func fetch(
+    url: URL, method: HTTPMethod = .get, parameters: [String: Any]?,
+    headers: [String: String]? = nil, jsonSerialization: Bool = true,
+    completion: @escaping (Result<Data, Error>) -> Void
+  ) {
+    var request = URLRequest(url: url)
+    request.httpMethod = method.rawValue
+
+    if var headers = headers {
+      headers.merge(self.headers) { $1 }
+      request.allHTTPHeaderFields = headers
+    } else {
+      request.allHTTPHeaderFields = self.headers
+    }
+
+    if let parameters = parameters {
+      do {
+        request.httpBody = try JSONSerialization.data(withJSONObject: parameters, options: [])
+      } catch {
+        completion(.failure(error))
+        return
+      }
+    }
+
+    let session = URLSession.shared
+    let dataTask = session.dataTask(with: request) { data, response, error in
+      if let error = error {
+        completion(.failure(error))
+        return
+      }
+
+      guard let response = response as? HTTPURLResponse else {
+        completion(.failure(GoTrueError(message: "failed to get response")))
+        return
+      }
+
+      guard let data = data else {
+        completion(.failure(GoTrueError(message: "empty data")))
+        return
+      }
+
+      do {
+        try Self.validate(data: data, response: response)
+        completion(.success(data))
+      } catch {
+        completion(.failure(error))
+      }
+    }
+
+    dataTask.resume()
+  }
+
+  private static func validate(data: Data, response: HTTPURLResponse) throws {
+    if 200..<300 ~= response.statusCode {
+      return
+    }
+
+    throw try decoder.decode(GoTrueError.self, from: data)
+  }
 }
+
+private let decoder = { () -> JSONDecoder in
+  let dateFormatter = ISO8601DateFormatter()
+  dateFormatter.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
+  let decoder = JSONDecoder()
+  decoder.dateDecodingStrategy = .custom({ decoder in
+    let string = try decoder.singleValueContainer().decode(String.self)
+    return dateFormatter.date(from: string)!
+  })
+  return decoder
+}()

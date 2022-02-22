@@ -1,77 +1,56 @@
-public struct Session {
-    public var accessToken: String
-    public var tokenType: String?
-    public var user: User?
+import Foundation
 
-    var expiresIn: Int?
-    var refreshToken: String?
-    var providerToken: String?
+public struct Session: Codable {
+  public let accessToken: String
+  public let tokenType: String
+  public let expiresIn: TimeInterval
+  public let refreshToken: String
+  public var user: User
 
-    init(accessToken: String, tokenType: String?, expiresIn: Int?, refreshToken: String?, providerToken: String?, user: User?) {
-        self.accessToken = accessToken
-        self.tokenType = tokenType
-        self.expiresIn = expiresIn
-        self.refreshToken = refreshToken
-        self.providerToken = providerToken
-        self.user = user
-    }
+  var expiresAt: Date
 
-    init?(from dictionary: [String: Any]) {
-        guard let accessToken: String = dictionary["access_token"] as? String else {
-            return nil
-        }
+  public init(
+    accessToken: String,
+    tokenType: String,
+    expiresIn: TimeInterval,
+    refreshToken: String,
+    user: User
+  ) {
+    self.accessToken = accessToken
+    self.tokenType = tokenType
+    self.expiresIn = expiresIn
+    self.refreshToken = refreshToken
+    self.user = user
 
-        self.accessToken = accessToken
+    self.expiresAt = Date().addingTimeInterval(self.expiresIn)
+  }
 
-        if let tokenType: String = dictionary["token_type"] as? String {
-            self.tokenType = tokenType
-        }
+  private enum CodingKeys: String, CodingKey {
+    case accessToken = "access_token"
+    case tokenType = "token_type"
+    case expiresIn = "expires_in"
+    case refreshToken = "refresh_token"
+    case user
 
-        if let expiresIn: Int = dictionary["expires_in"] as? Int {
-            self.expiresIn = expiresIn
-        }
+    case expiresAt = "expires_at"
+  }
 
-        if let refreshToken: String = dictionary["refresh_token"] as? String {
-            self.refreshToken = refreshToken
-        }
+  public init(from decoder: Decoder) throws {
+    let container = try decoder.container(keyedBy: CodingKeys.self)
 
-        if let providerToken: String = dictionary["provider_token"] as? String {
-            self.providerToken = providerToken
-        }
+    self.accessToken = try container.decode(String.self, forKey: .accessToken)
+    self.tokenType = try container.decode(String.self, forKey: .tokenType)
+    self.expiresIn = try container.decode(TimeInterval.self, forKey: .expiresIn)
+    self.refreshToken = try container.decode(String.self, forKey: .refreshToken)
+    self.user = try container.decode(User.self, forKey: .user)
 
-        if let user: [String: Any] = dictionary["user"] as? [String: Any] {
-            self.user = User(from: user)
-        }
-    }
-}
+    self.expiresAt =
+      try container.decodeIfPresent(Date.self, forKey: .expiresAt)
+      ?? Date().addingTimeInterval(self.expiresIn)
+  }
 
-extension Session: Codable {
-    enum CodingKeys: String, CodingKey {
-        case accessToken = "access_token"
-        case tokenType = "token_type"
-        case expiresIn = "expires_in"
-        case refreshToken = "refresh_token"
-        case providerToken = "provider_token"
-        case user
-    }
-
-    public init(from decoder: Decoder) throws {
-        let container = try decoder.container(keyedBy: CodingKeys.self)
-        accessToken = try container.decode(String.self, forKey: .accessToken)
-        tokenType = try? container.decode(String.self, forKey: .tokenType)
-        expiresIn = try? container.decode(Int.self, forKey: .expiresIn)
-        refreshToken = try? container.decode(String.self, forKey: .refreshToken)
-        providerToken = try? container.decode(String.self, forKey: .providerToken)
-        user = try? container.decode(User.self, forKey: .user)
-    }
-
-    public func encode(to encoder: Encoder) throws {
-        var container = encoder.container(keyedBy: CodingKeys.self)
-        try container.encode(accessToken, forKey: .accessToken)
-        try? container.encode(tokenType, forKey: .tokenType)
-        try? container.encode(expiresIn, forKey: .expiresIn)
-        try? container.encode(refreshToken, forKey: .refreshToken)
-        try? container.encode(providerToken, forKey: .providerToken)
-        try? container.encode(user, forKey: .user)
-    }
+  public var isValid: Bool {
+    // Consider a session expired 1min before its real expire date.
+    expiresAt.addingTimeInterval(-60) > Date()
+  }
 }
