@@ -1,4 +1,7 @@
 import Foundation
+#if canImport(FoundationNetworking)
+import FoundationNetworking
+#endif
 
 public typealias AuthStateChangeCallback = (_ event: AuthChangeEvent, _ session: Session?) -> Void
 
