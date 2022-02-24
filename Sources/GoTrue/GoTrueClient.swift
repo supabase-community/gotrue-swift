@@ -258,18 +258,23 @@ public class GoTrueClient {
   }
 }
 
-#if compiler(>=5.5)
-  @available(iOS 15.0.0, macOS 12.0.0, *)
+#if compiler(>=5.5) && canImport(_Concurrency)
+  @available(iOS 13.0.0, macOS 10.15, tvOS 13.0, *)
   extension GoTrueClient {
 
     public func onAuthStateChange() -> AsyncStream<(AuthChangeEvent, Session?)> {
-      AsyncStream { continuation in
-        _ = onAuthStateChange { event, session in
+      var subscription: Subscription?
+      let onTermination = {
+        subscription?.unsubscribe()
+        subscription = nil
+      }
+
+      return AsyncStream { continuation in
+        continuation.onTermination = { @Sendable _ in onTermination() }
+
+        subscription = onAuthStateChange { event, session in
           continuation.yield((event, session))
         }
-
-        // How to stop subscription?
-        // continuation.onTermination = { subscription.unsubscribe() }
       }
     }
 

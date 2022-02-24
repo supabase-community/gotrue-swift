@@ -13,7 +13,11 @@ final class IntegrationTests: XCTestCase {
     "http://localhost:54321/auth/v1"
   }
 
-  func test_signUpWithEmailAndPassword() {
+  func test_signUpWithEmailAndPassword() throws {
+    try XCTSkipIf(
+      ProcessInfo.processInfo.environment["INTEGRATION_TESTS"] == nil,
+      "INTEGRATION_TESTS not defined.")
+
     let expectation = self.expectation(description: #function)
 
     gotrue.signUp(email: "sample@supabase.io", password: "qwerty123") { result in

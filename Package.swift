@@ -5,7 +5,11 @@ import PackageDescription
 
 let package = Package(
   name: "GoTrue",
-  platforms: [.iOS(.v11)],
+  platforms: [
+    .iOS(.v11),
+    .macOS(.v10_13),
+    .tvOS(.v11),
+  ],
   products: [
     .library(name: "GoTrue", targets: ["GoTrue"])
   ],
