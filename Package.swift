@@ -17,8 +17,12 @@ let package = Package(
     .package(name: "AnyCodable", url: "https://github.com/Flight-School/AnyCodable", from: "0.6.2")
   ],
   targets: [
-    .target(name: "GoTrue", dependencies: ["AnyCodable"]),
+    .target(
+      name: "GoTrue",
+      dependencies: [
+        "AnyCodable"
+      ]
+    ),
     .testTarget(name: "GoTrueTests", dependencies: ["GoTrue"]),
-    .testTarget(name: "GoTrueIntegrationTests", dependencies: ["GoTrue"]),
   ]
 )
