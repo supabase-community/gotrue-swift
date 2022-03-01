@@ -225,9 +225,9 @@ public class GoTrueClient {
     }
   }
 
-  public func signOut(completion: @escaping (Result<Any?, Error>) -> Void) {
+  public func signOut(completion: @escaping (Error?) -> Void) {
     guard let accessToken = currentSession?.accessToken else {
-      completion(.failure(GoTrueError(message: "current session not found")))
+      completion(GoTrueError(message: "current session not found"))
       return
     }
 

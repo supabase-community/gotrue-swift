@@ -107,9 +107,9 @@ class GoTrueApi {
     }
   }
 
-  func signOut(accessToken: String, completion: @escaping (Result<Any?, Error>) -> Void) {
+  func signOut(accessToken: String, completion: @escaping (Error?) -> Void) {
     guard let url = URL(string: "\(url)/logout") else {
-      completion(.failure(GoTrueError(message: "badURL")))
+      completion(GoTrueError(message: "badURL"))
       return
     }
 
@@ -118,10 +118,10 @@ class GoTrueApi {
       jsonSerialization: false
     ) { result in
       switch result {
-      case let .success(response):
-        completion(.success(response))
+      case let .success:
+        completion(nil)
       case let .failure(error):
-        completion(.failure(error))
+        completion(error)
       }
     }
   }
