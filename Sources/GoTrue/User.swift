@@ -142,3 +142,27 @@ extension User: Codable {
     try container.encode(updatedAt, forKey: .updatedAt)
   }
 }
+
+extension User.Identity: Equatable {
+  public static func == (lhs: User.Identity, rhs: User.Identity) -> Bool {
+    lhs.id == rhs.id && lhs.userID == rhs.userID && lhs.provider == rhs.provider
+      && lhs.lastSignInAt == rhs.lastSignInAt && lhs.createdAt == rhs.createdAt
+      && lhs.updatedAt == rhs.updatedAt  // && lhs.identityData == rhs.identityData
+  }
+}
+
+extension User: Equatable {
+  public static func == (lhs: User, rhs: User) -> Bool {
+    lhs.id == rhs.id && lhs.aud == rhs.aud && lhs.role == rhs.role && lhs.email == rhs.email
+      && lhs.emailConfirmedAt == rhs.emailConfirmedAt && lhs.invitedAt == rhs.invitedAt
+      && lhs.phone == rhs.phone && lhs.phoneConfirmedAt == rhs.phoneConfirmedAt
+      && lhs.confirmationSentAt == rhs.confirmationSentAt
+      && lhs.recoverySentAt == rhs.recoverySentAt && lhs.newEmail == rhs.newEmail
+      && lhs.emailChangeSentAt == rhs.emailChangeSentAt && lhs.newPhone == rhs.newPhone
+      && lhs.phoneChangeSentAt == rhs.phoneChangeSentAt && lhs.lastSignInAt == rhs.lastSignInAt
+      && lhs.identities == rhs.identities && lhs.createdAt == rhs.createdAt
+      && lhs.updatedAt == rhs.updatedAt  // &&
+    // lhs.appMetadata == rhs.appMetadata &&
+    // lhs.userMetadata == rhs.userMetadata
+  }
+}
