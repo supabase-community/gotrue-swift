@@ -1,4 +1,4 @@
-// swift-tools-version:5.3
+// swift-tools-version:5.5
 // The swift-tools-version declares the minimum version of Swift required to build this package.
 
 import PackageDescription
@@ -6,9 +6,11 @@ import PackageDescription
 let package = Package(
   name: "GoTrue",
   platforms: [
-    .iOS(.v11),
-    .macOS(.v10_13),
-    .tvOS(.v11),
+    .iOS(.v13),
+    .macCatalyst(.v13),
+    .macOS(.v10_15),
+    .watchOS(.v6),
+    .tvOS(.v13),
   ],
   products: [
     .library(name: "GoTrue", targets: ["GoTrue"])
