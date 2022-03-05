@@ -1,5 +1,9 @@
 import Foundation
 
+#if canImport(FoundationNetworking)
+  import FoundationNetworking
+#endif
+
 class GoTrueApi {
   var url: String
   var headers: [String: String]
@@ -118,7 +122,7 @@ class GoTrueApi {
       jsonSerialization: false
     ) { result in
       switch result {
-      case let .success:
+      case .success:
         completion(nil)
       case let .failure(error):
         completion(error)
