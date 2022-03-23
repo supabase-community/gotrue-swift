@@ -1,3 +1,4 @@
+import GoTrueHTTP
 import XCTest
 
 @testable import GoTrue
@@ -8,8 +9,8 @@ final class IntegrationTests: XCTestCase {
     "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS1kZW1vIiwicm9sZSI6ImFub24ifQ.625_WdcF3KHqz5amU0x2X5WWHP-OEs_4qj0ssLNHzTs"
   }
 
-  var gotrueURL: String {
-    "http://localhost:54321/auth/v1"
+  var gotrueURL: URL {
+      URL(string: "http://localhost:54321/auth/v1")!
   }
 
   func test_signUpWithEmailAndPassword() async throws {
@@ -17,9 +18,16 @@ final class IntegrationTests: XCTestCase {
       ProcessInfo.processInfo.environment["INTEGRATION_TESTS"] == nil,
       "INTEGRATION_TESTS not defined.")
 
-    let client = GoTrueClient(url: gotrueURL, headers: ["apikey": apikey], autoRefreshToken: true)
+    let client = GoTrueClient(url: gotrueURL, headers: ["apikey": apikey])
 
-    let user = try await client.signUp(email: "sample@supabase.io", password: "qwerty123")
-    XCTAssertEqual(user.email, "sample@supabase.io")
+    let user = try await client.signUp(email: "sample@supabase.io", password: "qwerty123").user
+    XCTAssertEqual(try XCTUnwrap(user).email, "sample@supabase.io")
+  }
+}
+
+extension Paths.Signup.PostResponse {
+  var user: User? {
+    if case let .user(user) = self { return user }
+    return nil
   }
 }

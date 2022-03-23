@@ -1,4 +1,5 @@
 import Foundation
+import GoTrueHTTP
 
 struct SessionManager {
   private let keychain: KeychainClient

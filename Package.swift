@@ -16,13 +16,16 @@ let package = Package(
     .library(name: "GoTrue", targets: ["GoTrue"])
   ],
   dependencies: [
-    .package(name: "AnyCodable", url: "https://github.com/Flight-School/AnyCodable", from: "0.6.2")
+    .package(
+      name: "GoTrueHTTP", url: "https://github.com/grsouza/swift-gotrue-http", branch: "main"),
+    .package(url: "https://github.com/kean/Get", branch: "main"),
   ],
   targets: [
     .target(
       name: "GoTrue",
       dependencies: [
-        "AnyCodable"
+        .product(name: "GoTrueHTTP", package: "GoTrueHTTP"),
+        .product(name: "Get", package: "Get"),
       ]
     ),
     .testTarget(name: "GoTrueTests", dependencies: ["GoTrue"]),
