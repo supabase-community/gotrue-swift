@@ -1,23 +1,51 @@
 import Foundation
 import GoTrueHTTP
 
-struct SessionManager {
-  private let keychain: KeychainClient
+struct SessionNotFound: Error {}
 
-  init(serviceName: String? = nil, accessGroup: String? = nil) {
-    keychain = KeychainClient(serviceName: serviceName, accessGroup: accessGroup)
-  }
+actor SessionManager {
+    private let keychain: KeychainClient
+    private let sessionRefresher: (_ refreshToken: String) async throws -> Session
+    private var task: Task<Session, Error>?
 
-  /// Fetches any available session from the Keychain
-  func getSession() -> Session? {
-    return try? keychain.getSession()
-  }
+    init(
+        serviceName: String? = nil,
+        accessGroup: String? = nil,
+        sessionRefresher: @escaping (_ refreshToken: String) async throws -> Session
+    ) {
+        keychain = KeychainClient(serviceName: serviceName, accessGroup: accessGroup)
+        self.sessionRefresher = sessionRefresher
+    }
 
-  func saveSession(_ session: Session) {
-    try? keychain.storeSession(session)
-  }
+    func session() async throws -> Session {
+        if let task = task {
+            return try await task.value
+        }
 
-  func removeSession() {
-    keychain.deleteSession()
-  }
+        guard let currentSession = try keychain.getSession() else {
+            throw SessionNotFound()
+        }
+
+        self.task = Task {
+            defer { self.task = nil }
+
+            let session = try await sessionRefresher(currentSession.refreshToken)
+            try update(session)
+            return session
+        }
+
+        return try await task!.value
+    }
+
+    func update(_ session: Session) throws {
+        try keychain.storeSession(session)
+    }
+
+    func remove() {
+        try keychain.deleteSession()
+    }
+
+    nonisolated var storedSession: Session? {
+        try? keychain.getSession()
+    }
 }
