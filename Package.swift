@@ -16,16 +16,17 @@ let package = Package(
     .library(name: "GoTrue", targets: ["GoTrue"])
   ],
   dependencies: [
-    .package(
-      name: "GoTrueHTTP", url: "https://github.com/grsouza/swift-gotrue-http", branch: "main"),
+    .package(url: "https://github.com/grsouza/swift-gotrue-http", branch: "main"),
     .package(url: "https://github.com/kean/Get", branch: "main"),
+    .package(url: "https://github.com/binaryscraping/swift-composable-keychain", from: "0.0.2"),
   ],
   targets: [
     .target(
       name: "GoTrue",
       dependencies: [
-        .product(name: "GoTrueHTTP", package: "GoTrueHTTP"),
+        .product(name: "GoTrueHTTP", package: "swift-gotrue-http"),
         .product(name: "Get", package: "Get"),
+        .product(name: "ComposableKeychain", package: "swift-composable-keychain"),
       ]
     ),
     .testTarget(name: "GoTrueTests", dependencies: ["GoTrue"]),

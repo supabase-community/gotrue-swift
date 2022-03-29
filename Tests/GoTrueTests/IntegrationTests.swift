@@ -10,7 +10,7 @@ final class IntegrationTests: XCTestCase {
   }
 
   var gotrueURL: URL {
-      URL(string: "http://localhost:54321/auth/v1")!
+    URL(string: "http://localhost:54321/auth/v1")!
   }
 
   func test_signUpWithEmailAndPassword() async throws {
