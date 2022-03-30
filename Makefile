@@ -26,7 +26,7 @@ format:
 		--ignore-unparsable-files \
 		--in-place \
 		--recursive \
-		./Package.swift ./Sources ./Tests
+		.
 
 create-api:
 	create-api \
