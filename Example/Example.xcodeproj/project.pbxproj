@@ -43,12 +43,12 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
-		1859927E27F460CA00232FD6 /* Sign up with email and password */ = {
+		1859927E27F460CA00232FD6 /* SignUpWithEmailAndPassword */ = {
 			isa = PBXGroup;
 			children = (
 				1859927F27F460F300232FD6 /* SignUpWithEmailAndPasswordView.swift */,
 			);
-			path = "Sign up with email and password";
+			path = SignUpWithEmailAndPassword;
 			sourceTree = "<group>";
 		};
 		1859928127F464B500232FD6 /* Helpers */ = {
@@ -88,12 +88,12 @@
 		1865096627F45E07009ABF42 /* GoTrue Example */ = {
 			isa = PBXGroup;
 			children = (
-				1859928127F464B500232FD6 /* Helpers */,
-				1859927E27F460CA00232FD6 /* Sign up with email and password */,
-				1865096727F45E07009ABF42 /* ExampleApp.swift */,
-				1865096927F45E07009ABF42 /* RootView.swift */,
 				1865096B27F45E08009ABF42 /* Assets.xcassets */,
+				1865096727F45E07009ABF42 /* ExampleApp.swift */,
+				1859928127F464B500232FD6 /* Helpers */,
 				1865096D27F45E08009ABF42 /* Preview Content */,
+				1865096927F45E07009ABF42 /* RootView.swift */,
+				1859927E27F460CA00232FD6 /* SignUpWithEmailAndPassword */,
 			);
 			path = "GoTrue Example";
 			sourceTree = "<group>";

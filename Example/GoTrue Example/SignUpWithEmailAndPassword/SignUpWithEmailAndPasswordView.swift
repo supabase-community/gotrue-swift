@@ -13,9 +13,7 @@ struct SignUpWithEmailAndPasswordView: View {
   @ViewBuilder
   var body: some View {
     if let value = status.success {
-      ScrollView {
-        Text(value)
-      }
+      TextEditor(text: .constant(value))
     } else {
       Form {
         Section {

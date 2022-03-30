@@ -30,6 +30,8 @@ extension Environment {
       $0.sessionConfiguration.httpAdditionalHeaders = headers.merging([
         "Content-Type": "application/json"
       ]) { old, _ in old }
+      $0.decoder = .goTrue
+      $0.delegate = Delegate()
     }
 
     return Environment(
@@ -48,5 +50,37 @@ extension Environment {
       sessionManager: .live,
       date: Date.init
     )
+  }
+}
+
+extension JSONDecoder {
+  public static let goTrue = { () -> JSONDecoder in
+    let decoder = JSONDecoder()
+    decoder.dateDecodingStrategy = .custom { decoder in
+      let container = try decoder.singleValueContainer()
+      let string = try container.decode(String.self)
+      let formatter = ISO8601DateFormatter()
+      formatter.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
+
+      guard let date = formatter.date(from: string) else {
+        throw DecodingError.dataCorruptedError(
+          in: container, debugDescription: "Invalid date format: \(string)")
+      }
+
+      return date
+    }
+    return decoder
+  }()
+}
+
+private struct Delegate: APIClientDelegate {
+  func client(_ client: APIClient, didReceiveInvalidResponse response: HTTPURLResponse, data: Data)
+    -> Error
+  {
+    guard let error = try? JSONDecoder.goTrue.decode(GoTrueError.self, from: data) else {
+      return APIError.unacceptableStatusCode(response.statusCode)
+    }
+
+    return error
   }
 }

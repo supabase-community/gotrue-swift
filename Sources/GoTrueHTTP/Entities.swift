@@ -189,6 +189,7 @@ public enum Provider: String, Codable, CaseIterable {
   case azure
   case bitbucket
   case discord
+  case email
   case facebook
   case github
   case gitlab

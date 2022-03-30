@@ -221,6 +221,7 @@ components:
         - azure
         - bitbucket
         - discord
+        - email
         - facebook
         - github
         - gitlab
