@@ -11,7 +11,7 @@ public final class GoTrueClient {
   private let authEventChangeSubject: CurrentValueSubject<AuthChangeEvent, Never>
   public lazy var authEventChange = authEventChangeSubject.share().eraseToAnyPublisher()
 
-  public var session: Session? { Current.sessionManager.storedSession }
+  public var session: Session? { Current.sessionManager.storedSession() }
 
   public init(
     url: URL,
@@ -21,7 +21,7 @@ public final class GoTrueClient {
     Current = .live(url: url, accessGroup: keychainAccessGroup, headers: headers)
 
     self.authEventChangeSubject = CurrentValueSubject<AuthChangeEvent, Never>(
-      Current.sessionManager.storedSession != nil ? .signedIn : .signedOut
+      Current.sessionManager.storedSession() != nil ? .signedIn : .signedOut
     )
   }
 

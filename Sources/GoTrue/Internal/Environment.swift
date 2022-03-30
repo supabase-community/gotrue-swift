@@ -45,7 +45,7 @@ extension Environment {
         keychain: accessGroup.map { Keychain(service: "supabase.gotrue.swift", accessGroup: $0) }
           ?? Keychain(service: "supabase.gotrue.swift")
       ),
-      sessionManager: SessionManager(),
+      sessionManager: .live,
       date: Date.init
     )
   }

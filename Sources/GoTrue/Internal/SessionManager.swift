@@ -19,7 +19,26 @@ struct StoredSession: Codable {
   }
 }
 
-actor SessionManager {
+struct SessionManager {
+  var storedSession: () -> Session?
+  var session: () async throws -> Session
+  var update: (_ session: Session) async throws -> Void
+  var remove: () async -> Void
+}
+
+extension SessionManager {
+  static var live: Self {
+    let instance = LiveSessionManager()
+    return Self(
+      storedSession: { instance.storedSession },
+      session: { try await instance.session() },
+      update: { try await instance.update($0) },
+      remove: { await instance.remove() }
+    )
+  }
+}
+
+private actor LiveSessionManager {
   private var task: Task<Session, Error>?
 
   func session() async throws -> Session {
