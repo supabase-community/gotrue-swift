@@ -3,22 +3,18 @@ import SwiftUI
 
 @main
 struct ExampleApp: App {
-
-  let goTrue = GoTrueClient(
-    url: URL(string: "https://insert-your-url-here.com")!,
-    headers: ["apiKey": "insert your api key here"]
-  )
-
   var body: some Scene {
     WindowGroup {
-      ContentView()
-        .environment(\.goTrue, goTrue)
+      RootView()
     }
   }
 }
 
 private enum GoTrueClientEnvironmentKey: EnvironmentKey {
-  static var defaultValue: GoTrueClient = .init(url: URL(string: "/")!)
+  static var defaultValue: GoTrueClient = GoTrueClient(
+    url: URL(string: "https://insert-your-url-here.com")!,
+    headers: ["apiKey": "insert your api key here"]
+  )
 }
 
 extension EnvironmentValues {

@@ -7,18 +7,20 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		1859928027F460F300232FD6 /* SignUpWithEmailAndPasswordView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1859927F27F460F300232FD6 /* SignUpWithEmailAndPasswordView.swift */; };
 		185EBE2F27F45E92004CA51D /* GoTrue in Frameworks */ = {isa = PBXBuildFile; productRef = 185EBE2E27F45E92004CA51D /* GoTrue */; };
 		1865096827F45E07009ABF42 /* ExampleApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1865096727F45E07009ABF42 /* ExampleApp.swift */; };
-		1865096A27F45E07009ABF42 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1865096927F45E07009ABF42 /* ContentView.swift */; };
+		1865096A27F45E07009ABF42 /* RootView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1865096927F45E07009ABF42 /* RootView.swift */; };
 		1865096C27F45E08009ABF42 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 1865096B27F45E08009ABF42 /* Assets.xcassets */; };
 		1865096F27F45E08009ABF42 /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 1865096E27F45E08009ABF42 /* Preview Assets.xcassets */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		1859927F27F460F300232FD6 /* SignUpWithEmailAndPasswordView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SignUpWithEmailAndPasswordView.swift; sourceTree = "<group>"; };
 		185EBE2C27F45E5B004CA51D /* gotrue-swift */ = {isa = PBXFileReference; lastKnownFileType = wrapper; name = "gotrue-swift"; path = ..; sourceTree = "<group>"; };
 		1865096427F45E07009ABF42 /* Example.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Example.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		1865096727F45E07009ABF42 /* ExampleApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExampleApp.swift; sourceTree = "<group>"; };
-		1865096927F45E07009ABF42 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
+		1865096927F45E07009ABF42 /* RootView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RootView.swift; sourceTree = "<group>"; };
 		1865096B27F45E08009ABF42 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		1865096E27F45E08009ABF42 /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -35,6 +37,14 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		1859927E27F460CA00232FD6 /* Sign up with email and password */ = {
+			isa = PBXGroup;
+			children = (
+				1859927F27F460F300232FD6 /* SignUpWithEmailAndPasswordView.swift */,
+			);
+			path = "Sign up with email and password";
+			sourceTree = "<group>";
+		};
 		185EBE2D27F45E92004CA51D /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
@@ -63,8 +73,9 @@
 		1865096627F45E07009ABF42 /* GoTrue Example */ = {
 			isa = PBXGroup;
 			children = (
+				1859927E27F460CA00232FD6 /* Sign up with email and password */,
 				1865096727F45E07009ABF42 /* ExampleApp.swift */,
-				1865096927F45E07009ABF42 /* ContentView.swift */,
+				1865096927F45E07009ABF42 /* RootView.swift */,
 				1865096B27F45E08009ABF42 /* Assets.xcassets */,
 				1865096D27F45E08009ABF42 /* Preview Content */,
 			);
@@ -152,7 +163,8 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				1865096A27F45E07009ABF42 /* ContentView.swift in Sources */,
+				1859928027F460F300232FD6 /* SignUpWithEmailAndPasswordView.swift in Sources */,
+				1865096A27F45E07009ABF42 /* RootView.swift in Sources */,
 				1865096827F45E07009ABF42 /* ExampleApp.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
