@@ -25,8 +25,7 @@ format:
 	swift format \
 		--ignore-unparsable-files \
 		--in-place \
-		--recursive \
-		.
+		--recursive .
 
 create-api:
 	create-api \
