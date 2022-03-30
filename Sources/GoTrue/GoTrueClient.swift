@@ -8,58 +8,40 @@ import GoTrueHTTP
 #endif
 
 public final class GoTrueClient {
-  private let client: APIClient
   private let authEventChangeSubject: CurrentValueSubject<AuthChangeEvent, Never>
-  private let sessionManager: SessionManager
-
   public lazy var authEventChange = authEventChangeSubject.share().eraseToAnyPublisher()
 
-  public var session: Session? { sessionManager.storedSession }
+  public var session: Session? { Current.sessionManager.storedSession }
 
   public init(
     url: URL,
     headers: [String: String] = [:],
     keychainAccessGroup: String? = nil
   ) {
-    guard let host = URLComponents(url: url, resolvingAgainstBaseURL: false)?.host else {
-      preconditionFailure("Invalid URL provided: \(url)")
-    }
-
-    self.client = APIClient(host: host) {
-      $0.sessionConfiguration.httpAdditionalHeaders = headers.merging([
-        "Content-Type": "application/json"
-      ]) { old, _ in old }
-    }
-
-    self.sessionManager = SessionManager(accessGroup: keychainAccessGroup) {
-      [client] refreshToken in
-      try await client.send(
-        Paths.token.post(
-          grantType: .refreshToken,
-          .userCredentials(UserCredentials(refreshToken: refreshToken)))
-      ).value
-    }
+    Current = .live(url: url, accessGroup: keychainAccessGroup, headers: headers)
 
     self.authEventChangeSubject = CurrentValueSubject<AuthChangeEvent, Never>(
-      sessionManager.storedSession != nil ? .signedIn : .signedOut
+      Current.sessionManager.storedSession != nil ? .signedIn : .signedOut
     )
   }
 
   public func signUp(email: String, password: String) async throws -> Paths.Signup.PostResponse {
-    await sessionManager.remove()
-    return try await client.send(Paths.signup.post(.init(email: email, password: password))).value
+    await Current.sessionManager.remove()
+    return try await Current.client.send(
+      Paths.signup.post(.init(email: email, password: password))
+    ).value
   }
 
   public func signIn(email: String, password: String) async throws -> Session {
-    await sessionManager.remove()
+    await Current.sessionManager.remove()
 
     do {
-      let session = try await client.send(
+      let session = try await Current.client.send(
         Paths.token.post(
           grantType: .password,
           .userCredentials(UserCredentials(email: email, password: password)))
       ).value
-      try await sessionManager.update(session)
+      try await Current.sessionManager.update(session)
       authEventChangeSubject.send(.signedIn)
       return session
     } catch {

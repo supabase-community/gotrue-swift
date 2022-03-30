@@ -20,30 +20,14 @@ struct StoredSession: Codable {
 }
 
 actor SessionManager {
-  typealias SessionRefresher = (_ refreshToken: String) async throws -> Session
-
-  private let keychain: KeychainClient
-  private let sessionRefresher: SessionRefresher
   private var task: Task<Session, Error>?
-
-  init(
-    serviceName: String? = nil,
-    accessGroup: String? = nil,
-    sessionRefresher: @escaping SessionRefresher
-  ) {
-    keychain = KeychainClient.live(
-      keychain: accessGroup.map { Keychain(service: serviceName ?? "", accessGroup: $0) }
-        ?? Keychain(service: serviceName ?? "supabase.gotrue.swift")
-    )
-    self.sessionRefresher = sessionRefresher
-  }
 
   func session() async throws -> Session {
     if let task = task {
       return try await task.value
     }
 
-    guard let currentSession = try keychain.getSession() else {
+    guard let currentSession = try Current.keychain.getSession() else {
       throw SessionNotFound()
     }
 
@@ -54,7 +38,7 @@ actor SessionManager {
     self.task = Task {
       defer { self.task = nil }
 
-      let session = try await sessionRefresher(currentSession.session.refreshToken)
+      let session = try await Current.sessionRefresher(currentSession.session.refreshToken)
       try update(session)
       return session
     }
@@ -63,16 +47,16 @@ actor SessionManager {
   }
 
   func update(_ session: Session) throws {
-    try keychain.storeSession(StoredSession(session: session))
+    try Current.keychain.storeSession(StoredSession(session: session))
   }
 
   func remove() {
-    keychain.deleteSession()
+    Current.keychain.deleteSession()
   }
 
   /// Returns the currently stored session without checking if it's still valid.
   nonisolated var storedSession: Session? {
-    try? keychain.getSession()?.session
+    try? Current.keychain.getSession()?.session
   }
 }
 
