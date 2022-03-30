@@ -10,7 +10,7 @@ struct StoredSession: Codable {
   var expirationDate: Date
 
   var isValid: Bool {
-    expirationDate > Date()
+    expirationDate > Date().addingTimeInterval(-60)
   }
 
   init(session: Session, expirationDate: Date? = nil) {
@@ -20,14 +20,16 @@ struct StoredSession: Codable {
 }
 
 actor SessionManager {
+  typealias SessionRefresher = (_ refreshToken: String) async throws -> Session
+
   private let keychain: KeychainClient
-  private let sessionRefresher: (_ refreshToken: String) async throws -> Session
+  private let sessionRefresher: SessionRefresher
   private var task: Task<Session, Error>?
 
   init(
     serviceName: String? = nil,
     accessGroup: String? = nil,
-    sessionRefresher: @escaping (_ refreshToken: String) async throws -> Session
+    sessionRefresher: @escaping SessionRefresher
   ) {
     keychain = KeychainClient.live(
       keychain: accessGroup.map { Keychain(service: serviceName ?? "", accessGroup: $0) }

@@ -26,13 +26,17 @@ public final class GoTrueClient {
     }
 
     self.client = APIClient(host: host) {
-      $0.sessionConfiguration.httpAdditionalHeaders = headers
+      $0.sessionConfiguration.httpAdditionalHeaders = headers.merging([
+        "Content-Type": "application/json"
+      ]) { old, _ in old }
     }
+
     self.sessionManager = SessionManager(accessGroup: keychainAccessGroup) {
       [client] refreshToken in
       try await client.send(
         Paths.token.post(
-          grantType: .refreshToken, .userCredentials(UserCredentials(refreshToken: refreshToken)))
+          grantType: .refreshToken,
+          .userCredentials(UserCredentials(refreshToken: refreshToken)))
       ).value
     }
 
