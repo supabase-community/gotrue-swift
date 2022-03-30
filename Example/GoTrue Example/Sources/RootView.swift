@@ -12,6 +12,10 @@ struct RootView: View {
           SignInWithEmailAndPasswordView.title,
           destination: SignInWithEmailAndPasswordView.init
         )
+        NavigationLink(
+          SignInWithMagicLinkView.title,
+          destination: SignInWithMagicLinkView.init
+        )
       }
       .navigationTitle("Use cases")
     }

@@ -17,6 +17,7 @@
 		1865096A27F45E07009ABF42 /* RootView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1865096927F45E07009ABF42 /* RootView.swift */; };
 		1865096C27F45E08009ABF42 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 1865096B27F45E08009ABF42 /* Assets.xcassets */; };
 		1865096F27F45E08009ABF42 /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 1865096E27F45E08009ABF42 /* Preview Assets.xcassets */; };
+		188C8D6427F49B8F009A895C /* SignInWithMagicLinkView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 188C8D6327F49B8F009A895C /* SignInWithMagicLinkView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -30,6 +31,7 @@
 		1865096927F45E07009ABF42 /* RootView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RootView.swift; sourceTree = "<group>"; };
 		1865096B27F45E08009ABF42 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		1865096E27F45E08009ABF42 /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
+		188C8D6327F49B8F009A895C /* SignInWithMagicLinkView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SignInWithMagicLinkView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -73,6 +75,7 @@
 		1859928C27F4933600232FD6 /* UseCases */ = {
 			isa = PBXGroup;
 			children = (
+				188C8D6227F49B7E009A895C /* MagicLink */,
 				1859928927F491C100232FD6 /* SignInWithEmailAndPassword */,
 				1859927E27F460CA00232FD6 /* SignUpWithEmailAndPassword */,
 			);
@@ -131,6 +134,14 @@
 				1865096E27F45E08009ABF42 /* Preview Assets.xcassets */,
 			);
 			path = "Preview Content";
+			sourceTree = "<group>";
+		};
+		188C8D6227F49B7E009A895C /* MagicLink */ = {
+			isa = PBXGroup;
+			children = (
+				188C8D6327F49B8F009A895C /* SignInWithMagicLinkView.swift */,
+			);
+			path = MagicLink;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -215,6 +226,7 @@
 				1865096A27F45E07009ABF42 /* RootView.swift in Sources */,
 				1865096827F45E07009ABF42 /* ExampleApp.swift in Sources */,
 				1859928B27F491D100232FD6 /* SignInWithEmailAndPasswordView.swift in Sources */,
+				188C8D6427F49B8F009A895C /* SignInWithMagicLinkView.swift in Sources */,
 				1859928327F464C200232FD6 /* ActionStatus.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

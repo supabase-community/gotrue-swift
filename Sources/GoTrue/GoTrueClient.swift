@@ -48,4 +48,10 @@ public final class GoTrueClient {
       throw error
     }
   }
+
+  public func sendMagicLink(
+    params: OTPParams?, redirectURL: URL? = nil
+  ) async throws {
+    try await Current.client.send(Paths.otp.post(redirectURL: redirectURL, params)).value
+  }
 }
