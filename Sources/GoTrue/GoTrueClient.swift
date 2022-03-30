@@ -31,7 +31,8 @@ public final class GoTrueClient {
     self.sessionManager = SessionManager(accessGroup: keychainAccessGroup) {
       [client] refreshToken in
       try await client.send(
-        Paths.token.post(grantType: .refreshToken, TokenRequest(refreshToken: refreshToken))
+        Paths.token.post(
+          grantType: .refreshToken, .userCredentials(UserCredentials(refreshToken: refreshToken)))
       ).value
     }
 
@@ -50,7 +51,9 @@ public final class GoTrueClient {
 
     do {
       let session = try await client.send(
-        Paths.token.post(grantType: .password, TokenRequest(email: email, password: password))
+        Paths.token.post(
+          grantType: .password,
+          .userCredentials(UserCredentials(email: email, password: password)))
       ).value
       try await sessionManager.update(session)
       authEventChangeSubject.send(.signedIn)

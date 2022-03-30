@@ -29,15 +29,6 @@
         }
       },
       {
-        "package": "GoTrueHTTP",
-        "repositoryURL": "https://github.com/grsouza/swift-gotrue-http",
-        "state": {
-          "branch": "main",
-          "revision": "d888f8be329364b462458415e524223aaef0d78e",
-          "version": null
-        }
-      },
-      {
         "package": "URLQueryEncoder",
         "repositoryURL": "https://github.com/kean/URLQueryEncoder",
         "state": {

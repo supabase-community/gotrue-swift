@@ -28,5 +28,12 @@ format:
 		--recursive \
 		./Package.swift ./Sources ./Tests
 
+create-api:
+	create-api \
+		generate openapi.yaml \
+		--output Sources/GoTrueHTTP \
+		--module GoTrueHTTP \
+		--config .createapi.yml
+	$(MAKE) format
 
-.PHONY: format test-all test-ios test-macos test-tvos
+.PHONY: format test-all test-ios test-macos test-tvos create-api

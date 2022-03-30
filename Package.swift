@@ -13,22 +13,30 @@ let package = Package(
     .tvOS(.v13),
   ],
   products: [
-    .library(name: "GoTrue", targets: ["GoTrue"])
+    .library(name: "GoTrue", targets: ["GoTrue"]),
+    .library(name: "GoTrueHTTP", targets: ["GoTrueHTTP"]),
   ],
   dependencies: [
-    .package(url: "https://github.com/grsouza/swift-gotrue-http", branch: "main"),
     .package(url: "https://github.com/kean/Get", branch: "main"),
+    .package(url: "https://github.com/kean/URLQueryEncoder", branch: "main"),
     .package(url: "https://github.com/binaryscraping/swift-composable-keychain", from: "0.0.2"),
   ],
   targets: [
     .target(
       name: "GoTrue",
       dependencies: [
-        .product(name: "GoTrueHTTP", package: "swift-gotrue-http"),
+        "GoTrueHTTP",
         .product(name: "Get", package: "Get"),
         .product(name: "ComposableKeychain", package: "swift-composable-keychain"),
       ]
     ),
     .testTarget(name: "GoTrueTests", dependencies: ["GoTrue"]),
+    .target(
+      name: "GoTrueHTTP",
+      dependencies: [
+        .product(name: "Get", package: "Get"),
+        .product(name: "URLQueryEncoder", package: "URLQueryEncoder"),
+      ]
+    ),
   ]
 )
