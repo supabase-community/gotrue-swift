@@ -17,9 +17,9 @@ let package = Package(
     .library(name: "GoTrueHTTP", targets: ["GoTrueHTTP"]),
   ],
   dependencies: [
-    .package(url: "https://github.com/kean/Get", branch: "main"),
-    .package(url: "https://github.com/kean/URLQueryEncoder", branch: "main"),
     .package(url: "https://github.com/binaryscraping/swift-composable-keychain", from: "0.0.2"),
+    .package(url: "https://github.com/kean/Get", from: "0.5.0"),
+    .package(url: "https://github.com/kean/URLQueryEncoder", from: "0.2.0"),
   ],
   targets: [
     .target(

@@ -5,9 +5,9 @@
         "package": "Get",
         "repositoryURL": "https://github.com/kean/Get",
         "state": {
-          "branch": "main",
+          "branch": null,
           "revision": "068b400e3850f0953ec25d11d3a3893c4538ffd5",
-          "version": null
+          "version": "0.5.0"
         }
       },
       {
@@ -32,9 +32,9 @@
         "package": "URLQueryEncoder",
         "repositoryURL": "https://github.com/kean/URLQueryEncoder",
         "state": {
-          "branch": "main",
+          "branch": null,
           "revision": "4cc975d4d075d0e62699a796a08284e217d4ee93",
-          "version": null
+          "version": "0.2.0"
         }
       },
       {

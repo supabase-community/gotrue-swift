@@ -5,6 +5,20 @@ import KeychainAccess
 
 struct SessionNotFound: Error {}
 
+struct StoredSession: Codable {
+  var session: Session
+  var expirationDate: Date
+
+  var isValid: Bool {
+    expirationDate > Date()
+  }
+
+  init(session: Session, expirationDate: Date? = nil) {
+    self.session = session
+    self.expirationDate = expirationDate ?? Date().addingTimeInterval(session.expiresIn)
+  }
+}
+
 actor SessionManager {
   private let keychain: KeychainClient
   private let sessionRefresher: (_ refreshToken: String) async throws -> Session
@@ -31,10 +45,14 @@ actor SessionManager {
       throw SessionNotFound()
     }
 
+    if currentSession.isValid {
+      return currentSession.session
+    }
+
     self.task = Task {
       defer { self.task = nil }
 
-      let session = try await sessionRefresher(currentSession.refreshToken)
+      let session = try await sessionRefresher(currentSession.session.refreshToken)
       try update(session)
       return session
     }
@@ -43,30 +61,32 @@ actor SessionManager {
   }
 
   func update(_ session: Session) throws {
-    try keychain.storeSession(session)
+    try keychain.storeSession(StoredSession(session: session))
   }
 
   func remove() {
     keychain.deleteSession()
   }
 
+  /// Returns the currently stored session without checking if it's still valid.
   nonisolated var storedSession: Session? {
-    try? keychain.getSession()
+    try? keychain.getSession()?.session
   }
 }
 
 extension KeychainClient.Key {
-  static var session = Self("supabae_session_key")
+  static var session = Self("supabase.session")
+  static var expirationDate = Self("supabase.session.expiration_date")
 }
 
 extension KeychainClient {
-  func getSession() throws -> Session? {
+  func getSession() throws -> StoredSession? {
     try getData(.session).flatMap {
-      try JSONDecoder().decode(Session.self, from: $0)
+      try JSONDecoder().decode(StoredSession.self, from: $0)
     }
   }
 
-  func storeSession(_ session: Session) throws {
+  func storeSession(_ session: StoredSession) throws {
     try setData(JSONEncoder().encode(session), .session)
   }
 
