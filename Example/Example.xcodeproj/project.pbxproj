@@ -70,6 +70,26 @@
 			path = SignInWithEmailAndPassword;
 			sourceTree = "<group>";
 		};
+		1859928C27F4933600232FD6 /* UseCases */ = {
+			isa = PBXGroup;
+			children = (
+				1859928927F491C100232FD6 /* SignInWithEmailAndPassword */,
+				1859927E27F460CA00232FD6 /* SignUpWithEmailAndPassword */,
+			);
+			path = UseCases;
+			sourceTree = "<group>";
+		};
+		1859928D27F4934800232FD6 /* Sources */ = {
+			isa = PBXGroup;
+			children = (
+				1865096727F45E07009ABF42 /* ExampleApp.swift */,
+				1859928127F464B500232FD6 /* Helpers */,
+				1865096927F45E07009ABF42 /* RootView.swift */,
+				1859928C27F4933600232FD6 /* UseCases */,
+			);
+			path = Sources;
+			sourceTree = "<group>";
+		};
 		185EBE2D27F45E92004CA51D /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
@@ -98,13 +118,9 @@
 		1865096627F45E07009ABF42 /* GoTrue Example */ = {
 			isa = PBXGroup;
 			children = (
-				1859928927F491C100232FD6 /* SignInWithEmailAndPassword */,
 				1865096B27F45E08009ABF42 /* Assets.xcassets */,
-				1865096727F45E07009ABF42 /* ExampleApp.swift */,
-				1859928127F464B500232FD6 /* Helpers */,
 				1865096D27F45E08009ABF42 /* Preview Content */,
-				1865096927F45E07009ABF42 /* RootView.swift */,
-				1859927E27F460CA00232FD6 /* SignUpWithEmailAndPassword */,
+				1859928D27F4934800232FD6 /* Sources */,
 			);
 			path = "GoTrue Example";
 			sourceTree = "<group>";
