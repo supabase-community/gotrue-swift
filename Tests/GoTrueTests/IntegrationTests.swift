@@ -24,10 +24,3 @@ final class IntegrationTests: XCTestCase {
     XCTAssertEqual(try XCTUnwrap(user).email, "sample@supabase.io")
   }
 }
-
-extension Paths.Signup.PostResponse {
-  var user: User? {
-    if case let .user(user) = self { return user }
-    return nil
-  }
-}

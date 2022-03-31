@@ -24,11 +24,32 @@ public final class GoTrueClient {
     )
   }
 
-  public func signUp(email: String, password: String) async throws -> Paths.Signup.PostResponse {
+  public func signUp(email: String, password: String) async throws -> SessionOrUser {
     await Current.sessionManager.remove()
-    return try await Current.client.send(
+    let response = try await Current.client.send(
       Paths.signup.post(.init(email: email, password: password))
     ).value
+
+    if let session = response.session {
+      try await Current.sessionManager.update(session)
+      authEventChangeSubject.send(.signedIn)
+    }
+
+    return response
+  }
+
+  public func signUp(phone: String, password: String) async throws -> SessionOrUser {
+    await Current.sessionManager.remove()
+    let response = try await Current.client.send(
+      Paths.signup.post(.init(password: password, phone: phone))
+    ).value
+
+    if let session = response.session {
+      try await Current.sessionManager.update(session)
+      authEventChangeSubject.send(.signedIn)
+    }
+
+    return response
   }
 
   public func signIn(email: String, password: String) async throws -> Session {
@@ -52,5 +73,16 @@ public final class GoTrueClient {
     params: OTPParams?, redirectURL: URL? = nil
   ) async throws {
     try await Current.client.send(Paths.otp.post(redirectURL: redirectURL, params)).value
+  }
+
+  public func verifyOTP(params: VerifyOTPParams) async throws -> SessionOrUser {
+    let response = try await Current.client.send(Paths.verify.post(params)).value
+
+    if let session = response.session {
+      try await Current.sessionManager.update(session)
+      authEventChangeSubject.send(.signedIn)
+    }
+
+    return response
   }
 }

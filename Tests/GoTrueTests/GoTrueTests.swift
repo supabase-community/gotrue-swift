@@ -8,7 +8,7 @@ final class GoTrueTests: XCTestCase {
   func testDecode() {
     XCTAssertNoThrow(
       try JSONDecoder.goTrue.decode(
-        Paths.Signup.PostResponse.self, from: sessionJSON.data(using: .utf8)!)
+        SessionOrUser.self, from: sessionJSON.data(using: .utf8)!)
     )
   }
 }

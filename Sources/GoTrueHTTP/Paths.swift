@@ -60,26 +60,9 @@ extension Paths {
     public let path: String
 
     public func post(redirectURL: URL? = nil, _ body: GoTrueHTTP.SignUpRequest? = nil) -> Request<
-      PostResponse
+      GoTrueHTTP.SessionOrUser
     > {
       .post(path, query: makePostQuery(redirectURL), body: body)
-    }
-
-    public enum PostResponse: Decodable {
-      case session(GoTrueHTTP.Session)
-      case user(GoTrueHTTP.User)
-
-      public init(from decoder: Decoder) throws {
-        let container = try decoder.singleValueContainer()
-        if let value = try? container.decode(GoTrueHTTP.Session.self) {
-          self = .session(value)
-        } else if let value = try? container.decode(GoTrueHTTP.User.self) {
-          self = .user(value)
-        } else {
-          throw DecodingError.dataCorruptedError(
-            in: container, debugDescription: "Failed to intialize `oneOf`")
-        }
-      }
     }
 
     private func makePostQuery(_ redirectURL: URL?) -> [(String, String?)] {
@@ -108,6 +91,22 @@ extension Paths {
       let encoder = URLQueryEncoder()
       encoder.encode(redirectURL, forKey: "redirect_url")
       return encoder.items
+    }
+  }
+}
+
+extension Paths {
+  public static var verify: Verify {
+    Verify(path: "/verify")
+  }
+
+  public struct Verify {
+    /// Path: `/verify`
+    public let path: String
+
+    public func post(_ body: GoTrueHTTP.VerifyOTPParams? = nil) -> Request<GoTrueHTTP.SessionOrUser>
+    {
+      .post(path, body: body)
     }
   }
 }

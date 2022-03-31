@@ -276,6 +276,92 @@ public struct OTPParams: Codable {
   }
 }
 
+public struct VerifyMobileOTPParams: Codable {
+  public var phone: String
+  public var token: String
+  public var type: `Type`
+
+  public enum `Type`: String, Codable, CaseIterable {
+    case sms
+  }
+
+  public init(phone: String, token: String, type: `Type`) {
+    self.phone = phone
+    self.token = token
+    self.type = type
+  }
+}
+
+public struct VerifyEmailOTPParams: Codable {
+  public var email: String
+  public var token: String
+  public var type: `Type`
+
+  public enum `Type`: String, Codable, CaseIterable {
+    case signup
+    case invite
+    case magiclink
+    case recovery
+    case emailChange = "email_change"
+  }
+
+  public init(email: String, token: String, type: `Type`) {
+    self.email = email
+    self.token = token
+    self.type = type
+  }
+}
+
+public enum VerifyOTPParams: Codable {
+  case verifyMobileOTPParams(VerifyMobileOTPParams)
+  case verifyEmailOTPParams(VerifyEmailOTPParams)
+
+  public init(from decoder: Decoder) throws {
+    let container = try decoder.singleValueContainer()
+    if let value = try? container.decode(VerifyMobileOTPParams.self) {
+      self = .verifyMobileOTPParams(value)
+    } else if let value = try? container.decode(VerifyEmailOTPParams.self) {
+      self = .verifyEmailOTPParams(value)
+    } else {
+      throw DecodingError.dataCorruptedError(
+        in: container, debugDescription: "Failed to intialize `oneOf`")
+    }
+  }
+
+  public func encode(to encoder: Encoder) throws {
+    var container = encoder.singleValueContainer()
+    switch self {
+    case .verifyMobileOTPParams(let value): try container.encode(value)
+    case .verifyEmailOTPParams(let value): try container.encode(value)
+    }
+  }
+}
+
+public enum SessionOrUser: Codable {
+  case session(Session)
+  case user(User)
+
+  public init(from decoder: Decoder) throws {
+    let container = try decoder.singleValueContainer()
+    if let value = try? container.decode(Session.self) {
+      self = .session(value)
+    } else if let value = try? container.decode(User.self) {
+      self = .user(value)
+    } else {
+      throw DecodingError.dataCorruptedError(
+        in: container, debugDescription: "Failed to intialize `oneOf`")
+    }
+  }
+
+  public func encode(to encoder: Encoder) throws {
+    var container = encoder.singleValueContainer()
+    switch self {
+    case .session(let value): try container.encode(value)
+    case .user(let value): try container.encode(value)
+    }
+  }
+}
+
 public enum AnyJSON: Equatable, Codable {
   case string(String)
   case number(Double)

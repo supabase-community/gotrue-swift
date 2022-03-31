@@ -51,9 +51,7 @@ paths:
           content:
             application/json:
               schema:
-                oneOf:
-                  - $ref: "#/components/schemas/Session"
-                  - $ref: "#/components/schemas/User"
+                $ref: "#/components/schemas/SessionOrUser"
   /otp:
     summary: ""
     post:
@@ -68,6 +66,22 @@ paths:
       responses:
         default:
           description: ""
+  /verify:
+    summary: ""
+    post:
+      requestBody:
+        description: ""
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/VerifyOTPParams"
+      responses:
+        default:
+          description: ""
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SessionOrUser"
 
 components:
   parameters:
@@ -269,3 +283,45 @@ components:
           default: "true"
         gotrue_meta_security:
           $ref: "#/components/schemas/GoTrueMetaSecurity"
+    VerifyMobileOTPParams:
+      type: object
+      properties: 
+        phone: 
+          type: string
+        token: 
+          type: string
+        type: 
+          type: string
+          enum:
+            - sms
+      required:
+        - phone
+        - token
+        - type
+    VerifyEmailOTPParams:
+      type: object
+      properties:
+        email: 
+          type: string
+        token: 
+          type: string
+        type: 
+          type: string
+          enum:
+            - signup
+            - invite
+            - magiclink
+            - recovery
+            - email_change
+      required:
+        - email
+        - token
+        - type
+    VerifyOTPParams:
+      oneOf:
+        - $ref: "#/components/schemas/VerifyMobileOTPParams"
+        - $ref: "#/components/schemas/VerifyEmailOTPParams"
+    SessionOrUser:
+      oneOf:
+        - $ref: "#/components/schemas/Session"
+        - $ref: "#/components/schemas/User"
