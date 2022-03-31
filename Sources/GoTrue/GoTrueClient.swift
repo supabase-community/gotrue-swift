@@ -1,6 +1,5 @@
 import Combine
 import Foundation
-import Get
 import GoTrueHTTP
 
 #if canImport(FoundationNetworking)

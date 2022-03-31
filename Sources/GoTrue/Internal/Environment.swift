@@ -22,11 +22,7 @@ extension Environment {
     accessGroup: String?,
     headers: [String: String]
   ) -> Environment {
-    guard let host = URLComponents(url: url, resolvingAgainstBaseURL: false)?.host else {
-      preconditionFailure("Invalid URL provided: \(url)")
-    }
-
-    let client = APIClient(host: host) {
+    let client = APIClient(baseURL: url) {
       $0.sessionConfiguration.httpAdditionalHeaders = headers.merging([
         "Content-Type": "application/json"
       ]) { old, _ in old }

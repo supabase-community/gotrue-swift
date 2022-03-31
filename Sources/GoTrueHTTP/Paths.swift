@@ -9,11 +9,11 @@ import URLQueryEncoder
 
 extension Paths {
   public static var token: Token {
-    Token(path: "/auth/v1/token")
+    Token(path: "/token")
   }
 
   public struct Token {
-    /// Path: `/auth/v1/token`
+    /// Path: `/token`
     public let path: String
 
     public func post(grantType: GrantType, redirectURL: URL? = nil, _ body: PostRequest) -> Request<
@@ -52,11 +52,11 @@ extension Paths {
 
 extension Paths {
   public static var signup: Signup {
-    Signup(path: "/auth/v1/signup")
+    Signup(path: "/signup")
   }
 
   public struct Signup {
-    /// Path: `/auth/v1/signup`
+    /// Path: `/signup`
     public let path: String
 
     public func post(redirectURL: URL? = nil, _ body: GoTrueHTTP.SignUpRequest? = nil) -> Request<
@@ -92,11 +92,11 @@ extension Paths {
 
 extension Paths {
   public static var otp: Otp {
-    Otp(path: "/auth/v1/otp")
+    Otp(path: "/otp")
   }
 
   public struct Otp {
-    /// Path: `/auth/v1/otp`
+    /// Path: `/otp`
     public let path: String
 
     public func post(redirectURL: URL? = nil, _ body: GoTrueHTTP.OTPParams? = nil) -> Request<Void>
