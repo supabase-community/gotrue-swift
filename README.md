@@ -1,6 +1,6 @@
 # `gotrue-swift`
 
-Swift client for the [GoTrue](https://github.com/netlify/gotrue) API.
+Swift client for the [GoTrue](https://github.com/supabase/gotrue) API.
 
 ## Using
 

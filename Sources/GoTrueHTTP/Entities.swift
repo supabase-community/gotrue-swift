@@ -246,23 +246,23 @@ public struct GoTrueMetaSecurity: Codable {
 public struct OTPParams: Codable {
   public var email: String?
   public var phone: String?
-  public var isCreateUser: Bool
+  public var createUser: Bool
   public var gotrueMetaSecurity: GoTrueMetaSecurity?
 
   public init(
-    email: String? = nil, phone: String? = nil, isCreateUser: Bool? = nil,
+    email: String? = nil, phone: String? = nil, createUser: Bool? = nil,
     gotrueMetaSecurity: GoTrueMetaSecurity? = nil
   ) {
     self.email = email
     self.phone = phone
-    self.isCreateUser = isCreateUser ?? true
+    self.createUser = createUser ?? true
     self.gotrueMetaSecurity = gotrueMetaSecurity
   }
 
   private enum CodingKeys: String, CodingKey {
     case email
     case phone
-    case isCreateUser = "create_user"
+    case createUser = "create_user"
     case gotrueMetaSecurity = "gotrue_meta_security"
   }
 
@@ -270,7 +270,7 @@ public struct OTPParams: Codable {
     let values = try decoder.container(keyedBy: CodingKeys.self)
     self.email = try values.decodeIfPresent(String.self, forKey: .email)
     self.phone = try values.decodeIfPresent(String.self, forKey: .phone)
-    self.isCreateUser = try values.decodeIfPresent(Bool.self, forKey: .isCreateUser) ?? true
+    self.createUser = try values.decodeIfPresent(Bool.self, forKey: .createUser) ?? true
     self.gotrueMetaSecurity = try values.decodeIfPresent(
       GoTrueMetaSecurity.self, forKey: .gotrueMetaSecurity)
   }
