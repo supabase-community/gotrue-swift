@@ -18,6 +18,7 @@
 		1865096C27F45E08009ABF42 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 1865096B27F45E08009ABF42 /* Assets.xcassets */; };
 		1865096F27F45E08009ABF42 /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 1865096E27F45E08009ABF42 /* Preview Assets.xcassets */; };
 		188C8D6427F49B8F009A895C /* SignInWithMagicLinkView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 188C8D6327F49B8F009A895C /* SignInWithMagicLinkView.swift */; };
+		18E1761B27FAFAD4007CB819 /* Secrets.swift in Sources */ = {isa = PBXBuildFile; fileRef = 18E1761A27FAFAD4007CB819 /* Secrets.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -32,6 +33,7 @@
 		1865096B27F45E08009ABF42 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		1865096E27F45E08009ABF42 /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
 		188C8D6327F49B8F009A895C /* SignInWithMagicLinkView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SignInWithMagicLinkView.swift; sourceTree = "<group>"; };
+		18E1761A27FAFAD4007CB819 /* Secrets.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Secrets.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -89,6 +91,7 @@
 				1859928127F464B500232FD6 /* Helpers */,
 				1865096927F45E07009ABF42 /* RootView.swift */,
 				1859928C27F4933600232FD6 /* UseCases */,
+				18E1761A27FAFAD4007CB819 /* Secrets.swift */,
 			);
 			path = Sources;
 			sourceTree = "<group>";
@@ -222,6 +225,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				1859928827F466AF00232FD6 /* Stringfy.swift in Sources */,
+				18E1761B27FAFAD4007CB819 /* Secrets.swift in Sources */,
 				1859928027F460F300232FD6 /* SignUpWithEmailAndPasswordView.swift in Sources */,
 				1865096A27F45E07009ABF42 /* RootView.swift in Sources */,
 				1865096827F45E07009ABF42 /* ExampleApp.swift in Sources */,

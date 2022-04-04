@@ -12,8 +12,8 @@ struct ExampleApp: App {
 
 private enum GoTrueClientEnvironmentKey: EnvironmentKey {
   static var defaultValue: GoTrueClient = GoTrueClient(
-    url: URL(string: "https://insert-your-url-here.com")!,
-    headers: ["apiKey": "insert your api key here"]
+    url: Secrets.supabaseURL.appendingPathComponent("/auth/v1"),
+    headers: ["apiKey": Secrets.supabaseKey]
   )
 }
 
