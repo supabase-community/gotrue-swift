@@ -32,14 +32,8 @@ create-api:
 		generate openapi.yaml \
 		--output Sources/GoTrue/Generated \
 		--module GoTrue \
-		--generate paths \
-		--config .createapi-internal.yml
-	create-api \
-		generate openapi.yaml \
-		--output Sources/GoTrue/Generated \
-		--module GoTrue \
-		--generate entities \
-		--config .createapi-public.yml
+		--config .createapi.yml
+	sed -i "" "s/public /internal /g" Sources/GoTrue/Generated/Paths.swift
 	$(MAKE) format
 
 .PHONY: format test-all test-ios test-macos test-tvos create-api
