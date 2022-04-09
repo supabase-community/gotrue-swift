@@ -41,6 +41,7 @@ paths:
         - $ref: "#/components/parameters/redirect_url"
       requestBody:
         description: ""
+        required: true
         content:
           application/json:
             schema:
@@ -59,6 +60,7 @@ paths:
         - $ref: "#/components/parameters/redirect_url"
       requestBody:
         description: ""
+        required: true
         content:
           application/json:
             schema:
@@ -71,6 +73,7 @@ paths:
     post:
       requestBody:
         description: ""
+        required: true
         content:
           application/json:
             schema:

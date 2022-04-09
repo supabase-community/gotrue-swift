@@ -30,9 +30,16 @@ format:
 create-api:
 	create-api \
 		generate openapi.yaml \
-		--output Sources/GoTrueHTTP \
-		--module GoTrueHTTP \
-		--config .createapi.yml
+		--output Sources/GoTrue/Generated \
+		--module GoTrue \
+		--generate paths \
+		--config .createapi-internal.yml
+	create-api \
+		generate openapi.yaml \
+		--output Sources/GoTrue/Generated \
+		--module GoTrue \
+		--generate entities \
+		--config .createapi-public.yml
 	$(MAKE) format
 
 .PHONY: format test-all test-ios test-macos test-tvos create-api

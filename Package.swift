@@ -13,8 +13,7 @@ let package = Package(
     .tvOS(.v13),
   ],
   products: [
-    .library(name: "GoTrue", targets: ["GoTrue"]),
-    .library(name: "GoTrueHTTP", targets: ["GoTrueHTTP"]),
+    .library(name: "GoTrue", targets: ["GoTrue"])
   ],
   dependencies: [
     .package(url: "https://github.com/binaryscraping/swift-composable-keychain", from: "0.0.2"),
@@ -25,18 +24,11 @@ let package = Package(
     .target(
       name: "GoTrue",
       dependencies: [
-        "GoTrueHTTP",
         .product(name: "Get", package: "Get"),
         .product(name: "ComposableKeychain", package: "swift-composable-keychain"),
-      ]
-    ),
-    .testTarget(name: "GoTrueTests", dependencies: ["GoTrue"]),
-    .target(
-      name: "GoTrueHTTP",
-      dependencies: [
-        .product(name: "Get", package: "Get"),
         .product(name: "URLQueryEncoder", package: "URLQueryEncoder"),
       ]
     ),
+    .testTarget(name: "GoTrueTests", dependencies: ["GoTrue"]),
   ]
 )

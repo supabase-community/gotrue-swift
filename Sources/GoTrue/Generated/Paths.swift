@@ -8,17 +8,17 @@ import Get
 import URLQueryEncoder
 
 extension Paths {
-  public static var token: Token {
+  internal static var token: Token {
     Token(path: "/token")
   }
 
-  public struct Token {
+  internal struct Token {
     /// Path: `/token`
-    public let path: String
+    internal let path: String
 
-    public func post(grantType: GrantType, redirectURL: URL? = nil, _ body: PostRequest) -> Request<
-      GoTrueHTTP.Session
-    > {
+    internal func post(grantType: GrantType, redirectURL: URL? = nil, _ body: PostRequest)
+      -> Request<GoTrue.Session>
+    {
       .post(path, query: makePostQuery(grantType, redirectURL), body: body)
     }
 
@@ -29,17 +29,17 @@ extension Paths {
       return encoder.items
     }
 
-    public enum GrantType: String, Codable, CaseIterable {
+    internal enum GrantType: String, Codable, CaseIterable {
       case password
       case refreshToken = "refresh_token"
       case idToken = "id_token"
     }
 
-    public enum PostRequest: Encodable {
-      case userCredentials(GoTrueHTTP.UserCredentials)
-      case openIDConnectCredentials(GoTrueHTTP.OpenIDConnectCredentials)
+    internal enum PostRequest: Encodable {
+      case userCredentials(GoTrue.UserCredentials)
+      case openIDConnectCredentials(GoTrue.OpenIDConnectCredentials)
 
-      public func encode(to encoder: Encoder) throws {
+      internal func encode(to encoder: Encoder) throws {
         var container = encoder.singleValueContainer()
         switch self {
         case .userCredentials(let value): try container.encode(value)
@@ -51,16 +51,16 @@ extension Paths {
 }
 
 extension Paths {
-  public static var signup: Signup {
+  internal static var signup: Signup {
     Signup(path: "/signup")
   }
 
-  public struct Signup {
+  internal struct Signup {
     /// Path: `/signup`
-    public let path: String
+    internal let path: String
 
-    public func post(redirectURL: URL? = nil, _ body: GoTrueHTTP.SignUpRequest? = nil) -> Request<
-      GoTrueHTTP.SessionOrUser
+    internal func post(redirectURL: URL? = nil, _ body: GoTrue.SignUpRequest) -> Request<
+      GoTrue.SessionOrUser
     > {
       .post(path, query: makePostQuery(redirectURL), body: body)
     }
@@ -74,16 +74,15 @@ extension Paths {
 }
 
 extension Paths {
-  public static var otp: Otp {
+  internal static var otp: Otp {
     Otp(path: "/otp")
   }
 
-  public struct Otp {
+  internal struct Otp {
     /// Path: `/otp`
-    public let path: String
+    internal let path: String
 
-    public func post(redirectURL: URL? = nil, _ body: GoTrueHTTP.OTPParams? = nil) -> Request<Void>
-    {
+    internal func post(redirectURL: URL? = nil, _ body: GoTrue.OTPParams) -> Request<Void> {
       .post(path, query: makePostQuery(redirectURL), body: body)
     }
 
@@ -96,19 +95,18 @@ extension Paths {
 }
 
 extension Paths {
-  public static var verify: Verify {
+  internal static var verify: Verify {
     Verify(path: "/verify")
   }
 
-  public struct Verify {
+  internal struct Verify {
     /// Path: `/verify`
-    public let path: String
+    internal let path: String
 
-    public func post(_ body: GoTrueHTTP.VerifyOTPParams? = nil) -> Request<GoTrueHTTP.SessionOrUser>
-    {
+    internal func post(_ body: GoTrue.VerifyOTPParams) -> Request<GoTrue.SessionOrUser> {
       .post(path, body: body)
     }
   }
 }
 
-public enum Paths {}
+internal enum Paths {}
