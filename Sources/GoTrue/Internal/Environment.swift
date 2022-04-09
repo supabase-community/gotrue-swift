@@ -1,7 +1,6 @@
 import ComposableKeychain
 import Foundation
 import Get
-import GoTrueHTTP
 import KeychainAccess
 
 typealias SessionRefresher = (_ refreshToken: String) async throws -> Session

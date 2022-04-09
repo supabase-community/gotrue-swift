@@ -1,3 +1,5 @@
+import Get
+
 extension SessionOrUser {
 
   public var user: User? {
@@ -8,5 +10,15 @@ extension SessionOrUser {
   public var session: Session? {
     if case .session(let session) = self { return session }
     return nil
+  }
+}
+
+extension Request {
+  func withAuthoriztion(_ token: String) -> Self {
+    var copy = self
+    var headers = copy.headers ?? [:]
+    headers["Authorization"] = "Bearer \(token)"
+    copy.headers = headers
+    return copy
   }
 }

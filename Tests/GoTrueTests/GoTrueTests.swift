@@ -1,4 +1,3 @@
-import GoTrueHTTP
 import XCTest
 
 @testable import GoTrue

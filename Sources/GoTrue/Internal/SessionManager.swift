@@ -1,6 +1,5 @@
 import ComposableKeychain
 import Foundation
-import GoTrueHTTP
 import KeychainAccess
 
 struct SessionNotFound: Error {}

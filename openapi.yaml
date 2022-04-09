@@ -3,90 +3,11 @@ info:
   title: Supabase GoTrue
   description: "A JWT based API for managing users and issuing JWT tokens "
   version: 0.0.1
-paths:
-  /token:
-    summary: ""
-    post:
-      parameters:
-        - name: grant_type
-          in: query
-          required: true
-          schema:
-            type: string
-            enum:
-              - password
-              - refresh_token
-              - id_token
-        - $ref: "#/components/parameters/redirect_url"
-      requestBody:
-        description: ""
-        required: true
-        content:
-          application/json:
-            schema:
-              oneOf:
-                - $ref: "#/components/schemas/UserCredentials"
-                - $ref: "#/components/schemas/OpenIDConnectCredentials"
-      responses:
-        default:
-          description: ""
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Session"
-  /signup:
-    summary: ""
-    post:
-      parameters:
-        - $ref: "#/components/parameters/redirect_url"
-      requestBody:
-        description: ""
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/SignUpRequest"
-      responses:
-        default:
-          description: ""
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/SessionOrUser"
-  /otp:
-    summary: ""
-    post:
-      parameters:
-        - $ref: "#/components/parameters/redirect_url"
-      requestBody:
-        description: ""
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/OTPParams"
-      responses:
-        default:
-          description: ""
-  /verify:
-    summary: ""
-    post:
-      requestBody:
-        description: ""
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/VerifyOTPParams"
-      responses:
-        default:
-          description: ""
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/SessionOrUser"
-
 components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
   parameters:
     redirect_url:
       name: redirect_url
@@ -288,12 +209,12 @@ components:
           $ref: "#/components/schemas/GoTrueMetaSecurity"
     VerifyMobileOTPParams:
       type: object
-      properties: 
-        phone: 
+      properties:
+        phone:
           type: string
-        token: 
+        token:
           type: string
-        type: 
+        type:
           type: string
           enum:
             - sms
@@ -304,11 +225,11 @@ components:
     VerifyEmailOTPParams:
       type: object
       properties:
-        email: 
+        email:
           type: string
-        token: 
+        token:
           type: string
-        type: 
+        type:
           type: string
           enum:
             - signup
@@ -328,3 +249,106 @@ components:
       oneOf:
         - $ref: "#/components/schemas/Session"
         - $ref: "#/components/schemas/User"
+
+paths:
+  /token:
+    summary: ""
+    post:
+      parameters:
+        - name: grant_type
+          in: query
+          required: true
+          schema:
+            type: string
+            enum:
+              - password
+              - refresh_token
+              - id_token
+        - $ref: "#/components/parameters/redirect_url"
+      requestBody:
+        description: ""
+        required: true
+        content:
+          application/json:
+            schema:
+              oneOf:
+                - $ref: "#/components/schemas/UserCredentials"
+                - $ref: "#/components/schemas/OpenIDConnectCredentials"
+      responses:
+        default:
+          description: ""
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Session"
+  /signup:
+    summary: ""
+    post:
+      parameters:
+        - $ref: "#/components/parameters/redirect_url"
+      requestBody:
+        description: ""
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SignUpRequest"
+      responses:
+        default:
+          description: ""
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SessionOrUser"
+  /otp:
+    summary: ""
+    post:
+      parameters:
+        - $ref: "#/components/parameters/redirect_url"
+      requestBody:
+        description: ""
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/OTPParams"
+      responses:
+        default:
+          description: ""
+  /verify:
+    summary: ""
+    post:
+      requestBody:
+        description: ""
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/VerifyOTPParams"
+      responses:
+        default:
+          description: ""
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SessionOrUser"
+  /user:
+    summary: ""
+    get:
+      security:
+        - BearerAuth: []
+      responses:
+        default:
+          description: ""
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/User"
+  /logout:
+    summary: ""
+    post:
+      security:
+        - BearerAuth: []
+      responses:
+        default:
+          description: ""

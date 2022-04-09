@@ -109,4 +109,34 @@ extension Paths {
   }
 }
 
+extension Paths {
+  internal static var user: User {
+    User(path: "/user")
+  }
+
+  internal struct User {
+    /// Path: `/user`
+    internal let path: String
+
+    internal var get: Request<GoTrue.User> {
+      .get(path)
+    }
+  }
+}
+
+extension Paths {
+  internal static var logout: Logout {
+    Logout(path: "/logout")
+  }
+
+  internal struct Logout {
+    /// Path: `/logout`
+    internal let path: String
+
+    internal var post: Request<Void> {
+      .post(path)
+    }
+  }
+}
+
 internal enum Paths {}
