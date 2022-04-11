@@ -3,11 +3,11 @@
     "pins": [
       {
         "package": "Get",
-        "repositoryURL": "https://github.com/binaryscraping/Get",
+        "repositoryURL": "https://github.com/kean/Get",
         "state": {
-          "branch": "main",
-          "revision": "10d7ff6fb29360d018448c4f1ce404a4ec5fa21f",
-          "version": null
+          "branch": null,
+          "revision": "ac5261d9d5cb65f60dd901e4b1cdb67b45055ff6",
+          "version": "0.7.0"
         }
       },
       {
