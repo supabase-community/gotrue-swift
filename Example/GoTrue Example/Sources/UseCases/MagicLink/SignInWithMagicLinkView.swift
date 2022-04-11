@@ -1,4 +1,4 @@
-import GoTrueHTTP
+import GoTrue
 import SwiftUI
 
 struct SignInWithMagicLinkView: View {
@@ -47,7 +47,9 @@ struct SignInWithMagicLinkView: View {
       }
     }
     .onOpenURL { url in
-      // TODO: handle URL and retrieve session.
+      Task {
+        try await goTrue.session(from: url)
+      }
     }
   }
 
@@ -56,7 +58,7 @@ struct SignInWithMagicLinkView: View {
       status = .inFlight
 
       do {
-        try await goTrue.sendMagicLink(params: OTPParams(email: email))
+        try await goTrue.signIn(email: email)
         status = .success(())
       } catch {
         status = .failure(error)

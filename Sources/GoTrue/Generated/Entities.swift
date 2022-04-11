@@ -5,7 +5,7 @@
 
 import Foundation
 
-public struct UserCredentials: Codable {
+public struct UserCredentials: Codable, Equatable {
   public var email: String?
   public var password: String?
   public var phone: String?
@@ -28,7 +28,7 @@ public struct UserCredentials: Codable {
   }
 }
 
-public struct SignUpRequest: Codable {
+public struct SignUpRequest: Codable, Equatable {
   public var email: String?
   public var password: String?
   public var phone: String?
@@ -55,7 +55,7 @@ public struct SignUpRequest: Codable {
   }
 }
 
-public struct Session: Codable {
+public struct Session: Codable, Equatable {
   public var accessToken: String
   public var tokenType: String
   public var expiresIn: Double
@@ -81,7 +81,7 @@ public struct Session: Codable {
   }
 }
 
-public struct User: Codable {
+public struct User: Codable, Equatable {
   public var id: String
   public var appMetadata: [String: AnyJSON]
   public var userMetadata: [String: AnyJSON]
@@ -151,7 +151,7 @@ public struct User: Codable {
   }
 }
 
-public struct UserIdentity: Codable {
+public struct UserIdentity: Codable, Equatable {
   public var id: String
   public var userID: String
   public var identityData: [String: AnyJSON]
@@ -204,7 +204,7 @@ public enum Provider: String, Codable, CaseIterable {
   case workos
 }
 
-public struct OpenIDConnectCredentials: Codable {
+public struct OpenIDConnectCredentials: Codable, Equatable {
   public var idToken: String
   public var nonce: String
   public var clientID: String?
@@ -231,7 +231,7 @@ public struct OpenIDConnectCredentials: Codable {
   }
 }
 
-public struct GoTrueMetaSecurity: Codable {
+public struct GoTrueMetaSecurity: Codable, Equatable {
   public var hcaptchaToken: String
 
   public init(hcaptchaToken: String) {
@@ -243,7 +243,7 @@ public struct GoTrueMetaSecurity: Codable {
   }
 }
 
-public struct OTPParams: Codable {
+public struct OTPParams: Codable, Equatable {
   public var email: String?
   public var phone: String?
   public var createUser: Bool
@@ -276,7 +276,7 @@ public struct OTPParams: Codable {
   }
 }
 
-public struct VerifyMobileOTPParams: Codable {
+public struct VerifyMobileOTPParams: Codable, Equatable {
   public var phone: String
   public var token: String
   public var type: `Type`
@@ -292,7 +292,7 @@ public struct VerifyMobileOTPParams: Codable {
   }
 }
 
-public struct VerifyEmailOTPParams: Codable {
+public struct VerifyEmailOTPParams: Codable, Equatable {
   public var email: String
   public var token: String
   public var type: `Type`
@@ -312,7 +312,7 @@ public struct VerifyEmailOTPParams: Codable {
   }
 }
 
-public enum VerifyOTPParams: Codable {
+public enum VerifyOTPParams: Codable, Equatable {
   case verifyMobileOTPParams(VerifyMobileOTPParams)
   case verifyEmailOTPParams(VerifyEmailOTPParams)
 
@@ -337,7 +337,7 @@ public enum VerifyOTPParams: Codable {
   }
 }
 
-public enum SessionOrUser: Codable {
+public enum SessionOrUser: Codable, Equatable {
   case session(Session)
   case user(User)
 

@@ -16,8 +16,9 @@ let package = Package(
     .library(name: "GoTrue", targets: ["GoTrue"])
   ],
   dependencies: [
-    .package(url: "https://github.com/binaryscraping/swift-composable-keychain", from: "0.0.2"),
+    .package(url: "https://github.com/WeTransfer/Mocker", from: "2.5.5"),
     .package(url: "https://github.com/binaryscraping/Get", branch: "main"),
+    .package(url: "https://github.com/binaryscraping/swift-composable-keychain", from: "0.0.2"),
     .package(url: "https://github.com/kean/URLQueryEncoder", from: "0.2.0"),
   ],
   targets: [
@@ -29,6 +30,15 @@ let package = Package(
         .product(name: "URLQueryEncoder", package: "URLQueryEncoder"),
       ]
     ),
-    .testTarget(name: "GoTrueTests", dependencies: ["GoTrue"]),
+    .testTarget(
+      name: "GoTrueTests",
+      dependencies: [
+        "GoTrue",
+        "Mocker",
+      ],
+      resources: [
+        .process("Resources")
+      ]
+    ),
   ]
 )

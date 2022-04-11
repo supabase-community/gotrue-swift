@@ -1,2 +1,4 @@
 access: public
 isGeneratingSwiftyBooleanPropertyNames: false
+entities:
+  protocols: [Codable, Equatable]

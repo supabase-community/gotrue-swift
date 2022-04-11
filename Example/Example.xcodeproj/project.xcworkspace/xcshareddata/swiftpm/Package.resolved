@@ -20,6 +20,15 @@
         }
       },
       {
+        "package": "Mocker",
+        "repositoryURL": "https://github.com/WeTransfer/Mocker",
+        "state": {
+          "branch": null,
+          "revision": "077c52a31f5ebb649ebe546cc77d8647760b2279",
+          "version": "2.5.5"
+        }
+      },
+      {
         "package": "ComposableKeychain",
         "repositoryURL": "https://github.com/binaryscraping/swift-composable-keychain",
         "state": {

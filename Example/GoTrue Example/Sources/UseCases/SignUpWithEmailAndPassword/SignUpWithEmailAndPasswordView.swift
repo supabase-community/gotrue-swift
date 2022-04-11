@@ -1,4 +1,3 @@
-import GoTrueHTTP
 import SwiftUI
 
 struct SignUpWithEmailAndPasswordView: View {
@@ -14,6 +13,7 @@ struct SignUpWithEmailAndPasswordView: View {
   var body: some View {
     if let value = status.success {
       TextEditor(text: .constant(value))
+        .navigationTitle("Signed up")
     } else {
       Form {
         Section {

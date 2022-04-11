@@ -35,7 +35,7 @@ extension Paths {
       case idToken = "id_token"
     }
 
-    internal enum PostRequest: Encodable {
+    internal enum PostRequest: Encodable, Equatable {
       case userCredentials(GoTrue.UserCredentials)
       case openIDConnectCredentials(GoTrue.OpenIDConnectCredentials)
 

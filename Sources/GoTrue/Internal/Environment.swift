@@ -19,7 +19,8 @@ extension Environment {
   static func live(
     url: URL,
     accessGroup: String?,
-    headers: [String: String]
+    headers: [String: String],
+    configuration: (inout APIClient.Configuration) -> Void
   ) -> Environment {
     let client = APIClient(baseURL: url) {
       $0.sessionConfiguration.httpAdditionalHeaders = headers.merging([
@@ -27,6 +28,7 @@ extension Environment {
       ]) { old, _ in old }
       $0.decoder = .goTrue
       $0.delegate = Delegate()
+      configuration(&$0)
     }
 
     return Environment(

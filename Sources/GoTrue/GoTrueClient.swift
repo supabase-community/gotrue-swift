@@ -1,5 +1,6 @@
 import Combine
 import Foundation
+import Get
 
 #if canImport(FoundationNetworking)
   import FoundationNetworking
@@ -12,17 +13,28 @@ public final class GoTrueClient {
 
   public var session: Session? { Current.sessionManager.storedSession() }
 
-  public init(
+  init(
     url: URL,
     headers: [String: String] = [:],
-    keychainAccessGroup: String? = nil
+    keychainAccessGroup: String? = nil,
+    configuration: (inout APIClient.Configuration) -> Void
   ) {
     self.url = url
-    Current = .live(url: url, accessGroup: keychainAccessGroup, headers: headers)
+    Current = .live(
+      url: url, accessGroup: keychainAccessGroup, headers: headers, configuration: configuration)
 
     self.authEventChangeSubject = CurrentValueSubject<AuthChangeEvent, Never>(
       Current.sessionManager.storedSession() != nil ? .signedIn : .signedOut
     )
+  }
+
+  public convenience init(
+    url: URL,
+    headers: [String: String] = [:],
+    keychainAccessGroup: String? = nil
+  ) {
+    self.init(
+      url: url, headers: headers, keychainAccessGroup: keychainAccessGroup, configuration: { _ in })
   }
 
   public func signUp(email: String, password: String) async throws -> SessionOrUser {
@@ -74,17 +86,9 @@ public final class GoTrueClient {
     try await Current.client.send(Paths.otp.post(redirectURL: redirectURL, .init(email: email)))
   }
 
-  public struct ProviderOptions {
-    public var scopes: String?
-    public var redirectURL: URL?
-
-    public init(scopes: String? = nil, redirectURL: URL? = nil) {
-      self.scopes = scopes
-      self.redirectURL = redirectURL
-    }
-  }
-
-  public func signIn(provider: Provider, options: ProviderOptions? = nil) throws -> URL {
+  public func signIn(provider: Provider, scopes: String? = nil, redirectURL: URL? = nil) throws
+    -> URL
+  {
     guard
       var components = URLComponents(
         url: url.appendingPathComponent("authorize"), resolvingAgainstBaseURL: false)
@@ -96,11 +100,11 @@ public final class GoTrueClient {
       URLQueryItem(name: "provider", value: provider.rawValue)
     ]
 
-    if let scopes = options?.scopes {
+    if let scopes = scopes {
       queryItems.append(URLQueryItem(name: "scopes", value: scopes))
     }
 
-    if let redirectURL = options?.redirectURL {
+    if let redirectURL = redirectURL {
       queryItems.append(URLQueryItem(name: "redirect_to", value: redirectURL.absoluteString))
     }
 

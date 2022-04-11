@@ -6,7 +6,7 @@
         "repositoryURL": "https://github.com/binaryscraping/Get",
         "state": {
           "branch": "main",
-          "revision": "eba22370ecbe0a8ba012da4f2f7e57dee5c1deef",
+          "revision": "10d7ff6fb29360d018448c4f1ce404a4ec5fa21f",
           "version": null
         }
       },
@@ -17,6 +17,15 @@
           "branch": null,
           "revision": "84e546727d66f1adc5439debad16270d0fdd04e7",
           "version": "4.2.2"
+        }
+      },
+      {
+        "package": "Mocker",
+        "repositoryURL": "https://github.com/WeTransfer/Mocker",
+        "state": {
+          "branch": null,
+          "revision": "077c52a31f5ebb649ebe546cc77d8647760b2279",
+          "version": "2.5.5"
         }
       },
       {

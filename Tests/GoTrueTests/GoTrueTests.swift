@@ -1,14 +1,69 @@
+import Mocker
 import XCTest
 
 @testable import GoTrue
 
 final class GoTrueTests: XCTestCase {
 
-  func testDecode() {
+  static let baseURL = URL(string: "http://localhost:54321/auth/v1")!
+
+  let sut = GoTrueClient(
+    url: GoTrueTests.baseURL,
+    headers: ["apikey": "dummy.api.key"]
+  ) {
+    $0.sessionConfiguration.protocolClasses = [MockingURLProtocol.self]
+  }
+
+  func testDecodeSessionOrUser() {
     XCTAssertNoThrow(
       try JSONDecoder.goTrue.decode(
         SessionOrUser.self, from: sessionJSON.data(using: .utf8)!)
     )
+  }
+
+  func test_signUpWithEmailAndPassword() async throws {
+    Mock.post(path: "signup", json: "signup-response").register()
+
+    let user = try await sut.signUp(email: "guilherme@grds.dev", password: "thepass").user
+
+    XCTAssertEqual(user?.email, "guilherme@grds.dev")
+  }
+
+  func testSignInWithProvider() throws {
+    let url = try sut.signIn(
+      provider: .github, scopes: "read,write",
+      redirectURL: URL(string: "https://dummy-url.com/redirect")!)
+    XCTAssertEqual(
+      url,
+      URL(
+        string:
+          "http://localhost:54321/auth/v1/authorize?provider=github&scopes=read,write&redirect_to=https://dummy-url.com/redirect"
+      )!
+    )
+  }
+
+  func testSessionFromURL() async throws {
+    let url = URL(
+      string:
+        "https://dummy-url.com/callback?access_token=accesstoken&expires_in=60&refresh_token=refreshtoken&token_type=bearer"
+    )!
+
+    var mock = Mock.get(path: "user", json: "user")
+    mock.onRequest = { urlRequest, body in
+      let authorizationHeader = urlRequest.allHTTPHeaderFields?["Authorization"]
+      XCTAssertEqual(authorizationHeader, "bearer accesstoken")
+    }
+    mock.register()
+
+    let session = try await sut.session(from: url)
+    let expectedSession = Session(
+      accessToken: "accesstoken",
+      tokenType: "bearer",
+      expiresIn: 60,
+      refreshToken: "refreshtoken",
+      user: User(fromMockNamed: "user")
+    )
+    XCTAssertEqual(session, expectedSession)
   }
 }
 
