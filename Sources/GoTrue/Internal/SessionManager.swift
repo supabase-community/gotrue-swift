@@ -86,12 +86,12 @@ extension KeychainClient.Key {
 extension KeychainClient {
   func getSession() throws -> StoredSession? {
     try getData(.session).flatMap {
-      try JSONDecoder().decode(StoredSession.self, from: $0)
+      try JSONDecoder.goTrue.decode(StoredSession.self, from: $0)
     }
   }
 
   func storeSession(_ session: StoredSession) throws {
-    try setData(JSONEncoder().encode(session), .session)
+    try setData(JSONEncoder.goTrue.encode(session), .session)
   }
 
   func deleteSession() {

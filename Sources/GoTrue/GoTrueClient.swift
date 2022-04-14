@@ -74,8 +74,33 @@ public final class GoTrueClient {
           grantType: .password,
           .userCredentials(UserCredentials(email: email, password: password)))
       ).value
-      try await Current.sessionManager.update(session)
-      authEventChangeSubject.send(.signedIn)
+
+      if session.user.emailConfirmedAt != nil || session.user.confirmedAt != nil {
+        try await Current.sessionManager.update(session)
+        authEventChangeSubject.send(.signedIn)
+      }
+
+      return session
+    } catch {
+      throw error
+    }
+  }
+
+  public func signIn(phone: String, password: String) async throws -> Session {
+    await Current.sessionManager.remove()
+
+    do {
+      let session = try await Current.client.send(
+        Paths.token.post(
+          grantType: .password,
+          .userCredentials(UserCredentials(password: password, phone: phone)))
+      ).value
+
+      if session.user.phoneConfirmedAt != nil {
+        try await Current.sessionManager.update(session)
+        authEventChangeSubject.send(.signedIn)
+      }
+
       return session
     } catch {
       throw error
@@ -122,6 +147,11 @@ public final class GoTrueClient {
       throw URLError(.badURL)
     }
 
+    if let errorDescription = components.queryItems?.first(where: { $0.name == "error_description" }
+    )?.value {
+      throw GoTrueError(errorDescription: errorDescription)
+    }
+
     guard
       let queryItems = components.queryItems,
       let accessToken = queryItems.first(where: { $0.name == "access_token " })?.value,
@@ -132,9 +162,12 @@ public final class GoTrueClient {
       throw URLError(.badURL)
     }
 
+    let providerToken = queryItems.first(where: { $0.name == "provider_token" })?.value
+
     let user = try await Current.client.send(Paths.user.get.withAuthoriztion(accessToken)).value
 
     let session = Session(
+      providerToken: providerToken,
       accessToken: accessToken,
       tokenType: tokenType,
       expiresIn: Double(expiresIn) ?? 0,
@@ -144,6 +177,10 @@ public final class GoTrueClient {
 
     try await Current.sessionManager.update(session)
     authEventChangeSubject.send(.signedIn)
+
+    if let type = queryItems.first(where: { $0.name == "type" })?.value, type == "recovery" {
+      authEventChangeSubject.send(.passwordRecovery)
+    }
 
     return session
   }
@@ -163,5 +200,16 @@ public final class GoTrueClient {
     }
 
     return response
+  }
+
+  public func update(user: UserAttributes) async throws -> User {
+    var session = try await Current.sessionManager.session()
+    let user = try await Current.client.send(
+      Paths.user.put(user).withAuthoriztion(session.accessToken)
+    ).value
+    session.user = user
+    try await Current.sessionManager.update(session)
+    authEventChangeSubject.send(.userUpdated)
+    return user
   }
 }

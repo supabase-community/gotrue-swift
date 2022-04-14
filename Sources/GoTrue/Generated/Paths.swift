@@ -121,6 +121,10 @@ extension Paths {
     internal var get: Request<GoTrue.User> {
       .get(path)
     }
+
+    internal func put(_ body: GoTrue.UserAttributes) -> Request<GoTrue.User> {
+      .put(path, body: body)
+    }
   }
 }
 

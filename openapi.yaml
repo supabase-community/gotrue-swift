@@ -47,6 +47,8 @@ components:
     Session:
       type: object
       properties:
+        provider_token:
+          type: string
         access_token:
           type: string
         token_type:
@@ -249,6 +251,19 @@ components:
       oneOf:
         - $ref: "#/components/schemas/Session"
         - $ref: "#/components/schemas/User"
+    UserAttributes:
+      type: object
+      properties:
+        email:
+          type: string
+        phone:
+          type: string
+        password:
+          type: string
+        email_change_token:
+          type: string
+        data:
+          type: object
 
 paths:
   /token:
@@ -337,6 +352,23 @@ paths:
     get:
       security:
         - BearerAuth: []
+      responses:
+        default:
+          description: ""
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/User"
+    put:
+      security:
+        - BearerAuth: []
+      requestBody:
+        description: ""
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UserAttributes"
       responses:
         default:
           description: ""

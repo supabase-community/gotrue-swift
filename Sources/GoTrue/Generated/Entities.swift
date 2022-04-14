@@ -56,6 +56,7 @@ public struct SignUpRequest: Codable, Equatable {
 }
 
 public struct Session: Codable, Equatable {
+  public var providerToken: String?
   public var accessToken: String
   public var tokenType: String
   public var expiresIn: Double
@@ -63,8 +64,10 @@ public struct Session: Codable, Equatable {
   public var user: User
 
   public init(
-    accessToken: String, tokenType: String, expiresIn: Double, refreshToken: String, user: User
+    providerToken: String? = nil, accessToken: String, tokenType: String, expiresIn: Double,
+    refreshToken: String, user: User
   ) {
+    self.providerToken = providerToken
     self.accessToken = accessToken
     self.tokenType = tokenType
     self.expiresIn = expiresIn
@@ -73,6 +76,7 @@ public struct Session: Codable, Equatable {
   }
 
   private enum CodingKeys: String, CodingKey {
+    case providerToken = "provider_token"
     case accessToken = "access_token"
     case tokenType = "token_type"
     case expiresIn = "expires_in"
@@ -359,6 +363,33 @@ public enum SessionOrUser: Codable, Equatable {
     case .session(let value): try container.encode(value)
     case .user(let value): try container.encode(value)
     }
+  }
+}
+
+public struct UserAttributes: Codable, Equatable {
+  public var email: String?
+  public var phone: String?
+  public var password: String?
+  public var emailChangeToken: String?
+  public var data: [String: AnyJSON]?
+
+  public init(
+    email: String? = nil, phone: String? = nil, password: String? = nil,
+    emailChangeToken: String? = nil, data: [String: AnyJSON]? = nil
+  ) {
+    self.email = email
+    self.phone = phone
+    self.password = password
+    self.emailChangeToken = emailChangeToken
+    self.data = data
+  }
+
+  private enum CodingKeys: String, CodingKey {
+    case email
+    case phone
+    case password
+    case emailChangeToken = "email_change_token"
+    case data
   }
 }
 
