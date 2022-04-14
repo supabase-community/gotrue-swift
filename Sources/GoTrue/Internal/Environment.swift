@@ -27,7 +27,9 @@ extension Environment {
         "Content-Type": "application/json"
       ]) { old, _ in old }
       $0.decoder = .goTrue
+      $0.encoder = .goTrue
       $0.delegate = Delegate()
+
       configuration(&$0)
     }
 
