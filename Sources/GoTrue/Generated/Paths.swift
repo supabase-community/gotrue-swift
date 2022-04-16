@@ -143,4 +143,25 @@ extension Paths {
   }
 }
 
+extension Paths {
+  internal static var recover: Recover {
+    Recover(path: "/recover")
+  }
+
+  internal struct Recover {
+    /// Path: `/recover`
+    internal let path: String
+
+    internal func post(redirectURL: URL? = nil, _ body: GoTrue.RecoverParams) -> Request<Void> {
+      .post(path, query: makePostQuery(redirectURL), body: body)
+    }
+
+    private func makePostQuery(_ redirectURL: URL?) -> [(String, String?)] {
+      let encoder = URLQueryEncoder()
+      encoder.encode(redirectURL, forKey: "redirect_url")
+      return encoder.items
+    }
+  }
+}
+
 internal enum Paths {}
