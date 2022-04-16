@@ -264,6 +264,15 @@ components:
           type: string
         data:
           type: object
+    RecoverParams:
+      type: object
+      properties:
+        email:
+          type: string
+        gotrue_meta_security:
+          $ref: "#/components/schemas/GoTrueMetaSecurity"
+      required:
+        - email
 
 paths:
   /token:
@@ -381,6 +390,21 @@ paths:
     post:
       security:
         - BearerAuth: []
+      responses:
+        default:
+          description: ""
+  /recover:
+    summary: ""
+    post:
+      parameters:
+        - $ref: "#/components/parameters/redirect_url"
+      requestBody:
+        description: ""
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RecoverParams"
       responses:
         default:
           description: ""

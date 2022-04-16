@@ -212,4 +212,22 @@ public final class GoTrueClient {
     authEventChangeSubject.send(.userUpdated)
     return user
   }
+
+  /// Sends a reset request to an email address.
+  /// - Parameters:
+  ///   - email: The email address of the user.
+  ///   - redirectURL: A URL or mobile address to send the user to after they are confirmed.
+  public func resetPasswordForEmail(
+    _ email: String, redirectURL: URL? = nil, captchaToken: String? = nil
+  ) async throws {
+    try await Current.client.send(
+      Paths.recover.post(
+        redirectURL: redirectURL,
+        RecoverParams(
+          email: email,
+          gotrueMetaSecurity: captchaToken.map(GoTrueMetaSecurity.init(hcaptchaToken:))
+        )
+      )
+    ).value
+  }
 }

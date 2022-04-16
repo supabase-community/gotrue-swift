@@ -393,6 +393,21 @@ public struct UserAttributes: Codable, Equatable {
   }
 }
 
+public struct RecoverParams: Codable, Equatable {
+  public var email: String
+  public var gotrueMetaSecurity: GoTrueMetaSecurity?
+
+  public init(email: String, gotrueMetaSecurity: GoTrueMetaSecurity? = nil) {
+    self.email = email
+    self.gotrueMetaSecurity = gotrueMetaSecurity
+  }
+
+  private enum CodingKeys: String, CodingKey {
+    case email
+    case gotrueMetaSecurity = "gotrue_meta_security"
+  }
+}
+
 public enum AnyJSON: Equatable, Codable {
   case string(String)
   case number(Double)
