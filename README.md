@@ -8,16 +8,13 @@ The usage should be the same as gotrue-js except:
 
 Oauth2:
 
-- `signIn` with oauth2 provider only return provider url. Users have to launch that url to continue the auth flow.
-- After receiving callback uri from oauth2 provider, use `getSessionFromUrl` to parse session data.
+- `signIn` with OAuth2 provider only return provider url. Users have to launch that url to continue the auth flow.
+- After receiving callback uri from OAuth2 provider, use `session(from url: URL)` to parse session data.
 
-Persist/restore session:
 
-- Default persist storage provided using UserDefaults.
-- 
 ## Contributing
 
-- Fork the repo on [GitHub](https://github.com/supabase/gotrue-swift)
+- Fork the repo on [GitHub](https://github.com/supabase-community/gotrue-swift)
 - Clone the project to your own machine
 - Commit changes to your own branch
 - Push your work back up to your fork
@@ -26,6 +23,7 @@ Persist/restore session:
 ## License
 
 This repo is licensed under MIT.
+
 
 ## Credits
 
