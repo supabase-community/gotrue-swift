@@ -1,4 +1,4 @@
-// swift-tools-version:5.3
+// swift-tools-version:5.5
 // The swift-tools-version declares the minimum version of Swift required to build this package.
 
 import PackageDescription
@@ -6,23 +6,39 @@ import PackageDescription
 let package = Package(
   name: "GoTrue",
   platforms: [
-    .iOS(.v11),
-    .macOS(.v10_13),
-    .tvOS(.v11),
+    .iOS(.v13),
+    .macCatalyst(.v13),
+    .macOS(.v10_15),
+    .watchOS(.v6),
+    .tvOS(.v13),
   ],
   products: [
     .library(name: "GoTrue", targets: ["GoTrue"])
   ],
   dependencies: [
-    .package(name: "AnyCodable", url: "https://github.com/Flight-School/AnyCodable", from: "0.6.2")
+    .package(url: "https://github.com/WeTransfer/Mocker", from: "2.5.5"),
+    .package(url: "https://github.com/binaryscraping/swift-composable-keychain", from: "0.0.2"),
+    .package(url: "https://github.com/kean/Get", from: "0.7.0"),
+    .package(url: "https://github.com/kean/URLQueryEncoder", from: "0.2.0"),
   ],
   targets: [
     .target(
       name: "GoTrue",
       dependencies: [
-        "AnyCodable"
+        .product(name: "Get", package: "Get"),
+        .product(name: "ComposableKeychain", package: "swift-composable-keychain"),
+        .product(name: "URLQueryEncoder", package: "URLQueryEncoder"),
       ]
     ),
-    .testTarget(name: "GoTrueTests", dependencies: ["GoTrue"]),
+    .testTarget(
+      name: "GoTrueTests",
+      dependencies: [
+        "GoTrue",
+        "Mocker",
+      ],
+      resources: [
+        .process("Resources")
+      ]
+    ),
   ]
 )

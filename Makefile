@@ -25,8 +25,15 @@ format:
 	swift format \
 		--ignore-unparsable-files \
 		--in-place \
-		--recursive \
-		./Package.swift ./Sources ./Tests
+		--recursive .
 
+create-api:
+	create-api \
+		generate openapi.yaml \
+		--output Sources/GoTrue/Generated \
+		--module GoTrue \
+		--config .createapi.yml
+	sed -i "" "s/public /internal /g" Sources/GoTrue/Generated/Paths.swift
+	$(MAKE) format
 
-.PHONY: format test-all test-ios test-macos test-tvos
+.PHONY: format test-all test-ios test-macos test-tvos create-api

@@ -1,263 +1,215 @@
+import Combine
 import Foundation
+import Get
 
 #if canImport(FoundationNetworking)
   import FoundationNetworking
 #endif
 
-public typealias AuthStateChangeCallback = (_ event: AuthChangeEvent, _ session: Session?) -> Void
+public final class GoTrueClient {
+  private let url: URL
+  private let authEventChangeSubject: CurrentValueSubject<AuthChangeEvent, Never>
+  public lazy var authEventChange = authEventChangeSubject.share().eraseToAnyPublisher()
 
-public struct Subscription {
-  let callback: AuthStateChangeCallback
+  public var session: Session? { Current.sessionManager.storedSession() }
 
-  public let unsubscribe: () -> Void
-}
-
-public class GoTrueClient {
-  var api: GoTrueApi
-  var currentSession: Session?
-  var autoRefreshToken: Bool
-  var refreshTokenTimer: Timer?
-
-  private let sessionManager: SessionManager
-  private var stateChangeListeners: [String: Subscription] = [:]
-
-  /// Receive a notification every time an auth event happens.
-  /// - Returns: A subscription object which can be used to unsubscribe itself.
-  public func onAuthStateChange(
-    _ callback: @escaping (_ event: AuthChangeEvent, _ session: Session?) -> Void
-  ) -> Subscription {
-    let id = UUID().uuidString
-
-    let subscription = Subscription(
-      callback: callback,
-      unsubscribe: { [weak self] in
-        self?.stateChangeListeners[id] = nil
-      }
-    )
-
-    stateChangeListeners[id] = subscription
-    return subscription
-  }
-
-  public var user: User? {
-    return currentSession?.user
-  }
-
-  public var session: Session? {
-    return currentSession
-  }
-
-  /// Initializes the GoTrue Client with the provided parameters.
-  /// - Parameters:
-  ///   - url: URL of the GoTrue server.
-  ///   - headers: Any headers to include with network requests.
-  ///   - autoRefreshToken: Auto-refresh expired tokens.
-  ///   - keychainAccessGroup: A shared keychain access group to use (Optional).
-  public init(
-    url: String = GoTrueConstants.defaultGotrueUrl,
+  init(
+    url: URL,
     headers: [String: String] = [:],
-    autoRefreshToken: Bool = true,
+    keychainAccessGroup: String? = nil,
+    configuration: (inout APIClient.Configuration) -> Void
+  ) {
+    self.url = url
+    Current = .live(
+      url: url, accessGroup: keychainAccessGroup, headers: headers, configuration: configuration)
+
+    self.authEventChangeSubject = CurrentValueSubject<AuthChangeEvent, Never>(
+      Current.sessionManager.storedSession() != nil ? .signedIn : .signedOut
+    )
+  }
+
+  public convenience init(
+    url: URL,
+    headers: [String: String] = [:],
     keychainAccessGroup: String? = nil
   ) {
-    api = GoTrueApi(url: url, headers: headers)
-    self.autoRefreshToken = autoRefreshToken
+    self.init(
+      url: url, headers: headers, keychainAccessGroup: keychainAccessGroup, configuration: { _ in })
+  }
 
-    sessionManager = SessionManager(accessGroup: keychainAccessGroup)
+  public func signUp(email: String, password: String) async throws -> SessionOrUser {
+    await Current.sessionManager.remove()
+    let response = try await Current.client.send(
+      Paths.signup.post(.init(email: email, password: password))
+    ).value
 
-    // Recover session from storage
-    currentSession = sessionManager.getSession()
-    if currentSession != nil {
-      notifyAllStateChangeListeners(.signedIn)
+    if let session = response.session {
+      try await Current.sessionManager.update(session)
+      authEventChangeSubject.send(.signedIn)
     }
+
+    return response
   }
 
-  public func signUp(
-    email: String, password: String, completion: @escaping (Result<User, Error>) -> Void
-  ) {
-    sessionManager.removeSession()
-    api.signUpWithEmail(email: email, password: password, completion: completion)
-  }
+  public func signUp(phone: String, password: String) async throws -> SessionOrUser {
+    await Current.sessionManager.remove()
+    let response = try await Current.client.send(
+      Paths.signup.post(.init(password: password, phone: phone))
+    ).value
 
-  public func signIn(
-    email: String, password: String, completion: @escaping (Result<Session, Error>) -> Void
-  ) {
-    sessionManager.removeSession()
-
-    api.signInWithEmail(email: email, password: password) { [weak self] result in
-      guard let self = self else { return }
-      switch result {
-      case let .success(session):
-        self.saveSession(session: session)
-        self.notifyAllStateChangeListeners(.signedIn)
-        completion(.success(session))
-      case let .failure(error):
-        completion(.failure(error))
-      }
+    if let session = response.session {
+      try await Current.sessionManager.update(session)
+      authEventChangeSubject.send(.signedIn)
     }
+
+    return response
   }
 
-  public func signIn(email: String, completion: @escaping (Result<Void, Error>) -> Void) {
-    sessionManager.removeSession()
-    api.sendMagicLinkEmail(email: email, completion: completion)
-  }
-
-  public func signIn(
-    provider: Provider, options: ProviderOptions? = nil,
-    completion: @escaping (Result<URL, Error>) -> Void
-  ) {
-    sessionManager.removeSession()
+  public func signIn(email: String, password: String) async throws -> Session {
+    await Current.sessionManager.remove()
 
     do {
-      let providerURL = try api.getUrlForProvider(provider: provider, options: options)
-      completion(.success(providerURL))
+      let session = try await Current.client.send(
+        Paths.token.post(
+          grantType: .password,
+          .userCredentials(UserCredentials(email: email, password: password)))
+      ).value
+
+      if session.user.emailConfirmedAt != nil || session.user.confirmedAt != nil {
+        try await Current.sessionManager.update(session)
+        authEventChangeSubject.send(.signedIn)
+      }
+
+      return session
     } catch {
-      completion(.failure(error))
+      throw error
     }
   }
 
-  public func update(
-    emailChangeToken: String? = nil, password: String? = nil, data: [String: Any]? = nil,
-    completion: @escaping (Result<User, Error>) -> Void
-  ) {
-    guard let accessToken = currentSession?.accessToken else {
-      completion(.failure(GoTrueError(message: "current session not found")))
-      return
-    }
+  public func signIn(phone: String, password: String) async throws -> Session {
+    await Current.sessionManager.remove()
 
-    api.updateUser(
-      accessToken: accessToken, emailChangeToken: emailChangeToken, password: password, data: data
-    ) { [weak self] result in
-      guard let self = self else { return }
-      switch result {
-      case let .success(user):
-        self.notifyAllStateChangeListeners(.userUpdated)
-        self.currentSession?.user = user
-        if let currentSession = self.currentSession {
-          self.sessionManager.saveSession(currentSession)
-        }
-        completion(.success(user))
-      case let .failure(error):
-        completion(.failure(error))
+    do {
+      let session = try await Current.client.send(
+        Paths.token.post(
+          grantType: .password,
+          .userCredentials(UserCredentials(password: password, phone: phone)))
+      ).value
+
+      if session.user.phoneConfirmedAt != nil {
+        try await Current.sessionManager.update(session)
+        authEventChangeSubject.send(.signedIn)
       }
+
+      return session
+    } catch {
+      throw error
     }
   }
 
-  public func getSessionFromUrl(url: String, completion: @escaping (Result<Session, Error>) -> Void)
+  public func signIn(email: String, redirectURL: URL? = nil) async throws {
+    try await Current.client.send(Paths.otp.post(redirectURL: redirectURL, .init(email: email)))
+  }
+
+  public func signIn(provider: Provider, scopes: String? = nil, redirectURL: URL? = nil) throws
+    -> URL
   {
-    let components = URLComponents(string: url)
-
-    guard let queryItems = components?.queryItems,
-      let accessToken: String = queryItems.first(where: { item in item.name == "access_token" })?
-        .value,
-      let expiresIn: String = queryItems.first(where: { item in item.name == "expires_in" })?.value,
-      let refreshToken: String = queryItems.first(where: { item in item.name == "refresh_token" })?
-        .value,
-      let tokenType: String = queryItems.first(where: { item in item.name == "token_type" })?.value
+    guard
+      var components = URLComponents(
+        url: url.appendingPathComponent("authorize"), resolvingAgainstBaseURL: false)
     else {
-      completion(.failure(GoTrueError(message: "bad credentials")))
-      return
+      throw URLError(.badURL)
     }
 
-    //        let providerToken = queryItems.first(where: { item in item.name == "provider_token" })?.value
+    var queryItems: [URLQueryItem] = [
+      URLQueryItem(name: "provider", value: provider.rawValue)
+    ]
 
-    api.getUser(accessToken: accessToken) { [weak self] result in
-      guard let self = self else { return }
-      switch result {
-      case let .success(user):
-        let session = Session(
-          accessToken: accessToken, tokenType: tokenType, expiresIn: TimeInterval(expiresIn) ?? 0,
-          refreshToken: refreshToken, user: user)
-        self.saveSession(session: session)
-        self.notifyAllStateChangeListeners(.signedIn)
-
-        if let type: String = queryItems.first(where: { item in item.name == "type" })?.value,
-          type == "recovery"
-        {
-          self.notifyAllStateChangeListeners(.passwordRecovery)
-        }
-
-        completion(.success(session))
-      case let .failure(error):
-        completion(.failure(error))
-      }
+    if let scopes = scopes {
+      queryItems.append(URLQueryItem(name: "scopes", value: scopes))
     }
+
+    if let redirectURL = redirectURL {
+      queryItems.append(URLQueryItem(name: "redirect_to", value: redirectURL.absoluteString))
+    }
+
+    components.queryItems = queryItems
+
+    guard let url = components.url else {
+      throw URLError(.badURL)
+    }
+
+    return url
   }
 
-  func saveSession(session: Session) {
-    currentSession = session
-
-    sessionManager.saveSession(session)
-
-    if refreshTokenTimer != nil {
-      refreshTokenTimer?.invalidate()
-      refreshTokenTimer = nil
+  public func session(from url: URL) async throws -> Session {
+    guard let components = URLComponents(url: url, resolvingAgainstBaseURL: false) else {
+      throw URLError(.badURL)
     }
 
-    refreshTokenTimer = Timer(
-      fireAt: Date().addingTimeInterval(session.expiresIn), interval: 0, target: self,
-      selector: #selector(refreshToken), userInfo: nil, repeats: false)
+    if let errorDescription = components.queryItems?.first(where: { $0.name == "error_description" }
+    )?.value {
+      throw GoTrueError(errorDescription: errorDescription)
+    }
+
+    guard
+      let queryItems = components.queryItems,
+      let accessToken = queryItems.first(where: { $0.name == "access_token " })?.value,
+      let expiresIn = queryItems.first(where: { $0.name == "expires_in" })?.value,
+      let refreshToken = queryItems.first(where: { $0.name == "refresh_token" })?.value,
+      let tokenType = queryItems.first(where: { $0.name == "token_type" })?.value
+    else {
+      throw URLError(.badURL)
+    }
+
+    let providerToken = queryItems.first(where: { $0.name == "provider_token" })?.value
+
+    let user = try await Current.client.send(Paths.user.get.withAuthoriztion(accessToken)).value
+
+    let session = Session(
+      providerToken: providerToken,
+      accessToken: accessToken,
+      tokenType: tokenType,
+      expiresIn: Double(expiresIn) ?? 0,
+      refreshToken: refreshToken,
+      user: user
+    )
+
+    try await Current.sessionManager.update(session)
+    authEventChangeSubject.send(.signedIn)
+
+    if let type = queryItems.first(where: { $0.name == "type" })?.value, type == "recovery" {
+      authEventChangeSubject.send(.passwordRecovery)
+    }
+
+    return session
   }
 
-  @objc
-  private func refreshToken() {
-    callRefreshToken(refreshToken: currentSession?.refreshToken) { [weak self] result in
-      guard let self = self else { return }
-      switch result {
-      case let .success(session):
-        self.saveSession(session: session)
-        self.notifyAllStateChangeListeners(.signedIn)
-      case let .failure(error):
-        print(error.localizedDescription)
-      }
-    }
+  public func signOut() async throws {
+    let session = try await Current.sessionManager.session()
+    try await Current.client.send(Paths.logout.post.withAuthoriztion(session.accessToken)).value
+    await Current.sessionManager.remove()
   }
 
-  public func refreshSession(completion: @escaping (Result<Session, Error>) -> Void) {
-    guard let refreshToken = currentSession?.refreshToken else {
-      completion(.failure(GoTrueError(message: "Not logged in.")))
-      return
-    }
-    callRefreshToken(refreshToken: refreshToken) { [weak self] result in
-      switch result {
-      case let .success(session):
-        self?.saveSession(session: session)
-      case let .failure(error):
-        print(error.localizedDescription)
-      }
+  public func verifyOTP(params: VerifyOTPParams) async throws -> SessionOrUser {
+    let response = try await Current.client.send(Paths.verify.post(params)).value
 
-      completion(result)
+    if let session = response.session {
+      try await Current.sessionManager.update(session)
+      authEventChangeSubject.send(.signedIn)
     }
+
+    return response
   }
 
-  public func signOut(completion: @escaping (Error?) -> Void) {
-    guard let accessToken = currentSession?.accessToken else {
-      completion(GoTrueError(message: "current session not found"))
-      return
-    }
-
-    sessionManager.removeSession()
-    currentSession = nil
-    notifyAllStateChangeListeners(.signedOut)
-
-    api.signOut(accessToken: accessToken) { result in
-      completion(result)
-    }
-  }
-
-  private func callRefreshToken(
-    refreshToken: String?, completion: @escaping (Result<Session, Error>) -> Void
-  ) {
-    guard let refreshToken = refreshToken else {
-      completion(.failure(GoTrueError(message: "current session not found")))
-      return
-    }
-
-    api.refreshAccessToken(refreshToken: refreshToken, completion: completion)
-  }
-
-  private func notifyAllStateChangeListeners(_ event: AuthChangeEvent) {
-    stateChangeListeners.values.forEach {
-      $0.callback(event, session)
-    }
+  public func update(user: UserAttributes) async throws -> User {
+    var session = try await Current.sessionManager.session()
+    let user = try await Current.client.send(
+      Paths.user.put(user).withAuthoriztion(session.accessToken)
+    ).value
+    session.user = user
+    try await Current.sessionManager.update(session)
+    authEventChangeSubject.send(.userUpdated)
+    return user
   }
 }
