@@ -142,6 +142,25 @@ public final class GoTrueClient {
     return url
   }
 
+  public func refreshSession(refreshToken: String) async throws -> Session {
+    do {
+      let session = try await Current.client.send(
+        Paths.token.post(
+          grantType: .refreshToken,
+          .userCredentials(UserCredentials(refreshToken: refreshToken))
+        )).value
+      
+      if session.user.phoneConfirmedAt != nil {
+        try await Current.sessionManager.update(session)
+        authEventChangeSubject.send(.signedIn)
+      }
+        
+      return session
+    } catch {
+      throw error
+    }
+  }
+
   public func session(from url: URL) async throws -> Session {
     guard let components = URLComponents(url: url, resolvingAgainstBaseURL: false) else {
       throw URLError(.badURL)
