@@ -150,7 +150,7 @@ public final class GoTrueClient {
           .userCredentials(UserCredentials(refreshToken: refreshToken))
         )).value
       
-      if session.user.phoneConfirmedAt != nil {
+      if session.user.phoneConfirmedAt != nil || session.user.emailConfirmedAt != nil || session.user.confirmedAt != nil {
         try await Current.sessionManager.update(session)
         authEventChangeSubject.send(.signedIn)
       }
