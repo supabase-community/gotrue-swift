@@ -148,13 +148,16 @@ public final class GoTrueClient {
         Paths.token.post(
           grantType: .refreshToken,
           .userCredentials(UserCredentials(refreshToken: refreshToken))
-        )).value
-      
-      if session.user.phoneConfirmedAt != nil || session.user.emailConfirmedAt != nil || session.user.confirmedAt != nil {
+        )
+      ).value
+
+      if session.user.phoneConfirmedAt != nil || session.user.emailConfirmedAt != nil
+        || session.user.confirmedAt != nil
+      {
         try await Current.sessionManager.update(session)
         authEventChangeSubject.send(.signedIn)
       }
-        
+
       return session
     } catch {
       throw error
@@ -208,6 +211,7 @@ public final class GoTrueClient {
     let session = try await Current.sessionManager.session()
     try await Current.client.send(Paths.logout.post.withAuthoriztion(session.accessToken)).value
     await Current.sessionManager.remove()
+    authEventChangeSubject.send(.signedOut)
   }
 
   public func verifyOTP(params: VerifyOTPParams) async throws -> SessionOrUser {
