@@ -127,10 +127,6 @@ public final class GoTrueClient {
       ("provider", provider.rawValue)
     ]
 
-    var queryItems: [URLQueryItem] = [
-      URLQueryItem(name: "provider", value: provider.rawValue)
-    ]
-
     if let scopes = scopes {
       fragments.append(("scopes", scopes))
     }
