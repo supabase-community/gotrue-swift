@@ -37,7 +37,7 @@ final class GoTrueTests: XCTestCase {
       url,
       URL(
         string:
-          "http://localhost:54321/auth/v1/authorize?provider=github&scopes=read,write&redirect_to=https://dummy-url.com/redirect"
+          "http://localhost:54321/auth/v1/authorize#provider=github&scopes=read,write&redirect_to=https://dummy-url.com/redirect"
       )!
     )
   }
@@ -45,7 +45,7 @@ final class GoTrueTests: XCTestCase {
   func testSessionFromURL() async throws {
     let url = URL(
       string:
-        "https://dummy-url.com/callback?access_token=accesstoken&expires_in=60&refresh_token=refreshtoken&token_type=bearer"
+        "https://dummy-url.com/callback#access_token=accesstoken&expires_in=60&refresh_token=refreshtoken&token_type=bearer"
     )!
 
     var mock = Mock.get(path: "user", json: "user")

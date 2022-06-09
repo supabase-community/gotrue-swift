@@ -111,9 +111,11 @@ public final class GoTrueClient {
     try await Current.client.send(Paths.otp.post(redirectURL: redirectURL, .init(email: email)))
   }
 
-  public func signIn(provider: Provider, scopes: String? = nil, redirectURL: URL? = nil) throws
-    -> URL
-  {
+  public func signIn(
+    provider: Provider,
+    scopes: String? = nil,
+    redirectURL: URL? = nil
+  ) throws -> URL {
     guard
       var components = URLComponents(
         url: url.appendingPathComponent("authorize"), resolvingAgainstBaseURL: false)
@@ -121,19 +123,26 @@ public final class GoTrueClient {
       throw URLError(.badURL)
     }
 
+    var fragments: [(String, String)] = [
+      ("provider", provider.rawValue)
+    ]
+
     var queryItems: [URLQueryItem] = [
       URLQueryItem(name: "provider", value: provider.rawValue)
     ]
 
     if let scopes = scopes {
-      queryItems.append(URLQueryItem(name: "scopes", value: scopes))
+      fragments.append(("scopes", scopes))
     }
 
     if let redirectURL = redirectURL {
-      queryItems.append(URLQueryItem(name: "redirect_to", value: redirectURL.absoluteString))
+      fragments.append(("redirect_to", redirectURL.absoluteString))
     }
 
-    components.queryItems = queryItems
+    components.fragment =
+      fragments
+      .map { key, value in "\(key)=\(value)" }
+      .joined(separator: "&")
 
     guard let url = components.url else {
       throw URLError(.badURL)
@@ -169,22 +178,25 @@ public final class GoTrueClient {
       throw URLError(.badURL)
     }
 
-    if let errorDescription = components.queryItems?.first(where: { $0.name == "error_description" }
-    )?.value {
+    let fragments = (components.fragment ?? "")
+      .split(separator: "&")
+      .map { $0.split(separator: "=") }
+      .map { (String($0[0]), String($0[1])) }
+
+    if let errorDescription = fragments.first(where: { $0.0 == "error_description" })?.1 {
       throw GoTrueError(errorDescription: errorDescription)
     }
 
     guard
-      let queryItems = components.queryItems,
-      let accessToken = queryItems.first(where: { $0.name == "access_token " })?.value,
-      let expiresIn = queryItems.first(where: { $0.name == "expires_in" })?.value,
-      let refreshToken = queryItems.first(where: { $0.name == "refresh_token" })?.value,
-      let tokenType = queryItems.first(where: { $0.name == "token_type" })?.value
+      let accessToken = fragments.first(where: { $0.0 == "access_token " })?.1,
+      let expiresIn = fragments.first(where: { $0.0 == "expires_in" })?.1,
+      let refreshToken = fragments.first(where: { $0.0 == "refresh_token" })?.1,
+      let tokenType = fragments.first(where: { $0.0 == "token_type" })?.1
     else {
       throw URLError(.badURL)
     }
 
-    let providerToken = queryItems.first(where: { $0.name == "provider_token" })?.value
+    let providerToken = fragments.first(where: { $0.0 == "provider_token" })?.1
 
     let user = try await Current.client.send(Paths.user.get.withAuthoriztion(accessToken)).value
 
@@ -200,7 +212,7 @@ public final class GoTrueClient {
     try await Current.sessionManager.update(session)
     authEventChangeSubject.send(.signedIn)
 
-    if let type = queryItems.first(where: { $0.name == "type" })?.value, type == "recovery" {
+    if let type = fragments.first(where: { $0.0 == "type" })?.1, type == "recovery" {
       authEventChangeSubject.send(.passwordRecovery)
     }
 
