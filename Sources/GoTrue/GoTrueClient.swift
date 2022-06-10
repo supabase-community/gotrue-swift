@@ -111,9 +111,12 @@ public final class GoTrueClient {
     try await Current.client.send(Paths.otp.post(redirectURL: redirectURL, .init(email: email)))
   }
 
-  public func signIn(provider: Provider, scopes: String? = nil, redirectURL: URL? = nil) throws
-    -> URL
-  {
+  public func signIn(
+    provider: Provider,
+    scopes: String? = nil,
+    redirectURL: URL? = nil,
+    queryParams: [(name: String, value: String?)] = []
+  ) throws -> URL {
     guard
       var components = URLComponents(
         url: url.appendingPathComponent("authorize"), resolvingAgainstBaseURL: false)
@@ -132,6 +135,8 @@ public final class GoTrueClient {
     if let redirectURL = redirectURL {
       queryItems.append(URLQueryItem(name: "redirect_to", value: redirectURL.absoluteString))
     }
+
+    queryItems.append(contentsOf: queryParams.map(URLQueryItem.init))
 
     components.queryItems = queryItems
 
@@ -169,24 +174,26 @@ public final class GoTrueClient {
       throw URLError(.badURL)
     }
 
-    if let errorDescription = components.queryItems?.first(where: { $0.name == "error_description" }
-    )?.value {
+    let params = extractParams(from: components.fragment ?? "")
+
+    if let errorDescription = params.first(where: { $0.name == "error_description" })?.value {
       throw GoTrueError(errorDescription: errorDescription)
     }
 
     guard
-      let queryItems = components.queryItems,
-      let accessToken = queryItems.first(where: { $0.name == "access_token " })?.value,
-      let expiresIn = queryItems.first(where: { $0.name == "expires_in" })?.value,
-      let refreshToken = queryItems.first(where: { $0.name == "refresh_token" })?.value,
-      let tokenType = queryItems.first(where: { $0.name == "token_type" })?.value
+      let accessToken = params.first(where: { $0.name == "access_token" })?.value,
+      let expiresIn = params.first(where: { $0.name == "expires_in" })?.value,
+      let refreshToken = params.first(where: { $0.name == "refresh_token" })?.value,
+      let tokenType = params.first(where: { $0.name == "token_type" })?.value
     else {
       throw URLError(.badURL)
     }
 
-    let providerToken = queryItems.first(where: { $0.name == "provider_token" })?.value
+    let providerToken = params.first(where: { $0.name == "provider_token" })?.value
 
-    let user = try await Current.client.send(Paths.user.get.withAuthoriztion(accessToken)).value
+    let user = try await Current.client.send(
+      Paths.user.get.withAuthoriztion(accessToken, type: tokenType)
+    ).value
 
     let session = Session(
       providerToken: providerToken,
@@ -200,7 +207,7 @@ public final class GoTrueClient {
     try await Current.sessionManager.update(session)
     authEventChangeSubject.send(.signedIn)
 
-    if let type = queryItems.first(where: { $0.name == "type" })?.value, type == "recovery" {
+    if let type = params.first(where: { $0.name == "type" })?.value, type == "recovery" {
       authEventChangeSubject.send(.passwordRecovery)
     }
 

@@ -14,10 +14,10 @@ extension SessionOrUser {
 }
 
 extension Request {
-  func withAuthoriztion(_ token: String) -> Self {
+  func withAuthoriztion(_ token: String, type: String = "Bearer") -> Self {
     var copy = self
     var headers = copy.headers ?? [:]
-    headers["Authorization"] = "Bearer \(token)"
+    headers["Authorization"] = "\(type) \(token)"
     copy.headers = headers
     return copy
   }

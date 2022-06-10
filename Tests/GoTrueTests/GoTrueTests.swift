@@ -32,12 +32,14 @@ final class GoTrueTests: XCTestCase {
   func testSignInWithProvider() throws {
     let url = try sut.signIn(
       provider: .github, scopes: "read,write",
-      redirectURL: URL(string: "https://dummy-url.com/redirect")!)
+      redirectURL: URL(string: "https://dummy-url.com/redirect")!,
+      queryParams: [("extra_key", "extra_value")]
+    )
     XCTAssertEqual(
       url,
       URL(
         string:
-          "http://localhost:54321/auth/v1/authorize?provider=github&scopes=read,write&redirect_to=https://dummy-url.com/redirect"
+          "http://localhost:54321/auth/v1/authorize?provider=github&scopes=read,write&redirect_to=https://dummy-url.com/redirect&extra_key=extra_value"
       )!
     )
   }
@@ -45,7 +47,7 @@ final class GoTrueTests: XCTestCase {
   func testSessionFromURL() async throws {
     let url = URL(
       string:
-        "https://dummy-url.com/callback?access_token=accesstoken&expires_in=60&refresh_token=refreshtoken&token_type=bearer"
+        "https://dummy-url.com/callback#access_token=accesstoken&expires_in=60&refresh_token=refreshtoken&token_type=bearer"
     )!
 
     var mock = Mock.get(path: "user", json: "user")
@@ -64,6 +66,21 @@ final class GoTrueTests: XCTestCase {
       user: User(fromMockNamed: "user")
     )
     XCTAssertEqual(session, expectedSession)
+  }
+
+  func testSessionFromURLWithMissingComponent() async {
+    let url = URL(
+      string:
+        "https://dummy-url.com/callback#access_token=accesstoken&expires_in=60&refresh_token=refreshtoken"
+    )!
+
+    do {
+      _ = try await sut.session(from: url)
+    } catch let error as URLError {
+      XCTAssertEqual(error.code, .badURL)
+    } catch {
+      XCTFail("Unexpected error thrown: \(error.localizedDescription)")
+    }
   }
 }
 
