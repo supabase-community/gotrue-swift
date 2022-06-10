@@ -32,12 +32,14 @@ final class GoTrueTests: XCTestCase {
   func testSignInWithProvider() throws {
     let url = try sut.signIn(
       provider: .github, scopes: "read,write",
-      redirectURL: URL(string: "https://dummy-url.com/redirect")!)
+      redirectURL: URL(string: "https://dummy-url.com/redirect")!,
+      queryParams: [("extra_key", "extra_value")]
+    )
     XCTAssertEqual(
       url,
       URL(
         string:
-          "http://localhost:54321/auth/v1/authorize#provider=github&scopes=read,write&redirect_to=https://dummy-url.com/redirect"
+          "http://localhost:54321/auth/v1/authorize?provider=github&scopes=read,write&redirect_to=https://dummy-url.com/redirect&extra_key=extra_value"
       )!
     )
   }

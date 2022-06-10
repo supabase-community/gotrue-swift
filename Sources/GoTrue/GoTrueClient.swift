@@ -114,7 +114,8 @@ public final class GoTrueClient {
   public func signIn(
     provider: Provider,
     scopes: String? = nil,
-    redirectURL: URL? = nil
+    redirectURL: URL? = nil,
+    queryParams: [(name: String, value: String?)] = []
   ) throws -> URL {
     guard
       var components = URLComponents(
@@ -123,22 +124,21 @@ public final class GoTrueClient {
       throw URLError(.badURL)
     }
 
-    var fragments: [(String, String)] = [
-      ("provider", provider.rawValue)
+    var queryItems: [URLQueryItem] = [
+      URLQueryItem(name: "provider", value: provider.rawValue)
     ]
 
     if let scopes = scopes {
-      fragments.append(("scopes", scopes))
+      queryItems.append(URLQueryItem(name: "scopes", value: scopes))
     }
 
     if let redirectURL = redirectURL {
-      fragments.append(("redirect_to", redirectURL.absoluteString))
+      queryItems.append(URLQueryItem(name: "redirect_to", value: redirectURL.absoluteString))
     }
 
-    components.fragment =
-      fragments
-      .map { key, value in "\(key)=\(value)" }
-      .joined(separator: "&")
+    queryItems.append(contentsOf: queryParams.map(URLQueryItem.init))
+
+    components.queryItems = queryItems
 
     guard let url = components.url else {
       throw URLError(.badURL)
@@ -177,24 +177,26 @@ public final class GoTrueClient {
     let fragments = (components.fragment ?? "")
       .split(separator: "&")
       .map { $0.split(separator: "=") }
-      .map { (String($0[0]), String($0[1])) }
+      .map { (name: String($0[0]), value: String($0[1])) }
 
-    if let errorDescription = fragments.first(where: { $0.0 == "error_description" })?.1 {
+    if let errorDescription = fragments.first(where: { $0.name == "error_description" })?.value {
       throw GoTrueError(errorDescription: errorDescription)
     }
 
     guard
-      let accessToken = fragments.first(where: { $0.0 == "access_token " })?.1,
-      let expiresIn = fragments.first(where: { $0.0 == "expires_in" })?.1,
-      let refreshToken = fragments.first(where: { $0.0 == "refresh_token" })?.1,
-      let tokenType = fragments.first(where: { $0.0 == "token_type" })?.1
+      let accessToken = fragments.first(where: { $0.name == "access_token" })?.value,
+      let expiresIn = fragments.first(where: { $0.name == "expires_in" })?.value,
+      let refreshToken = fragments.first(where: { $0.name == "refresh_token" })?.value,
+      let tokenType = fragments.first(where: { $0.name == "token_type" })?.value
     else {
       throw URLError(.badURL)
     }
 
-    let providerToken = fragments.first(where: { $0.0 == "provider_token" })?.1
+    let providerToken = fragments.first(where: { $0.name == "provider_token" })?.value
 
-    let user = try await Current.client.send(Paths.user.get.withAuthoriztion(accessToken)).value
+    let user = try await Current.client.send(
+      Paths.user.get.withAuthoriztion(accessToken, type: tokenType)
+    ).value
 
     let session = Session(
       providerToken: providerToken,
