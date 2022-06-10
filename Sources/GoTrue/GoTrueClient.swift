@@ -177,6 +177,7 @@ public final class GoTrueClient {
     let fragments = (components.fragment ?? "")
       .split(separator: "&")
       .map { $0.split(separator: "=") }
+      .filter { $0.count == 2 }
       .map { (name: String($0[0]), value: String($0[1])) }
 
     if let errorDescription = fragments.first(where: { $0.name == "error_description" })?.value {
