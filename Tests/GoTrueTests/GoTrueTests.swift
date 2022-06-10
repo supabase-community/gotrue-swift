@@ -67,6 +67,21 @@ final class GoTrueTests: XCTestCase {
     )
     XCTAssertEqual(session, expectedSession)
   }
+
+  func testSessionFromURLWithMissingComponent() async {
+    let url = URL(
+      string:
+        "https://dummy-url.com/callback#access_token=accesstoken&expires_in=60&refresh_token=refreshtoken"
+    )!
+
+    do {
+      _ = try await sut.session(from: url)
+    } catch let error as URLError {
+      XCTAssertEqual(error.code, .badURL)
+    } catch {
+      XCTFail("Unexpected error thrown: \(error.localizedDescription)")
+    }
+  }
 }
 
 let sessionJSON = """

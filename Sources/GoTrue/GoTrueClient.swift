@@ -174,26 +174,22 @@ public final class GoTrueClient {
       throw URLError(.badURL)
     }
 
-    let fragments = (components.fragment ?? "")
-      .split(separator: "&")
-      .map { $0.split(separator: "=") }
-      .filter { $0.count == 2 }
-      .map { (name: String($0[0]), value: String($0[1])) }
+    let params = extractParams(from: components.fragment ?? "")
 
-    if let errorDescription = fragments.first(where: { $0.name == "error_description" })?.value {
+    if let errorDescription = params.first(where: { $0.name == "error_description" })?.value {
       throw GoTrueError(errorDescription: errorDescription)
     }
 
     guard
-      let accessToken = fragments.first(where: { $0.name == "access_token" })?.value,
-      let expiresIn = fragments.first(where: { $0.name == "expires_in" })?.value,
-      let refreshToken = fragments.first(where: { $0.name == "refresh_token" })?.value,
-      let tokenType = fragments.first(where: { $0.name == "token_type" })?.value
+      let accessToken = params.first(where: { $0.name == "access_token" })?.value,
+      let expiresIn = params.first(where: { $0.name == "expires_in" })?.value,
+      let refreshToken = params.first(where: { $0.name == "refresh_token" })?.value,
+      let tokenType = params.first(where: { $0.name == "token_type" })?.value
     else {
       throw URLError(.badURL)
     }
 
-    let providerToken = fragments.first(where: { $0.name == "provider_token" })?.value
+    let providerToken = params.first(where: { $0.name == "provider_token" })?.value
 
     let user = try await Current.client.send(
       Paths.user.get.withAuthoriztion(accessToken, type: tokenType)
@@ -211,7 +207,7 @@ public final class GoTrueClient {
     try await Current.sessionManager.update(session)
     authEventChangeSubject.send(.signedIn)
 
-    if let type = fragments.first(where: { $0.0 == "type" })?.1, type == "recovery" {
+    if let type = params.first(where: { $0.name == "type" })?.value, type == "recovery" {
       authEventChangeSubject.send(.passwordRecovery)
     }
 
