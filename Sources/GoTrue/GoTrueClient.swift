@@ -147,6 +147,7 @@ public final class GoTrueClient {
     return url
   }
 
+  @discardableResult
   public func refreshSession(refreshToken: String) async throws -> Session {
     do {
       let session = try await Current.client.send(
