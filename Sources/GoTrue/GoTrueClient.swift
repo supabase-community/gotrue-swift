@@ -37,6 +37,7 @@ public final class GoTrueClient {
       url: url, headers: headers, keychainAccessGroup: keychainAccessGroup, configuration: { _ in })
   }
 
+  @discardableResult
   public func signUp(email: String, password: String) async throws -> SessionOrUser {
     await Current.sessionManager.remove()
     let response = try await Current.client.send(
@@ -51,6 +52,7 @@ public final class GoTrueClient {
     return response
   }
 
+  @discardableResult
   public func signUp(phone: String, password: String) async throws -> SessionOrUser {
     await Current.sessionManager.remove()
     let response = try await Current.client.send(
@@ -65,6 +67,7 @@ public final class GoTrueClient {
     return response
   }
 
+  @discardableResult
   public func signIn(email: String, password: String) async throws -> Session {
     await Current.sessionManager.remove()
 
@@ -86,6 +89,7 @@ public final class GoTrueClient {
     }
   }
 
+  @discardableResult
   public func signIn(phone: String, password: String) async throws -> Session {
     await Current.sessionManager.remove()
 
@@ -170,6 +174,7 @@ public final class GoTrueClient {
     }
   }
 
+  @discardableResult
   public func session(from url: URL) async throws -> Session {
     guard let components = URLComponents(url: url, resolvingAgainstBaseURL: false) else {
       throw URLError(.badURL)
@@ -222,6 +227,7 @@ public final class GoTrueClient {
     authEventChangeSubject.send(.signedOut)
   }
 
+  @discardableResult
   public func verifyOTP(params: VerifyOTPParams) async throws -> SessionOrUser {
     let response = try await Current.client.send(Paths.verify.post(params)).value
 
@@ -233,6 +239,7 @@ public final class GoTrueClient {
     return response
   }
 
+  @discardableResult
   public func update(user: UserAttributes) async throws -> User {
     var session = try await Current.sessionManager.session()
     let user = try await Current.client.send(
