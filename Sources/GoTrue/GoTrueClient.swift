@@ -10,6 +10,7 @@ public final class GoTrueClient {
   private let url: URL
   private let authEventChangeSubject: CurrentValueSubject<AuthChangeEvent, Never>
   public lazy var authEventChange = authEventChangeSubject.share().eraseToAnyPublisher()
+  public lazy var onSessionUpdate = Current.sessionManager.onSessionUpdate
 
   public var session: Session? { Current.sessionManager.storedSession() }
 

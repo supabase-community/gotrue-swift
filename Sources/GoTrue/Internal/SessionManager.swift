@@ -1,3 +1,4 @@
+import Combine
 import ComposableKeychain
 import Foundation
 import KeychainAccess
@@ -19,6 +20,7 @@ struct StoredSession: Codable {
 }
 
 struct SessionManager {
+  var onSessionUpdate: AnyPublisher<Session, Never>
   var storedSession: () -> Session?
   var session: () async throws -> Session
   var update: (_ session: Session) async throws -> Void
@@ -29,6 +31,7 @@ extension SessionManager {
   static var live: Self {
     let instance = LiveSessionManager()
     return Self(
+      onSessionUpdate: instance.onSessionUpdate.eraseToAnyPublisher(),
       storedSession: { instance.storedSession },
       session: { try await instance.session() },
       update: { try await instance.update($0) },
@@ -39,6 +42,8 @@ extension SessionManager {
 
 private actor LiveSessionManager {
   private var task: Task<Session, Error>?
+
+  nonisolated let onSessionUpdate = PassthroughSubject<Session, Never>()
 
   func session() async throws -> Session {
     if let task = task {
@@ -66,6 +71,7 @@ private actor LiveSessionManager {
 
   func update(_ session: Session) throws {
     try Current.keychain.storeSession(StoredSession(session: session))
+    onSessionUpdate.send(session)
   }
 
   func remove() {
