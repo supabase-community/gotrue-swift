@@ -24,8 +24,5 @@ struct ExamplesApp: App {
     }
 }
 
-let gotrue = GoTrueClient(
-    url: URL(string: "https://{PROJECT_ID}.supabase.co/auth/v1")!,
-    headers: ["apikey": "{PROJECT_API_KEY}"]
-)
-
+/// Global GoTrueClient instance.
+let gotrue = GoTrueClient(url: SUPABASE_URL, headers: ["apikey": SUPABASE_API_KEY])

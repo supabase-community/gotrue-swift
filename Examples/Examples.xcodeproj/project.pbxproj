@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		1820720E286B449B0009D0BF /* Secrets.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1820720D286B449B0009D0BF /* Secrets.swift */; };
 		18AD3624286B304300855046 /* GoTrue in Frameworks */ = {isa = PBXBuildFile; productRef = 18AD3623286B304300855046 /* GoTrue */; };
 		18DE58AE286B2C78005F7FF2 /* ExamplesApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 18DE589E286B2C77005F7FF2 /* ExamplesApp.swift */; };
 		18DE58B0286B2C78005F7FF2 /* SignInWithGoogleExampleView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 18DE589F286B2C77005F7FF2 /* SignInWithGoogleExampleView.swift */; };
@@ -14,6 +15,7 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		1820720D286B449B0009D0BF /* Secrets.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Secrets.swift; sourceTree = "<group>"; };
 		18AD3626286B33AE00855046 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		18AD3627286B35D300855046 /* Examples.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = Examples.entitlements; sourceTree = "<group>"; };
 		18DE589E286B2C77005F7FF2 /* ExamplesApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExamplesApp.swift; sourceTree = "<group>"; };
@@ -60,6 +62,7 @@
 				18AD3627286B35D300855046 /* Examples.entitlements */,
 				18DE589E286B2C77005F7FF2 /* ExamplesApp.swift */,
 				18AD3626286B33AE00855046 /* Info.plist */,
+				1820720D286B449B0009D0BF /* Secrets.swift */,
 			);
 			path = Shared;
 			sourceTree = "<group>";
@@ -145,6 +148,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				18DE58B0286B2C78005F7FF2 /* SignInWithGoogleExampleView.swift in Sources */,
+				1820720E286B449B0009D0BF /* Secrets.swift in Sources */,
 				18DE58AE286B2C78005F7FF2 /* ExamplesApp.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
