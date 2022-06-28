@@ -20,8 +20,7 @@ struct StoredSession: Codable {
 }
 
 struct SessionManager {
-  var onSessionUpdate: AnyPublisher<Session, Never>
-  var storedSession: () -> Session?
+  var storedSession: () -> StoredSession?
   var session: () async throws -> Session
   var update: (_ session: Session) async throws -> Void
   var remove: () async -> Void
@@ -31,7 +30,6 @@ extension SessionManager {
   static var live: Self {
     let instance = LiveSessionManager()
     return Self(
-      onSessionUpdate: instance.onSessionUpdate.eraseToAnyPublisher(),
       storedSession: { instance.storedSession },
       session: { try await instance.session() },
       update: { try await instance.update($0) },
@@ -42,8 +40,6 @@ extension SessionManager {
 
 private actor LiveSessionManager {
   private var task: Task<Session, Error>?
-
-  nonisolated let onSessionUpdate = PassthroughSubject<Session, Never>()
 
   func session() async throws -> Session {
     if let task = task {
@@ -70,8 +66,8 @@ private actor LiveSessionManager {
   }
 
   func update(_ session: Session) throws {
-    try Current.keychain.storeSession(StoredSession(session: session))
-    onSessionUpdate.send(session)
+    let wrapper = StoredSession(session: session)
+    try Current.keychain.storeSession(wrapper)
   }
 
   func remove() {
@@ -79,8 +75,8 @@ private actor LiveSessionManager {
   }
 
   /// Returns the currently stored session without checking if it's still valid.
-  nonisolated var storedSession: Session? {
-    try? Current.keychain.getSession()?.session
+  nonisolated var storedSession: StoredSession? {
+    try? Current.keychain.getSession()
   }
 }
 

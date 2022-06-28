@@ -13,6 +13,12 @@ extension SessionOrUser {
   }
 }
 
+extension User {
+    var isConfirmed: Bool {
+        phoneConfirmedAt != nil || emailConfirmedAt != nil || confirmedAt != nil
+    }
+}
+
 extension Request {
   func withAuthoriztion(_ token: String, type: String = "Bearer") -> Self {
     var copy = self

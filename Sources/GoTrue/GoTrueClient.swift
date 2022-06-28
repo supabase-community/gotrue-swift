@@ -9,10 +9,10 @@ import Get
 public final class GoTrueClient {
   private let url: URL
   private let authEventChangeSubject: CurrentValueSubject<AuthChangeEvent, Never>
-  public lazy var authEventChange = authEventChangeSubject.share().eraseToAnyPublisher()
-  public lazy var onSessionUpdate = Current.sessionManager.onSessionUpdate
+  private var refreshTimer: Timer?
 
-  public var session: Session? { Current.sessionManager.storedSession() }
+  public lazy var authEventChange = authEventChangeSubject.share().eraseToAnyPublisher()
+    public var session: Session? { Current.sessionManager.storedSession()?.session }
 
   init(
     url: URL,
@@ -22,11 +22,19 @@ public final class GoTrueClient {
   ) {
     self.url = url
     Current = .live(
-      url: url, accessGroup: keychainAccessGroup, headers: headers, configuration: configuration)
+      url: url,
+      accessGroup: keychainAccessGroup,
+      headers: headers,
+      configuration: configuration
+    )
+
+    let storedSession = Current.sessionManager.storedSession()
 
     self.authEventChangeSubject = CurrentValueSubject<AuthChangeEvent, Never>(
-      Current.sessionManager.storedSession() != nil ? .signedIn : .signedOut
+      storedSession != nil ? .signedIn : .signedOut
     )
+
+      initializeRefreshTokenTimer()
   }
 
   public convenience init(
@@ -269,4 +277,30 @@ public final class GoTrueClient {
       )
     ).value
   }
+
+    private func initializeRefreshTokenTimer() {
+        guard let storedSession = Current.sessionManager.storedSession() else {
+            return
+        }
+
+        refreshTimer?.invalidate()
+        refreshTimer = Timer.scheduledTimer(
+            timeInterval: storedSession.expirationDate.timeIntervalSince(Date()) - 60,
+            target: self,
+            selector: #selector(forceRefreshSession),
+            userInfo: nil,
+            repeats: false
+        )
+    }
+
+    @objc
+    private func forceRefreshSession() {
+        guard let refreshToken = Current.sessionManager.storedSession()?.session.refreshToken else {
+            return
+        }
+
+        Task {
+            try await self.refreshSession(refreshToken: refreshToken)
+        }
+    }
 }
