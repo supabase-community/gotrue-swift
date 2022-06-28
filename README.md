@@ -11,6 +11,7 @@ Oauth2:
 - `signIn` with OAuth2 provider only return provider url. Users have to launch that url to continue the auth flow.
 - After receiving callback uri from OAuth2 provider, use `session(from url: URL)` to parse session data.
 
+Check [Examples](/Examples) for example usages.
 
 ## Contributing
 
