@@ -5,23 +5,23 @@
 //  Created by Guilherme Souza on 28/06/22.
 //
 
-import SwiftUI
 import GoTrue
+import SwiftUI
 
 @main
 struct ExamplesApp: App {
-    var body: some Scene {
-        WindowGroup {
-            NavigationView {
-                List {
-                    NavigationLink("Sign in with Google") {
-                        SignInWithGoogleExampleView()
-                    }
-                }
-                .navigationTitle("Examples")
-            }
+  var body: some Scene {
+    WindowGroup {
+      NavigationView {
+        List {
+          NavigationLink("Sign in with Google") {
+            SignInWithGoogleExampleView()
+          }
         }
+        .navigationTitle("Examples")
+      }
     }
+  }
 }
 
 /// Global GoTrueClient instance.
