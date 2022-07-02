@@ -221,10 +221,10 @@ public final class GoTrueClient {
   }
 
   public func signOut() async throws {
+    defer { authEventChangeSubject.send(.signedOut) }
     let session = try await Current.sessionManager.session()
-    try await Current.client.send(Paths.logout.post.withAuthoriztion(session.accessToken)).value
     await Current.sessionManager.remove()
-    authEventChangeSubject.send(.signedOut)
+    try await Current.client.send(Paths.logout.post.withAuthoriztion(session.accessToken)).value
   }
 
   @discardableResult
