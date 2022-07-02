@@ -220,11 +220,16 @@ public final class GoTrueClient {
     return session
   }
 
+  /// Calling this method will remove the logged in user and erase the tokens storad on local storage and invalidate the token on the API. It also will trigger a ``AuthChangeEvent.signedOut`` event.
   public func signOut() async throws {
     defer { authEventChangeSubject.send(.signedOut) }
-    let session = try await Current.sessionManager.session()
+
+    let session = try? await Current.sessionManager.session()
     await Current.sessionManager.remove()
-    try await Current.client.send(Paths.logout.post.withAuthoriztion(session.accessToken)).value
+
+    if let session = session {
+      try await Current.client.send(Paths.logout.post.withAuthoriztion(session.accessToken)).value
+    }
   }
 
   @discardableResult
