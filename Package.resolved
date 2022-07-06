@@ -6,8 +6,8 @@
         "repositoryURL": "https://github.com/kean/Get",
         "state": {
           "branch": null,
-          "revision": "38d21f68a79b08d0eb083f0690620658ffe3b159",
-          "version": "0.7.1"
+          "revision": "b1137bf8315479cddc79fcb04d9db7bc8117e16f",
+          "version": "0.8.0"
         }
       },
       {
@@ -24,8 +24,8 @@
         "repositoryURL": "https://github.com/WeTransfer/Mocker",
         "state": {
           "branch": null,
-          "revision": "077c52a31f5ebb649ebe546cc77d8647760b2279",
-          "version": "2.5.5"
+          "revision": "5b270d79f39f6628f4c87752f7470ba640e09cba",
+          "version": "2.5.6"
         }
       },
       {
@@ -51,8 +51,8 @@
         "repositoryURL": "https://github.com/pointfreeco/xctest-dynamic-overlay",
         "state": {
           "branch": null,
-          "revision": "50a70a9d3583fe228ce672e8923010c8df2deddd",
-          "version": "0.2.1"
+          "revision": "8816142e27f1127d87c61cee4a0a5db93e9df7c4",
+          "version": "0.3.1"
         }
       }
     ]

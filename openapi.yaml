@@ -55,6 +55,7 @@ components:
           type: string
         expires_in:
           type: number
+          description: "The number of seconds until the token expires (since it was issued)."
         refresh_token:
           type: string
         user:
@@ -83,6 +84,11 @@ components:
         recovery_sent_at:
           type: string
           format: date-time
+        email_change_sent_at:
+          type: string
+          format: date-time
+        new_email:
+          type: string
         invited_at:
           type: string
           format: date-time
@@ -220,6 +226,7 @@ components:
           type: string
           enum:
             - sms
+            - phone_change
       required:
         - phone
         - token
@@ -256,14 +263,19 @@ components:
       properties:
         email:
           type: string
+          description: "The user's email."
         phone:
           type: string
+          description: "The user's phone."
         password:
           type: string
+          description: "The user's password."
         email_change_token:
           type: string
+          description: "An email change token."
         data:
           type: object
+          description: "A custom data object for `user_metadata` that a user can modify. Can be any JSON."
     RecoverParams:
       type: object
       properties:
