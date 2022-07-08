@@ -174,6 +174,11 @@ public final class GoTrueClient {
     }
   }
 
+  /// Refreshes the current stored session if it has expired.
+  public func refreshCurrentSessionIfNeeded() async throws {
+    _ = try await Current.sessionManager.session()
+  }
+
   @discardableResult
   public func session(from url: URL) async throws -> Session {
     guard let components = URLComponents(url: url, resolvingAgainstBaseURL: false) else {
