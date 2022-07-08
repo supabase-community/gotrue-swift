@@ -21,7 +21,11 @@ public final class GoTrueClient {
   ) {
     self.url = url
     Current = .live(
-      url: url, accessGroup: keychainAccessGroup, headers: headers, configuration: configuration)
+      url: url,
+      accessGroup: keychainAccessGroup,
+      headers: headers.merging(Constants.defaultHeaders) { old, _ in old },
+      configuration: configuration
+    )
 
     self.authEventChangeSubject = CurrentValueSubject<AuthChangeEvent, Never>(
       Current.sessionManager.storedSession() != nil ? .signedIn : .signedOut
