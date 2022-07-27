@@ -18,7 +18,7 @@ let package = Package(
   dependencies: [
     .package(url: "https://github.com/WeTransfer/Mocker", from: "2.5.5"),
     .package(url: "https://github.com/binaryscraping/swift-composable-keychain", from: "0.0.2"),
-    .package(url: "https://github.com/kean/Get", from: "0.7.0"),
+    .package(url: "https://github.com/kean/Get", from: "1.0.0"),
     .package(url: "https://github.com/kean/URLQueryEncoder", from: "0.2.0"),
   ],
   targets: [

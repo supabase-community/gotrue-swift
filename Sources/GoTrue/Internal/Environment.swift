@@ -89,13 +89,18 @@ extension JSONEncoder {
 }
 
 private struct Delegate: APIClientDelegate {
-  func client(_ client: APIClient, didReceiveInvalidResponse response: HTTPURLResponse, data: Data)
-    -> Error
-  {
-    guard let error = try? JSONDecoder.goTrue.decode(GoTrueError.self, from: data) else {
-      return APIError.unacceptableStatusCode(response.statusCode)
+  func client(
+    _ client: APIClient, validateResponse response: HTTPURLResponse, data: Data,
+    task: URLSessionTask
+  ) throws {
+    if 200..<300 ~= response.statusCode {
+      return
     }
 
-    return error
+    guard let error = try? JSONDecoder.goTrue.decode(GoTrueError.self, from: data) else {
+      throw APIError.unacceptableStatusCode(response.statusCode)
+    }
+
+    throw error
   }
 }
