@@ -27,12 +27,8 @@ format:
 		--in-place \
 		--recursive .
 
-create-api:
-	create-api \
-		generate openapi.yaml \
-		--output Sources/GoTrue/Generated \
-		--module GoTrue \
-		--config .createapi.yml
+api:
+	create-api generate --module GoTrue --output Sources/GoTrue/Generated --config .createapi.yml openapi.yaml
 	sed -i "" "s/public /internal /g" Sources/GoTrue/Generated/Paths.swift
 	$(MAKE) format
 

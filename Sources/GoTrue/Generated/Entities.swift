@@ -11,9 +11,7 @@ public struct UserCredentials: Codable, Equatable {
   public var phone: String?
   public var refreshToken: String?
 
-  public init(
-    email: String? = nil, password: String? = nil, phone: String? = nil, refreshToken: String? = nil
-  ) {
+  public init(email: String? = nil, password: String? = nil, phone: String? = nil, refreshToken: String? = nil) {
     self.email = email
     self.password = password
     self.phone = phone
@@ -35,10 +33,7 @@ public struct SignUpRequest: Codable, Equatable {
   public var data: [String: AnyJSON]?
   public var gotrueMetaSecurity: GoTrueMetaSecurity?
 
-  public init(
-    email: String? = nil, password: String? = nil, phone: String? = nil,
-    data: [String: AnyJSON]? = nil, gotrueMetaSecurity: GoTrueMetaSecurity? = nil
-  ) {
+  public init(email: String? = nil, password: String? = nil, phone: String? = nil, data: [String: AnyJSON]? = nil, gotrueMetaSecurity: GoTrueMetaSecurity? = nil) {
     self.email = email
     self.password = password
     self.phone = phone
@@ -64,10 +59,7 @@ public struct Session: Codable, Equatable {
   public var refreshToken: String
   public var user: User
 
-  public init(
-    providerToken: String? = nil, accessToken: String, tokenType: String, expiresIn: Double,
-    refreshToken: String, user: User
-  ) {
+  public init(providerToken: String? = nil, accessToken: String, tokenType: String, expiresIn: Double, refreshToken: String, user: User) {
     self.providerToken = providerToken
     self.accessToken = accessToken
     self.tokenType = tokenType
@@ -108,14 +100,7 @@ public struct User: Codable, Equatable {
   public var updatedAt: Date
   public var identities: [UserIdentity]?
 
-  public init(
-    id: UUID, appMetadata: [String: AnyJSON], userMetadata: [String: AnyJSON], aud: String,
-    confirmationSentAt: Date? = nil, recoverySentAt: Date? = nil, emailChangeSentAt: Date? = nil,
-    newEmail: String? = nil, invitedAt: Date? = nil, actionLink: String? = nil,
-    email: String? = nil, phone: String? = nil, createdAt: Date, confirmedAt: Date? = nil,
-    emailConfirmedAt: Date? = nil, phoneConfirmedAt: Date? = nil, lastSignInAt: Date? = nil,
-    role: String? = nil, updatedAt: Date, identities: [UserIdentity]? = nil
-  ) {
+  public init(id: UUID, appMetadata: [String: AnyJSON], userMetadata: [String: AnyJSON], aud: String, confirmationSentAt: Date? = nil, recoverySentAt: Date? = nil, emailChangeSentAt: Date? = nil, newEmail: String? = nil, invitedAt: Date? = nil, actionLink: String? = nil, email: String? = nil, phone: String? = nil, createdAt: Date, confirmedAt: Date? = nil, emailConfirmedAt: Date? = nil, phoneConfirmedAt: Date? = nil, lastSignInAt: Date? = nil, role: String? = nil, updatedAt: Date, identities: [UserIdentity]? = nil) {
     self.id = id
     self.appMetadata = appMetadata
     self.userMetadata = userMetadata
@@ -171,10 +156,7 @@ public struct UserIdentity: Codable, Equatable {
   public var lastSignInAt: Date
   public var updatedAt: Date
 
-  public init(
-    id: UUID, userID: UUID, identityData: [String: AnyJSON], provider: Provider, createdAt: Date,
-    lastSignInAt: Date, updatedAt: Date
-  ) {
+  public init(id: UUID, userID: UUID, identityData: [String: AnyJSON], provider: Provider, createdAt: Date, lastSignInAt: Date, updatedAt: Date) {
     self.id = id
     self.userID = userID
     self.identityData = identityData
@@ -222,10 +204,7 @@ public struct OpenIDConnectCredentials: Codable, Equatable {
   public var issuer: String?
   public var provider: Provider?
 
-  public init(
-    idToken: String, nonce: String, clientID: String? = nil, issuer: String? = nil,
-    provider: Provider? = nil
-  ) {
+  public init(idToken: String, nonce: String, clientID: String? = nil, issuer: String? = nil, provider: Provider? = nil) {
     self.idToken = idToken
     self.nonce = nonce
     self.clientID = clientID
@@ -260,10 +239,7 @@ public struct OTPParams: Codable, Equatable {
   public var createUser: Bool
   public var gotrueMetaSecurity: GoTrueMetaSecurity?
 
-  public init(
-    email: String? = nil, phone: String? = nil, createUser: Bool? = nil,
-    gotrueMetaSecurity: GoTrueMetaSecurity? = nil
-  ) {
+  public init(email: String? = nil, phone: String? = nil, createUser: Bool? = nil, gotrueMetaSecurity: GoTrueMetaSecurity? = nil) {
     self.email = email
     self.phone = phone
     self.createUser = createUser ?? true
@@ -282,8 +258,7 @@ public struct OTPParams: Codable, Equatable {
     self.email = try values.decodeIfPresent(String.self, forKey: .email)
     self.phone = try values.decodeIfPresent(String.self, forKey: .phone)
     self.createUser = try values.decodeIfPresent(Bool.self, forKey: .createUser) ?? true
-    self.gotrueMetaSecurity = try values.decodeIfPresent(
-      GoTrueMetaSecurity.self, forKey: .gotrueMetaSecurity)
+    self.gotrueMetaSecurity = try values.decodeIfPresent(GoTrueMetaSecurity.self, forKey: .gotrueMetaSecurity)
   }
 }
 
@@ -335,8 +310,7 @@ public enum VerifyOTPParams: Codable, Equatable {
     } else if let value = try? container.decode(VerifyEmailOTPParams.self) {
       self = .verifyEmailOTPParams(value)
     } else {
-      throw DecodingError.dataCorruptedError(
-        in: container, debugDescription: "Failed to intialize `oneOf`")
+      throw DecodingError.dataCorruptedError(in: container, debugDescription: "Failed to intialize `oneOf`")
     }
   }
 
@@ -360,8 +334,7 @@ public enum SessionOrUser: Codable, Equatable {
     } else if let value = try? container.decode(User.self) {
       self = .user(value)
     } else {
-      throw DecodingError.dataCorruptedError(
-        in: container, debugDescription: "Failed to intialize `oneOf`")
+      throw DecodingError.dataCorruptedError(in: container, debugDescription: "Failed to intialize `oneOf`")
     }
   }
 
@@ -386,10 +359,7 @@ public struct UserAttributes: Codable, Equatable {
   /// A custom data object for `user_metadata` that a user can modify. Can be any JSON.
   public var data: [String: AnyJSON]?
 
-  public init(
-    email: String? = nil, phone: String? = nil, password: String? = nil,
-    emailChangeToken: String? = nil, data: [String: AnyJSON]? = nil
-  ) {
+  public init(email: String? = nil, phone: String? = nil, password: String? = nil, emailChangeToken: String? = nil, data: [String: AnyJSON]? = nil) {
     self.email = email
     self.phone = phone
     self.password = password
