@@ -6,8 +6,8 @@
         "repositoryURL": "https://github.com/kean/Get",
         "state": {
           "branch": null,
-          "revision": "d2ded8526d647a8ca25905025cd5503dfe51e874",
-          "version": "2.0.0"
+          "revision": "a9475786258c8df3d052359288ceed2d62025606",
+          "version": "2.1.2"
         }
       },
       {
@@ -51,8 +51,8 @@
         "repositoryURL": "https://github.com/pointfreeco/xctest-dynamic-overlay",
         "state": {
           "branch": null,
-          "revision": "38bc9242e4388b80bd23ddfdf3071428859e3260",
-          "version": "0.4.0"
+          "revision": "30314f1ece684dd60679d598a9b89107557b67d9",
+          "version": "0.4.1"
         }
       }
     ]
