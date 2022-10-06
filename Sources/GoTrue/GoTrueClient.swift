@@ -205,13 +205,15 @@ public final class GoTrueClient {
     }
 
     let providerToken = params.first(where: { $0.name == "provider_token" })?.value
+    let providerRefreshToken = params.first(where: { $0.name == "provider_refresh_token" })?.value
 
     let user = try await Current.client.send(
-      Paths.user.get.withAuthoriztion(accessToken, type: tokenType)
+      Paths.user.get.withAuthorization(accessToken, type: tokenType)
     ).value
 
     let session = Session(
       providerToken: providerToken,
+      providerRefreshToken: providerRefreshToken,
       accessToken: accessToken,
       tokenType: tokenType,
       expiresIn: Double(expiresIn) ?? 0,
@@ -237,7 +239,7 @@ public final class GoTrueClient {
     await Current.sessionManager.remove()
 
     if let session = session {
-      try await Current.client.send(Paths.logout.post.withAuthoriztion(session.accessToken)).value
+      try await Current.client.send(Paths.logout.post.withAuthorization(session.accessToken)).value
     }
   }
 
@@ -257,7 +259,7 @@ public final class GoTrueClient {
   public func update(user: UserAttributes) async throws -> User {
     var session = try await Current.sessionManager.session()
     let user = try await Current.client.send(
-      Paths.user.put(user).withAuthoriztion(session.accessToken)
+      Paths.user.put(user).withAuthorization(session.accessToken)
     ).value
     session.user = user
     try await Current.sessionManager.update(session)

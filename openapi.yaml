@@ -49,6 +49,8 @@ components:
       properties:
         provider_token:
           type: string
+        provider_refresh_token:
+          type: string
         access_token:
           type: string
         token_type:
