@@ -15,3 +15,5 @@ public struct GoTrueError: LocalizedError, Decodable {
     case errorDescription = "error_description"
   }
 }
+
+struct MissingExpClaimError: Error {}

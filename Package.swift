@@ -20,6 +20,7 @@ let package = Package(
     .package(url: "https://github.com/binaryscraping/swift-composable-keychain", from: "0.0.2"),
     .package(url: "https://github.com/kean/Get", from: "2.0.0"),
     .package(url: "https://github.com/kean/URLQueryEncoder", from: "0.2.0"),
+    .package(url: "https://github.com/auth0/JWTDecode.swift", from: "3.0.0"),
   ],
   targets: [
     .target(
@@ -28,6 +29,7 @@ let package = Package(
         .product(name: "Get", package: "Get"),
         .product(name: "ComposableKeychain", package: "swift-composable-keychain"),
         .product(name: "URLQueryEncoder", package: "URLQueryEncoder"),
+        .product(name: "JWTDecode", package: "JWTDecode.swift"),
       ]
     ),
     .testTarget(

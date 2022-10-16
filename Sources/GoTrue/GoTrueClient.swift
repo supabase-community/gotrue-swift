@@ -1,4 +1,5 @@
 import Combine
+import JWTDecode
 import Foundation
 import Get
 
@@ -228,6 +229,45 @@ public final class GoTrueClient {
       authEventChangeSubject.send(.passwordRecovery)
     }
 
+    return session
+  }
+
+  @discardableResult
+  public func setSession(accessToken: String, refreshToken: String) async throws -> Session {
+    let now = Date()
+    var expiresAt = now
+    var hasExpired = true
+    var session: Session?
+
+    let jwt = try decode(jwt: accessToken)
+    if let exp = jwt.expiresAt {
+      expiresAt = exp
+      hasExpired = expiresAt <= now
+    } else {
+      throw MissingExpClaimError()
+    }
+
+    if hasExpired {
+      session = try await refreshSession(refreshToken: refreshToken)
+    } else {
+      let user = try await Current.client.send(
+        Paths.user.get.withAuthorization(accessToken)
+      ).value
+      session = Session(
+        accessToken: accessToken,
+        tokenType: "bearer",
+        expiresIn: expiresAt.timeIntervalSince(now),
+        refreshToken: refreshToken,
+        user: user
+      )
+    }
+
+    guard let session = session else {
+      throw SessionNotFound()
+    }
+
+    try await Current.sessionManager.update(session)
+    authEventChangeSubject.send(.tokenRefreshed)
     return session
   }
 
