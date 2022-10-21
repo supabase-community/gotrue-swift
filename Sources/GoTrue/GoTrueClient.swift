@@ -1,6 +1,7 @@
 import Combine
 import Foundation
 import Get
+import JWTDecode
 
 #if canImport(FoundationNetworking)
   import FoundationNetworking
@@ -27,7 +28,7 @@ public final class GoTrueClient {
       configuration: configuration
     )
 
-    self.authEventChangeSubject = CurrentValueSubject<AuthChangeEvent, Never>(
+    authEventChangeSubject = CurrentValueSubject<AuthChangeEvent, Never>(
       Current.sessionManager.storedSession() != nil ? .signedIn : .signedOut
     )
   }
@@ -38,7 +39,8 @@ public final class GoTrueClient {
     keychainAccessGroup: String? = nil
   ) {
     self.init(
-      url: url, headers: headers, keychainAccessGroup: keychainAccessGroup, configuration: { _ in })
+      url: url, headers: headers, keychainAccessGroup: keychainAccessGroup, configuration: { _ in }
+    )
   }
 
   @discardableResult
@@ -79,7 +81,8 @@ public final class GoTrueClient {
       let session = try await Current.client.send(
         Paths.token.post(
           grantType: .password,
-          .userCredentials(UserCredentials(email: email, password: password)))
+          .userCredentials(UserCredentials(email: email, password: password))
+        )
       ).value
 
       if session.user.emailConfirmedAt != nil || session.user.confirmedAt != nil {
@@ -101,7 +104,8 @@ public final class GoTrueClient {
       let session = try await Current.client.send(
         Paths.token.post(
           grantType: .password,
-          .userCredentials(UserCredentials(password: password, phone: phone)))
+          .userCredentials(UserCredentials(password: password, phone: phone))
+        )
       ).value
 
       if session.user.phoneConfirmedAt != nil {
@@ -127,13 +131,14 @@ public final class GoTrueClient {
   ) throws -> URL {
     guard
       var components = URLComponents(
-        url: url.appendingPathComponent("authorize"), resolvingAgainstBaseURL: false)
+        url: url.appendingPathComponent("authorize"), resolvingAgainstBaseURL: false
+      )
     else {
       throw URLError(.badURL)
     }
 
     var queryItems: [URLQueryItem] = [
-      URLQueryItem(name: "provider", value: provider.rawValue)
+      URLQueryItem(name: "provider", value: provider.rawValue),
     ]
 
     if let scopes = scopes {
@@ -231,7 +236,57 @@ public final class GoTrueClient {
     return session
   }
 
-  /// Calling this method will remove the logged in user and erase the tokens stored on local storage and invalidate the token on the API. It also will trigger a ``AuthChangeEvent.signedOut`` event.
+  /// Sets the session data from the current session. If the current session is expired, setSession
+  /// will take care of refreshing it to obtain a new session.
+  ///
+  /// If the refresh token is invalid and the current session has expired, an error will be thrown.
+  /// This method will use the exp claim defined in the access token.
+  /// - Parameters:
+  ///   - accessToken: The current access token.
+  ///   - refreshToken: The current refresh token.
+  /// - Returns: A new valid session.
+  @discardableResult
+  public func setSession(accessToken: String, refreshToken: String) async throws -> Session {
+    let now = Date()
+    var expiresAt = now
+    var hasExpired = true
+    var session: Session?
+
+    let jwt = try decode(jwt: accessToken)
+    if let exp = jwt.expiresAt {
+      expiresAt = exp
+      hasExpired = expiresAt <= now
+    } else {
+      throw MissingExpClaimError()
+    }
+
+    if hasExpired {
+      session = try await refreshSession(refreshToken: refreshToken)
+    } else {
+      let user = try await Current.client.send(
+        Paths.user.get.withAuthorization(accessToken)
+      ).value
+      session = Session(
+        accessToken: accessToken,
+        tokenType: "bearer",
+        expiresIn: expiresAt.timeIntervalSince(now),
+        refreshToken: refreshToken,
+        user: user
+      )
+    }
+
+    guard let session = session else {
+      throw SessionNotFound()
+    }
+
+    try await Current.sessionManager.update(session)
+    authEventChangeSubject.send(.tokenRefreshed)
+    return session
+  }
+
+  /// Calling this method will remove the logged in user and erase the tokens stored on local
+  /// storage and invalidate the token on the API. It also will trigger a
+  /// ``AuthChangeEvent.signedOut`` event.
   public func signOut() async throws {
     defer { authEventChangeSubject.send(.signedOut) }
 

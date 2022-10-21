@@ -1,14 +1,13 @@
 import Get
 
 extension SessionOrUser {
-
   public var user: User? {
-    if case .user(let user) = self { return user }
+    if case let .user(user) = self { return user }
     return nil
   }
 
   public var session: Session? {
-    if case .session(let session) = self { return session }
+    if case let .session(session) = self { return session }
     return nil
   }
 }

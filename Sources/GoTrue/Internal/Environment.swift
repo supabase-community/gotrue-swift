@@ -24,7 +24,7 @@ extension Environment {
   ) -> Environment {
     let client = APIClient(baseURL: url) {
       $0.sessionConfiguration.httpAdditionalHeaders = headers.merging([
-        "Content-Type": "application/json"
+        "Content-Type": "application/json",
       ]) { old, _ in old }
       $0.decoder = .goTrue
       $0.encoder = .goTrue
@@ -39,7 +39,8 @@ extension Environment {
         try await Current.client.send(
           Paths.token.post(
             grantType: .refreshToken,
-            .userCredentials(UserCredentials(refreshToken: refreshToken)))
+            .userCredentials(UserCredentials(refreshToken: refreshToken))
+          )
         ).value
       },
       keychain: .live(
@@ -67,7 +68,8 @@ extension JSONDecoder {
 
       guard let date = dateFormatter.date(from: string) else {
         throw DecodingError.dataCorruptedError(
-          in: container, debugDescription: "Invalid date format: \(string)")
+          in: container, debugDescription: "Invalid date format: \(string)"
+        )
       }
 
       return date
@@ -90,10 +92,10 @@ extension JSONEncoder {
 
 private struct Delegate: APIClientDelegate {
   func client(
-    _ client: APIClient, validateResponse response: HTTPURLResponse, data: Data,
-    task: URLSessionTask
+    _: APIClient, validateResponse response: HTTPURLResponse, data: Data,
+    task _: URLSessionTask
   ) throws {
-    if 200..<300 ~= response.statusCode {
+    if 200 ..< 300 ~= response.statusCode {
       return
     }
 

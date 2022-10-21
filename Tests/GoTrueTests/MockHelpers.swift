@@ -19,7 +19,7 @@ extension Mock {
       dataType: .json,
       statusCode: statusCode,
       data: [
-        .post: json(named: name)
+        .post: json(named: name),
       ]
     )
   }
@@ -30,7 +30,7 @@ extension Mock {
       dataType: .json,
       statusCode: statusCode,
       data: [
-        .get: json(named: name)
+        .get: json(named: name),
       ]
     )
   }
