@@ -13,7 +13,7 @@ let package = Package(
     .tvOS(.v13),
   ],
   products: [
-    .library(name: "GoTrue", targets: ["GoTrue"])
+    .library(name: "GoTrue", targets: ["GoTrue"]),
   ],
   dependencies: [
     .package(url: "https://github.com/WeTransfer/Mocker", from: "2.7.0"),
@@ -39,7 +39,7 @@ let package = Package(
         "Mocker",
       ],
       resources: [
-        .process("Resources")
+        .process("Resources"),
       ]
     ),
   ]

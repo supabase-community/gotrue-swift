@@ -53,7 +53,7 @@ private actor LiveSessionManager {
       return currentSession.session
     }
 
-    self.task = Task {
+    task = Task {
       defer { self.task = nil }
 
       let session = try await Current.sessionRefresher(currentSession.session.refreshToken)

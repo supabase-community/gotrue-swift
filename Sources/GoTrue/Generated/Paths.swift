@@ -16,7 +16,11 @@ extension Paths {
     /// Path: `/token`
     internal let path: String
 
-    internal func post(grantType: GrantType, redirectURL: URL? = nil, _ body: PostRequest) -> Request<GoTrue.Session> {
+    internal func post(
+      grantType: GrantType,
+      redirectURL: URL? = nil,
+      _ body: PostRequest
+    ) -> Request<GoTrue.Session> {
       Request(path: path, method: "POST", query: makePostQuery(grantType, redirectURL), body: body)
     }
 
@@ -40,8 +44,8 @@ extension Paths {
       internal func encode(to encoder: Encoder) throws {
         var container = encoder.singleValueContainer()
         switch self {
-        case .userCredentials(let value): try container.encode(value)
-        case .openIDConnectCredentials(let value): try container.encode(value)
+        case let .userCredentials(value): try container.encode(value)
+        case let .openIDConnectCredentials(value): try container.encode(value)
         }
       }
     }
@@ -57,7 +61,10 @@ extension Paths {
     /// Path: `/signup`
     internal let path: String
 
-    internal func post(redirectURL: URL? = nil, _ body: GoTrue.SignUpRequest) -> Request<GoTrue.SessionOrUser> {
+    internal func post(
+      redirectURL: URL? = nil,
+      _ body: GoTrue.SignUpRequest
+    ) -> Request<GoTrue.SessionOrUser> {
       Request(path: path, method: "POST", query: makePostQuery(redirectURL), body: body)
     }
 

@@ -12,11 +12,11 @@ public enum AnyJSON: Equatable, Codable {
 
   var value: Any {
     switch self {
-    case .string(let string): return string
-    case .number(let double): return double
-    case .object(let dictionary): return dictionary
-    case .array(let array): return array
-    case .bool(let bool): return bool
+    case let .string(string): return string
+    case let .number(double): return double
+    case let .object(dictionary): return dictionary
+    case let .array(array): return array
+    case let .bool(bool): return bool
     }
   }
 
@@ -62,18 +62,18 @@ struct StringCodingKey: CodingKey, ExpressibleByStringLiteral {
   }
 
   init?(stringValue: String) {
-    self.string = stringValue
+    string = stringValue
   }
 
   var intValue: Int? { return int }
 
   init?(intValue: Int) {
-    self.string = String(describing: intValue)
-    self.int = intValue
+    string = String(describing: intValue)
+    int = intValue
   }
 
   init(stringLiteral value: String) {
-    self.string = value
+    string = value
   }
 }
 
@@ -83,7 +83,12 @@ public struct UserCredentials: Codable, Equatable {
   public var phone: String?
   public var refreshToken: String?
 
-  public init(email: String? = nil, password: String? = nil, phone: String? = nil, refreshToken: String? = nil) {
+  public init(
+    email: String? = nil,
+    password: String? = nil,
+    phone: String? = nil,
+    refreshToken: String? = nil
+  ) {
     self.email = email
     self.password = password
     self.phone = phone
@@ -92,10 +97,10 @@ public struct UserCredentials: Codable, Equatable {
 
   public init(from decoder: Decoder) throws {
     let values = try decoder.container(keyedBy: StringCodingKey.self)
-    self.email = try values.decodeIfPresent(String.self, forKey: "email")
-    self.password = try values.decodeIfPresent(String.self, forKey: "password")
-    self.phone = try values.decodeIfPresent(String.self, forKey: "phone")
-    self.refreshToken = try values.decodeIfPresent(String.self, forKey: "refresh_token")
+    email = try values.decodeIfPresent(String.self, forKey: "email")
+    password = try values.decodeIfPresent(String.self, forKey: "password")
+    phone = try values.decodeIfPresent(String.self, forKey: "phone")
+    refreshToken = try values.decodeIfPresent(String.self, forKey: "refresh_token")
   }
 
   public func encode(to encoder: Encoder) throws {
@@ -114,7 +119,13 @@ public struct SignUpRequest: Codable, Equatable {
   public var data: [String: AnyJSON]?
   public var gotrueMetaSecurity: GoTrueMetaSecurity?
 
-  public init(email: String? = nil, password: String? = nil, phone: String? = nil, data: [String: AnyJSON]? = nil, gotrueMetaSecurity: GoTrueMetaSecurity? = nil) {
+  public init(
+    email: String? = nil,
+    password: String? = nil,
+    phone: String? = nil,
+    data: [String: AnyJSON]? = nil,
+    gotrueMetaSecurity: GoTrueMetaSecurity? = nil
+  ) {
     self.email = email
     self.password = password
     self.phone = phone
@@ -124,11 +135,14 @@ public struct SignUpRequest: Codable, Equatable {
 
   public init(from decoder: Decoder) throws {
     let values = try decoder.container(keyedBy: StringCodingKey.self)
-    self.email = try values.decodeIfPresent(String.self, forKey: "email")
-    self.password = try values.decodeIfPresent(String.self, forKey: "password")
-    self.phone = try values.decodeIfPresent(String.self, forKey: "phone")
-    self.data = try values.decodeIfPresent([String: AnyJSON].self, forKey: "data")
-    self.gotrueMetaSecurity = try values.decodeIfPresent(GoTrueMetaSecurity.self, forKey: "gotrue_meta_security")
+    email = try values.decodeIfPresent(String.self, forKey: "email")
+    password = try values.decodeIfPresent(String.self, forKey: "password")
+    phone = try values.decodeIfPresent(String.self, forKey: "phone")
+    data = try values.decodeIfPresent([String: AnyJSON].self, forKey: "data")
+    gotrueMetaSecurity = try values.decodeIfPresent(
+      GoTrueMetaSecurity.self,
+      forKey: "gotrue_meta_security"
+    )
   }
 
   public func encode(to encoder: Encoder) throws {
@@ -151,7 +165,15 @@ public struct Session: Codable, Equatable {
   public var refreshToken: String
   public var user: User
 
-  public init(providerToken: String? = nil, providerRefreshToken: String? = nil, accessToken: String, tokenType: String, expiresIn: Double, refreshToken: String, user: User) {
+  public init(
+    providerToken: String? = nil,
+    providerRefreshToken: String? = nil,
+    accessToken: String,
+    tokenType: String,
+    expiresIn: Double,
+    refreshToken: String,
+    user: User
+  ) {
     self.providerToken = providerToken
     self.providerRefreshToken = providerRefreshToken
     self.accessToken = accessToken
@@ -163,13 +185,13 @@ public struct Session: Codable, Equatable {
 
   public init(from decoder: Decoder) throws {
     let values = try decoder.container(keyedBy: StringCodingKey.self)
-    self.providerToken = try values.decodeIfPresent(String.self, forKey: "provider_token")
-    self.providerRefreshToken = try values.decodeIfPresent(String.self, forKey: "provider_refresh_token")
-    self.accessToken = try values.decode(String.self, forKey: "access_token")
-    self.tokenType = try values.decode(String.self, forKey: "token_type")
-    self.expiresIn = try values.decode(Double.self, forKey: "expires_in")
-    self.refreshToken = try values.decode(String.self, forKey: "refresh_token")
-    self.user = try values.decode(User.self, forKey: "user")
+    providerToken = try values.decodeIfPresent(String.self, forKey: "provider_token")
+    providerRefreshToken = try values.decodeIfPresent(String.self, forKey: "provider_refresh_token")
+    accessToken = try values.decode(String.self, forKey: "access_token")
+    tokenType = try values.decode(String.self, forKey: "token_type")
+    expiresIn = try values.decode(Double.self, forKey: "expires_in")
+    refreshToken = try values.decode(String.self, forKey: "refresh_token")
+    user = try values.decode(User.self, forKey: "user")
   }
 
   public func encode(to encoder: Encoder) throws {
@@ -206,7 +228,28 @@ public struct User: Codable, Equatable {
   public var updatedAt: Date
   public var identities: [UserIdentity]?
 
-  public init(id: UUID, appMetadata: [String: AnyJSON], userMetadata: [String: AnyJSON], aud: String, confirmationSentAt: Date? = nil, recoverySentAt: Date? = nil, emailChangeSentAt: Date? = nil, newEmail: String? = nil, invitedAt: Date? = nil, actionLink: String? = nil, email: String? = nil, phone: String? = nil, createdAt: Date, confirmedAt: Date? = nil, emailConfirmedAt: Date? = nil, phoneConfirmedAt: Date? = nil, lastSignInAt: Date? = nil, role: String? = nil, updatedAt: Date, identities: [UserIdentity]? = nil) {
+  public init(
+    id: UUID,
+    appMetadata: [String: AnyJSON],
+    userMetadata: [String: AnyJSON],
+    aud: String,
+    confirmationSentAt: Date? = nil,
+    recoverySentAt: Date? = nil,
+    emailChangeSentAt: Date? = nil,
+    newEmail: String? = nil,
+    invitedAt: Date? = nil,
+    actionLink: String? = nil,
+    email: String? = nil,
+    phone: String? = nil,
+    createdAt: Date,
+    confirmedAt: Date? = nil,
+    emailConfirmedAt: Date? = nil,
+    phoneConfirmedAt: Date? = nil,
+    lastSignInAt: Date? = nil,
+    role: String? = nil,
+    updatedAt: Date,
+    identities: [UserIdentity]? = nil
+  ) {
     self.id = id
     self.appMetadata = appMetadata
     self.userMetadata = userMetadata
@@ -231,26 +274,26 @@ public struct User: Codable, Equatable {
 
   public init(from decoder: Decoder) throws {
     let values = try decoder.container(keyedBy: StringCodingKey.self)
-    self.id = try values.decode(UUID.self, forKey: "id")
-    self.appMetadata = try values.decode([String: AnyJSON].self, forKey: "app_metadata")
-    self.userMetadata = try values.decode([String: AnyJSON].self, forKey: "user_metadata")
-    self.aud = try values.decode(String.self, forKey: "aud")
-    self.confirmationSentAt = try values.decodeIfPresent(Date.self, forKey: "confirmation_sent_at")
-    self.recoverySentAt = try values.decodeIfPresent(Date.self, forKey: "recovery_sent_at")
-    self.emailChangeSentAt = try values.decodeIfPresent(Date.self, forKey: "email_change_sent_at")
-    self.newEmail = try values.decodeIfPresent(String.self, forKey: "new_email")
-    self.invitedAt = try values.decodeIfPresent(Date.self, forKey: "invited_at")
-    self.actionLink = try values.decodeIfPresent(String.self, forKey: "action_link")
-    self.email = try values.decodeIfPresent(String.self, forKey: "email")
-    self.phone = try values.decodeIfPresent(String.self, forKey: "phone")
-    self.createdAt = try values.decode(Date.self, forKey: "created_at")
-    self.confirmedAt = try values.decodeIfPresent(Date.self, forKey: "confirmed_at")
-    self.emailConfirmedAt = try values.decodeIfPresent(Date.self, forKey: "email_confirmed_at")
-    self.phoneConfirmedAt = try values.decodeIfPresent(Date.self, forKey: "phone_confirmed_at")
-    self.lastSignInAt = try values.decodeIfPresent(Date.self, forKey: "last_sign_in_at")
-    self.role = try values.decodeIfPresent(String.self, forKey: "role")
-    self.updatedAt = try values.decode(Date.self, forKey: "updated_at")
-    self.identities = try values.decodeIfPresent([UserIdentity].self, forKey: "identities")
+    id = try values.decode(UUID.self, forKey: "id")
+    appMetadata = try values.decode([String: AnyJSON].self, forKey: "app_metadata")
+    userMetadata = try values.decode([String: AnyJSON].self, forKey: "user_metadata")
+    aud = try values.decode(String.self, forKey: "aud")
+    confirmationSentAt = try values.decodeIfPresent(Date.self, forKey: "confirmation_sent_at")
+    recoverySentAt = try values.decodeIfPresent(Date.self, forKey: "recovery_sent_at")
+    emailChangeSentAt = try values.decodeIfPresent(Date.self, forKey: "email_change_sent_at")
+    newEmail = try values.decodeIfPresent(String.self, forKey: "new_email")
+    invitedAt = try values.decodeIfPresent(Date.self, forKey: "invited_at")
+    actionLink = try values.decodeIfPresent(String.self, forKey: "action_link")
+    email = try values.decodeIfPresent(String.self, forKey: "email")
+    phone = try values.decodeIfPresent(String.self, forKey: "phone")
+    createdAt = try values.decode(Date.self, forKey: "created_at")
+    confirmedAt = try values.decodeIfPresent(Date.self, forKey: "confirmed_at")
+    emailConfirmedAt = try values.decodeIfPresent(Date.self, forKey: "email_confirmed_at")
+    phoneConfirmedAt = try values.decodeIfPresent(Date.self, forKey: "phone_confirmed_at")
+    lastSignInAt = try values.decodeIfPresent(Date.self, forKey: "last_sign_in_at")
+    role = try values.decodeIfPresent(String.self, forKey: "role")
+    updatedAt = try values.decode(Date.self, forKey: "updated_at")
+    identities = try values.decodeIfPresent([UserIdentity].self, forKey: "identities")
   }
 
   public func encode(to encoder: Encoder) throws {
@@ -287,7 +330,15 @@ public struct UserIdentity: Codable, Equatable {
   public var lastSignInAt: Date
   public var updatedAt: Date
 
-  public init(id: String, userID: UUID, identityData: [String: AnyJSON], provider: Provider, createdAt: Date, lastSignInAt: Date, updatedAt: Date) {
+  public init(
+    id: String,
+    userID: UUID,
+    identityData: [String: AnyJSON],
+    provider: Provider,
+    createdAt: Date,
+    lastSignInAt: Date,
+    updatedAt: Date
+  ) {
     self.id = id
     self.userID = userID
     self.identityData = identityData
@@ -299,13 +350,13 @@ public struct UserIdentity: Codable, Equatable {
 
   public init(from decoder: Decoder) throws {
     let values = try decoder.container(keyedBy: StringCodingKey.self)
-    self.id = try values.decode(String.self, forKey: "id")
-    self.userID = try values.decode(UUID.self, forKey: "user_id")
-    self.identityData = try values.decode([String: AnyJSON].self, forKey: "identity_data")
-    self.provider = try values.decode(Provider.self, forKey: "provider")
-    self.createdAt = try values.decode(Date.self, forKey: "created_at")
-    self.lastSignInAt = try values.decode(Date.self, forKey: "last_sign_in_at")
-    self.updatedAt = try values.decode(Date.self, forKey: "updated_at")
+    id = try values.decode(String.self, forKey: "id")
+    userID = try values.decode(UUID.self, forKey: "user_id")
+    identityData = try values.decode([String: AnyJSON].self, forKey: "identity_data")
+    provider = try values.decode(Provider.self, forKey: "provider")
+    createdAt = try values.decode(Date.self, forKey: "created_at")
+    lastSignInAt = try values.decode(Date.self, forKey: "last_sign_in_at")
+    updatedAt = try values.decode(Date.self, forKey: "updated_at")
   }
 
   public func encode(to encoder: Encoder) throws {
@@ -347,7 +398,13 @@ public struct OpenIDConnectCredentials: Codable, Equatable {
   public var issuer: String?
   public var provider: Provider?
 
-  public init(idToken: String, nonce: String, clientID: String? = nil, issuer: String? = nil, provider: Provider? = nil) {
+  public init(
+    idToken: String,
+    nonce: String,
+    clientID: String? = nil,
+    issuer: String? = nil,
+    provider: Provider? = nil
+  ) {
     self.idToken = idToken
     self.nonce = nonce
     self.clientID = clientID
@@ -357,11 +414,11 @@ public struct OpenIDConnectCredentials: Codable, Equatable {
 
   public init(from decoder: Decoder) throws {
     let values = try decoder.container(keyedBy: StringCodingKey.self)
-    self.idToken = try values.decode(String.self, forKey: "id_token")
-    self.nonce = try values.decode(String.self, forKey: "nonce")
-    self.clientID = try values.decodeIfPresent(String.self, forKey: "client_id")
-    self.issuer = try values.decodeIfPresent(String.self, forKey: "issuer")
-    self.provider = try values.decodeIfPresent(Provider.self, forKey: "provider")
+    idToken = try values.decode(String.self, forKey: "id_token")
+    nonce = try values.decode(String.self, forKey: "nonce")
+    clientID = try values.decodeIfPresent(String.self, forKey: "client_id")
+    issuer = try values.decodeIfPresent(String.self, forKey: "issuer")
+    provider = try values.decodeIfPresent(Provider.self, forKey: "provider")
   }
 
   public func encode(to encoder: Encoder) throws {
@@ -383,7 +440,7 @@ public struct GoTrueMetaSecurity: Codable, Equatable {
 
   public init(from decoder: Decoder) throws {
     let values = try decoder.container(keyedBy: StringCodingKey.self)
-    self.hcaptchaToken = try values.decode(String.self, forKey: "hcaptcha_token")
+    hcaptchaToken = try values.decode(String.self, forKey: "hcaptcha_token")
   }
 
   public func encode(to encoder: Encoder) throws {
@@ -398,7 +455,12 @@ public struct OTPParams: Codable, Equatable {
   public var createUser: Bool
   public var gotrueMetaSecurity: GoTrueMetaSecurity?
 
-  public init(email: String? = nil, phone: String? = nil, createUser: Bool? = nil, gotrueMetaSecurity: GoTrueMetaSecurity? = nil) {
+  public init(
+    email: String? = nil,
+    phone: String? = nil,
+    createUser: Bool? = nil,
+    gotrueMetaSecurity: GoTrueMetaSecurity? = nil
+  ) {
     self.email = email
     self.phone = phone
     self.createUser = createUser ?? true
@@ -407,10 +469,13 @@ public struct OTPParams: Codable, Equatable {
 
   public init(from decoder: Decoder) throws {
     let values = try decoder.container(keyedBy: StringCodingKey.self)
-    self.email = try values.decodeIfPresent(String.self, forKey: "email")
-    self.phone = try values.decodeIfPresent(String.self, forKey: "phone")
-    self.createUser = try values.decodeIfPresent(Bool.self, forKey: "create_user") ?? true
-    self.gotrueMetaSecurity = try values.decodeIfPresent(GoTrueMetaSecurity.self, forKey: "gotrue_meta_security")
+    email = try values.decodeIfPresent(String.self, forKey: "email")
+    phone = try values.decodeIfPresent(String.self, forKey: "phone")
+    createUser = try values.decodeIfPresent(Bool.self, forKey: "create_user") ?? true
+    gotrueMetaSecurity = try values.decodeIfPresent(
+      GoTrueMetaSecurity.self,
+      forKey: "gotrue_meta_security"
+    )
   }
 
   public func encode(to encoder: Encoder) throws {
@@ -432,7 +497,7 @@ public struct VerifyMobileOTPParams: Codable, Equatable {
     case phoneChange = "phone_change"
   }
 
-  public init(phone: String, token: String, type: `Type`) {
+  public init(phone: String, token: String, type: Type) {
     self.phone = phone
     self.token = token
     self.type = type
@@ -440,9 +505,9 @@ public struct VerifyMobileOTPParams: Codable, Equatable {
 
   public init(from decoder: Decoder) throws {
     let values = try decoder.container(keyedBy: StringCodingKey.self)
-    self.phone = try values.decode(String.self, forKey: "phone")
-    self.token = try values.decode(String.self, forKey: "token")
-    self.type = try values.decode(`Type`.self, forKey: "type")
+    phone = try values.decode(String.self, forKey: "phone")
+    token = try values.decode(String.self, forKey: "token")
+    type = try values.decode(Type.self, forKey: "type")
   }
 
   public func encode(to encoder: Encoder) throws {
@@ -466,7 +531,7 @@ public struct VerifyEmailOTPParams: Codable, Equatable {
     case emailChange = "email_change"
   }
 
-  public init(email: String, token: String, type: `Type`) {
+  public init(email: String, token: String, type: Type) {
     self.email = email
     self.token = token
     self.type = type
@@ -474,9 +539,9 @@ public struct VerifyEmailOTPParams: Codable, Equatable {
 
   public init(from decoder: Decoder) throws {
     let values = try decoder.container(keyedBy: StringCodingKey.self)
-    self.email = try values.decode(String.self, forKey: "email")
-    self.token = try values.decode(String.self, forKey: "token")
-    self.type = try values.decode(`Type`.self, forKey: "type")
+    email = try values.decode(String.self, forKey: "email")
+    token = try values.decode(String.self, forKey: "token")
+    type = try values.decode(Type.self, forKey: "type")
   }
 
   public func encode(to encoder: Encoder) throws {
@@ -508,8 +573,8 @@ public enum VerifyOTPParams: Codable, Equatable {
   public func encode(to encoder: Encoder) throws {
     var container = encoder.singleValueContainer()
     switch self {
-    case .verifyMobileOTPParams(let value): try container.encode(value)
-    case .verifyEmailOTPParams(let value): try container.encode(value)
+    case let .verifyMobileOTPParams(value): try container.encode(value)
+    case let .verifyEmailOTPParams(value): try container.encode(value)
     }
   }
 }
@@ -535,8 +600,8 @@ public enum SessionOrUser: Codable, Equatable {
   public func encode(to encoder: Encoder) throws {
     var container = encoder.singleValueContainer()
     switch self {
-    case .session(let value): try container.encode(value)
-    case .user(let value): try container.encode(value)
+    case let .session(value): try container.encode(value)
+    case let .user(value): try container.encode(value)
     }
   }
 }
@@ -553,7 +618,13 @@ public struct UserAttributes: Codable, Equatable {
   /// A custom data object for `user_metadata` that a user can modify. Can be any JSON.
   public var data: [String: AnyJSON]?
 
-  public init(email: String? = nil, phone: String? = nil, password: String? = nil, emailChangeToken: String? = nil, data: [String: AnyJSON]? = nil) {
+  public init(
+    email: String? = nil,
+    phone: String? = nil,
+    password: String? = nil,
+    emailChangeToken: String? = nil,
+    data: [String: AnyJSON]? = nil
+  ) {
     self.email = email
     self.phone = phone
     self.password = password
@@ -563,11 +634,11 @@ public struct UserAttributes: Codable, Equatable {
 
   public init(from decoder: Decoder) throws {
     let values = try decoder.container(keyedBy: StringCodingKey.self)
-    self.email = try values.decodeIfPresent(String.self, forKey: "email")
-    self.phone = try values.decodeIfPresent(String.self, forKey: "phone")
-    self.password = try values.decodeIfPresent(String.self, forKey: "password")
-    self.emailChangeToken = try values.decodeIfPresent(String.self, forKey: "email_change_token")
-    self.data = try values.decodeIfPresent([String: AnyJSON].self, forKey: "data")
+    email = try values.decodeIfPresent(String.self, forKey: "email")
+    phone = try values.decodeIfPresent(String.self, forKey: "phone")
+    password = try values.decodeIfPresent(String.self, forKey: "password")
+    emailChangeToken = try values.decodeIfPresent(String.self, forKey: "email_change_token")
+    data = try values.decodeIfPresent([String: AnyJSON].self, forKey: "data")
   }
 
   public func encode(to encoder: Encoder) throws {
@@ -591,8 +662,11 @@ public struct RecoverParams: Codable, Equatable {
 
   public init(from decoder: Decoder) throws {
     let values = try decoder.container(keyedBy: StringCodingKey.self)
-    self.email = try values.decode(String.self, forKey: "email")
-    self.gotrueMetaSecurity = try values.decodeIfPresent(GoTrueMetaSecurity.self, forKey: "gotrue_meta_security")
+    email = try values.decode(String.self, forKey: "email")
+    gotrueMetaSecurity = try values.decodeIfPresent(
+      GoTrueMetaSecurity.self,
+      forKey: "gotrue_meta_security"
+    )
   }
 
   public func encode(to encoder: Encoder) throws {
