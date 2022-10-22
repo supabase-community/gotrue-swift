@@ -1,6 +1,5 @@
 import Foundation
 import Get
-import JWTDecode
 
 #if canImport(FoundationNetworking)
   import FoundationNetworking
@@ -40,9 +39,9 @@ public final class GoTrueClient {
       do {
         _ = try await Current.sessionManager.session()
         continuation.yield(.signedIn)
-      } catch GoTrueError.sessionNotFound {
+      } catch {
         continuation.yield(.signedOut)
-      } catch {}
+      }
     }
   }
 
@@ -52,7 +51,10 @@ public final class GoTrueClient {
     keychainAccessGroup: String? = nil
   ) {
     self.init(
-      url: url, headers: headers, keychainAccessGroup: keychainAccessGroup, configuration: { _ in }
+      url: url,
+      headers: headers,
+      keychainAccessGroup: keychainAccessGroup,
+      configuration: { _ in }
     )
   }
 
@@ -278,8 +280,8 @@ public final class GoTrueClient {
     var session: Session?
 
     let jwt = try decode(jwt: accessToken)
-    if let exp = jwt.expiresAt {
-      expiresAt = exp
+    if let exp = jwt["exp"] as? TimeInterval {
+      expiresAt = Date(timeIntervalSince1970: exp)
       hasExpired = expiresAt <= now
     } else {
       throw GoTrueError.missingExpClaim

@@ -2,6 +2,7 @@ import Foundation
 
 public enum GoTrueError: Error {
   case missingExpClaim
+  case malformedJWT
   case sessionNotFound
   case api(APIError)
 
