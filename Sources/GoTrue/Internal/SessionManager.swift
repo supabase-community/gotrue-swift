@@ -2,8 +2,6 @@ import ComposableKeychain
 import Foundation
 import KeychainAccess
 
-struct SessionNotFound: Error {}
-
 struct StoredSession: Codable {
   var session: Session
   var expirationDate: Date
@@ -46,7 +44,7 @@ private actor LiveSessionManager {
     }
 
     guard let currentSession = try Current.keychain.getSession() else {
-      throw SessionNotFound()
+      throw GoTrueError.sessionNotFound
     }
 
     if currentSession.isValid {

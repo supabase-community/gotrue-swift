@@ -99,10 +99,10 @@ private struct Delegate: APIClientDelegate {
       return
     }
 
-    guard let error = try? JSONDecoder.goTrue.decode(GoTrueError.self, from: data) else {
+    guard let error = try? JSONDecoder.goTrue.decode(GoTrueError.APIError.self, from: data) else {
       throw APIError.unacceptableStatusCode(response.statusCode)
     }
 
-    throw error
+    throw GoTrueError.api(error)
   }
 }

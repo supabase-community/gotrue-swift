@@ -1,4 +1,3 @@
-import Combine
 import Foundation
 import Get
 import JWTDecode
@@ -9,10 +8,16 @@ import JWTDecode
 
 public final class GoTrueClient {
   private let url: URL
-  private let authEventChangeSubject: CurrentValueSubject<AuthChangeEvent, Never>
-  public lazy var authEventChange = authEventChangeSubject.share().eraseToAnyPublisher()
 
-  public var session: Session? { Current.sessionManager.storedSession() }
+  private let authEventChangeContinuation: AsyncStream<AuthChangeEvent>.Continuation
+  /// Asynchronous sequence of authentication change events emitted during life of `GoTrueClient`.
+  public let authEventChange: AsyncStream<AuthChangeEvent>
+
+  private let initializationTask: Task<Void, Never>
+
+  /// Current stored session, not guarantee to be a valid session. If you need a valid session, use
+  /// ``getSession()`` method.
+  public var storedSession: Session? { Current.sessionManager.storedSession() }
 
   init(
     url: URL,
@@ -28,9 +33,17 @@ public final class GoTrueClient {
       configuration: configuration
     )
 
-    authEventChangeSubject = CurrentValueSubject<AuthChangeEvent, Never>(
-      Current.sessionManager.storedSession() != nil ? .signedIn : .signedOut
-    )
+    let (stream, continuation) = AsyncStream<AuthChangeEvent>.streamWithContinuation()
+    authEventChange = stream
+    authEventChangeContinuation = continuation
+    initializationTask = Task {
+      do {
+        _ = try await Current.sessionManager.session()
+        continuation.yield(.signedIn)
+      } catch GoTrueError.sessionNotFound {
+        continuation.yield(.signedOut)
+      } catch {}
+    }
   }
 
   public convenience init(
@@ -43,6 +56,15 @@ public final class GoTrueClient {
     )
   }
 
+  /// Initialize the client session from storage.
+  ///
+  /// This method is called automatically when instantiating the client, but it's recommended to
+  /// call this method on the app startup, for making sure that the client is fully initialized
+  /// before proceeding.
+  public func initialize() async {
+    await initializationTask.value
+  }
+
   @discardableResult
   public func signUp(email: String, password: String) async throws -> SessionOrUser {
     await Current.sessionManager.remove()
@@ -52,7 +74,7 @@ public final class GoTrueClient {
 
     if let session = response.session {
       try await Current.sessionManager.update(session)
-      authEventChangeSubject.send(.signedIn)
+      authEventChangeContinuation.yield(.signedIn)
     }
 
     return response
@@ -67,7 +89,7 @@ public final class GoTrueClient {
 
     if let session = response.session {
       try await Current.sessionManager.update(session)
-      authEventChangeSubject.send(.signedIn)
+      authEventChangeContinuation.yield(.signedIn)
     }
 
     return response
@@ -87,7 +109,7 @@ public final class GoTrueClient {
 
       if session.user.emailConfirmedAt != nil || session.user.confirmedAt != nil {
         try await Current.sessionManager.update(session)
-        authEventChangeSubject.send(.signedIn)
+        authEventChangeContinuation.yield(.signedIn)
       }
 
       return session
@@ -110,7 +132,7 @@ public final class GoTrueClient {
 
       if session.user.phoneConfirmedAt != nil {
         try await Current.sessionManager.update(session)
-        authEventChangeSubject.send(.signedIn)
+        authEventChangeContinuation.yield(.signedIn)
       }
 
       return session
@@ -170,22 +192,17 @@ public final class GoTrueClient {
         )
       ).value
 
-      if session.user.phoneConfirmedAt != nil || session.user.emailConfirmedAt != nil
-        || session.user.confirmedAt != nil
+      if session.user.phoneConfirmedAt != nil || session.user.emailConfirmedAt != nil || session
+        .user.confirmedAt != nil
       {
         try await Current.sessionManager.update(session)
-        authEventChangeSubject.send(.signedIn)
+        authEventChangeContinuation.yield(.signedIn)
       }
 
       return session
     } catch {
       throw error
     }
-  }
-
-  /// Refreshes the current stored session if it has expired.
-  public func refreshCurrentSessionIfNeeded() async throws {
-    _ = try await Current.sessionManager.session()
   }
 
   @discardableResult
@@ -197,7 +214,7 @@ public final class GoTrueClient {
     let params = extractParams(from: components.fragment ?? "")
 
     if let errorDescription = params.first(where: { $0.name == "error_description" })?.value {
-      throw GoTrueError(errorDescription: errorDescription)
+      throw GoTrueError.api(.init(errorDescription: errorDescription))
     }
 
     guard
@@ -227,13 +244,21 @@ public final class GoTrueClient {
     )
 
     try await Current.sessionManager.update(session)
-    authEventChangeSubject.send(.signedIn)
+    authEventChangeContinuation.yield(.signedIn)
 
     if let type = params.first(where: { $0.name == "type" })?.value, type == "recovery" {
-      authEventChangeSubject.send(.passwordRecovery)
+      authEventChangeContinuation.yield(.passwordRecovery)
     }
 
     return session
+  }
+
+  /// Returns the session, refreshing it if necessary.
+  /// - Returns: A valid session, or thrown a ``SessionNotFoundError`` if a valid session wasn't
+  /// found.
+  public func getSession() async throws -> Session {
+    await initialize()
+    return try await Current.sessionManager.session()
   }
 
   /// Sets the session data from the current session. If the current session is expired, setSession
@@ -257,7 +282,7 @@ public final class GoTrueClient {
       expiresAt = exp
       hasExpired = expiresAt <= now
     } else {
-      throw MissingExpClaimError()
+      throw GoTrueError.missingExpClaim
     }
 
     if hasExpired {
@@ -276,11 +301,11 @@ public final class GoTrueClient {
     }
 
     guard let session = session else {
-      throw SessionNotFound()
+      throw GoTrueError.sessionNotFound
     }
 
     try await Current.sessionManager.update(session)
-    authEventChangeSubject.send(.tokenRefreshed)
+    authEventChangeContinuation.yield(.tokenRefreshed)
     return session
   }
 
@@ -288,7 +313,7 @@ public final class GoTrueClient {
   /// storage and invalidate the token on the API. It also will trigger a
   /// ``AuthChangeEvent.signedOut`` event.
   public func signOut() async throws {
-    defer { authEventChangeSubject.send(.signedOut) }
+    defer { authEventChangeContinuation.yield(.signedOut) }
 
     let session = try? await Current.sessionManager.session()
     await Current.sessionManager.remove()
@@ -304,7 +329,7 @@ public final class GoTrueClient {
 
     if let session = response.session {
       try await Current.sessionManager.update(session)
-      authEventChangeSubject.send(.signedIn)
+      authEventChangeContinuation.yield(.signedIn)
     }
 
     return response
@@ -318,7 +343,7 @@ public final class GoTrueClient {
     ).value
     session.user = user
     try await Current.sessionManager.update(session)
-    authEventChangeSubject.send(.userUpdated)
+    authEventChangeContinuation.yield(.userUpdated)
     return user
   }
 
