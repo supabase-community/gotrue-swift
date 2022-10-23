@@ -11,7 +11,7 @@ public actor KeychainLocalStorage: GoTrueLocalStorage {
   let keychain: Keychain
 
   public init(service: String, accessGroup: String?) {
-    if let accessGroup {
+    if let accessGroup = accessGroup {
       keychain = Keychain(service: service, accessGroup: accessGroup)
     } else {
       keychain = Keychain(service: service)
