@@ -3,12 +3,29 @@ import XCTest
 
 @testable import GoTrue
 
+actor InMemoryLocalStorage: GoTrueLocalStorage {
+  private var storage: [String: Data] = [:]
+
+  func store(key: String, value: Data) async throws {
+    storage[key] = value
+  }
+
+  func retrieve(key: String) async throws -> Data? {
+    storage[key]
+  }
+
+  func remove(key: String) async throws {
+    storage[key] = nil
+  }
+}
+
 final class GoTrueTests: XCTestCase {
   static let baseURL = URL(string: "http://localhost:54321/auth/v1")!
 
   let sut = GoTrueClient(
     url: GoTrueTests.baseURL,
-    headers: ["apikey": "dummy.api.key"]
+    headers: ["apikey": "dummy.api.key"],
+    localStorage: InMemoryLocalStorage()
   ) {
     $0.sessionConfiguration.protocolClasses = [MockingURLProtocol.self]
   }

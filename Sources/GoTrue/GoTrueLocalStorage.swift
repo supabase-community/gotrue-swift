@@ -7,10 +7,10 @@ public protocol GoTrueLocalStorage {
   func remove(key: String) async throws
 }
 
-actor KeychainLocalStorage: GoTrueLocalStorage {
+public actor KeychainLocalStorage: GoTrueLocalStorage {
   let keychain: Keychain
 
-  init(service: String, accessGroup: String?) {
+  public init(service: String, accessGroup: String?) {
     if let accessGroup {
       keychain = Keychain(service: service, accessGroup: accessGroup)
     } else {
@@ -18,15 +18,15 @@ actor KeychainLocalStorage: GoTrueLocalStorage {
     }
   }
 
-  func store(key: String, value: Data) async throws {
+  public func store(key: String, value: Data) async throws {
     try keychain.set(value, key: key)
   }
 
-  func retrieve(key: String) async throws -> Data? {
+  public func retrieve(key: String) async throws -> Data? {
     try keychain.getData(key)
   }
 
-  func remove(key: String) async throws {
+  public func remove(key: String) async throws {
     try keychain.remove(key)
   }
 }

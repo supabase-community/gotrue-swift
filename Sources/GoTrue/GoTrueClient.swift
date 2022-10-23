@@ -25,13 +25,13 @@ public final class GoTrueClient {
   init(
     url: URL,
     headers: [String: String] = [:],
-    keychainAccessGroup: String? = nil,
+    localStorage: GoTrueLocalStorage,
     configuration: (inout APIClient.Configuration) -> Void
   ) {
     self.url = url
     Current = .live(
       url: url,
-      accessGroup: keychainAccessGroup,
+      localStorage: localStorage,
       headers: headers.merging(Constants.defaultHeaders) { old, _ in old },
       configuration: configuration
     )
@@ -52,12 +52,15 @@ public final class GoTrueClient {
   public convenience init(
     url: URL,
     headers: [String: String] = [:],
-    keychainAccessGroup: String? = nil
+    localStorage: GoTrueLocalStorage = KeychainLocalStorage(
+      service: "supabase.gotrue.swift",
+      accessGroup: nil
+    )
   ) {
     self.init(
       url: url,
       headers: headers,
-      keychainAccessGroup: keychainAccessGroup,
+      localStorage: localStorage,
       configuration: { _ in }
     )
   }

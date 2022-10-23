@@ -17,7 +17,7 @@ var Current: Environment!
 extension Environment {
   static func live(
     url: URL,
-    accessGroup: String?,
+    localStorage: GoTrueLocalStorage,
     headers: [String: String],
     configuration: (inout APIClient.Configuration) -> Void
   ) -> Environment {
@@ -42,10 +42,7 @@ extension Environment {
           )
         ).value
       },
-      localStorage: KeychainLocalStorage(
-        service: "supabase.gotrue.swift",
-        accessGroup: accessGroup
-      ),
+      localStorage: localStorage,
       sessionManager: .live,
       date: Date.init
     )
