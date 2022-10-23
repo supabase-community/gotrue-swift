@@ -14,9 +14,13 @@ public final class GoTrueClient {
 
   private let initializationTask: Task<Void, Never>
 
-  /// Current stored session, not guarantee to be a valid session. If you need a valid session, use
-  /// ``getSession()`` method.
-  public var storedSession: Session? { Current.sessionManager.storedSession() }
+  /// Returns the session, refreshing it if necessary.
+  public var session: Session {
+    get async throws {
+      await initialize()
+      return try await Current.sessionManager.session()
+    }
+  }
 
   init(
     url: URL,
@@ -253,14 +257,6 @@ public final class GoTrueClient {
     }
 
     return session
-  }
-
-  /// Returns the session, refreshing it if necessary.
-  /// - Returns: A valid session, or thrown a ``SessionNotFoundError`` if a valid session wasn't
-  /// found.
-  public func getSession() async throws -> Session {
-    await initialize()
-    return try await Current.sessionManager.session()
   }
 
   /// Sets the session data from the current session. If the current session is expired, setSession

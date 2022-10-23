@@ -22,10 +22,7 @@ test-tvos:
 		-destination platform="$(PLATFORM_TVOS)"
 
 format:
-	swift format \
-		--ignore-unparsable-files \
-		--in-place \
-		--recursive .
+	@swiftformat .
 
 api:
 	create-api generate --output Sources/GoTrue/Generated --config .createapi.yml openapi.yaml

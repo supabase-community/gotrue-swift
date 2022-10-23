@@ -17,7 +17,7 @@ let package = Package(
   ],
   dependencies: [
     .package(url: "https://github.com/WeTransfer/Mocker", from: "2.7.0"),
-    .package(url: "https://github.com/binaryscraping/swift-composable-keychain", from: "0.0.2"),
+    .package(url: "https://github.com/kishikawakatsumi/KeychainAccess", from: "4.2.2"),
     .package(url: "https://github.com/kean/Get", from: "2.0.0"),
     .package(url: "https://github.com/kean/URLQueryEncoder", from: "0.2.0"),
   ],
@@ -26,7 +26,7 @@ let package = Package(
       name: "GoTrue",
       dependencies: [
         .product(name: "Get", package: "Get"),
-        .product(name: "ComposableKeychain", package: "swift-composable-keychain"),
+        .product(name: "KeychainAccess", package: "KeychainAccess"),
         .product(name: "URLQueryEncoder", package: "URLQueryEncoder"),
       ]
     ),

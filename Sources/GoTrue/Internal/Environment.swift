@@ -1,4 +1,3 @@
-import ComposableKeychain
 import Foundation
 import Get
 import KeychainAccess
@@ -8,7 +7,7 @@ typealias SessionRefresher = (_ refreshToken: String) async throws -> Session
 struct Environment {
   var client: APIClient
   var sessionRefresher: SessionRefresher
-  var keychain: KeychainClient
+  var localStorage: GoTrueLocalStorage
   var sessionManager: SessionManager
   var date: () -> Date
 }
@@ -43,9 +42,9 @@ extension Environment {
           )
         ).value
       },
-      keychain: .live(
-        keychain: accessGroup.map { Keychain(service: "supabase.gotrue.swift", accessGroup: $0) }
-          ?? Keychain(service: "supabase.gotrue.swift")
+      localStorage: KeychainLocalStorage(
+        service: "supabase.gotrue.swift",
+        accessGroup: accessGroup
       ),
       sessionManager: .live,
       date: Date.init

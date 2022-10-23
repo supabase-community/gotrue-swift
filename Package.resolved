@@ -29,30 +29,12 @@
         }
       },
       {
-        "package": "ComposableKeychain",
-        "repositoryURL": "https://github.com/binaryscraping/swift-composable-keychain",
-        "state": {
-          "branch": null,
-          "revision": "3ebddfe9e9232218bada99ab6d6b3ca1fd94f112",
-          "version": "0.0.2"
-        }
-      },
-      {
         "package": "URLQueryEncoder",
         "repositoryURL": "https://github.com/kean/URLQueryEncoder",
         "state": {
           "branch": null,
           "revision": "4cc975d4d075d0e62699a796a08284e217d4ee93",
           "version": "0.2.0"
-        }
-      },
-      {
-        "package": "xctest-dynamic-overlay",
-        "repositoryURL": "https://github.com/pointfreeco/xctest-dynamic-overlay",
-        "state": {
-          "branch": null,
-          "revision": "16e6409ee82e1b81390bdffbf217b9c08ab32784",
-          "version": "0.5.0"
         }
       }
     ]

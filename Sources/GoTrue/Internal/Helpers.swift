@@ -33,7 +33,8 @@ func decode(jwt: String) throws -> [String: Any] {
 }
 
 private func base64URLDecode(_ value: String) -> Data? {
-  var base64 = value.replacingOccurrences(of: "-", with: "+").replacingOccurrences(of: "_", with: "/")
+  var base64 = value.replacingOccurrences(of: "-", with: "+")
+    .replacingOccurrences(of: "_", with: "/")
   let length = Double(base64.lengthOfBytes(using: .utf8))
   let requiredLength = 4 * ceil(length / 4.0)
   let paddingLength = requiredLength - length
