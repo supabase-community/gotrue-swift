@@ -8,12 +8,26 @@ on:
     branches:
       - '*'
       
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
-  build-and-test:
-    runs-on: macos-latest
+  library:
+    runs-on: macos-12
+    strategy:
+      matrix:
+        xcode: ['14.0.1', '14.1']
     steps:
     - uses: actions/checkout@v3
-    - name: Build
-      run: swift build -v
+    - name: Select Xcode ${{ matrix.xcode }}
+      run: sudo xcode-select -S /Applications/Xcode_${{ matrix.xcode }}.app
     - name: Run tests
-      run: swift test -v
+      run: make test-library
+  
+  # examples:
+  #   runs-on: macos-12
+  #   steps:
+  #     - uses: actions/checkout@v3
+  #     - name: Run tests
+  #       run: make test-examples

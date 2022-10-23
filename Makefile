@@ -1,25 +1,20 @@
-PLATFORM_IOS = iOS Simulator,name=iPhone 11 Pro Max
+PLATFORM_IOS = iOS Simulator,name=iPhone 14 Pro Max
 PLATFORM_MACOS = macOS
-PLATFORM_TVOS = tvOS Simulator,name=Apple TV 4K (at 1080p) (2nd generation)
+PLATFORM_MAC_CATALYST = macOS,variant=Mac Catalyst
+PLATFORM_TVOS = tvOS Simulator,name=Apple TV
+PLATFORM_WATCHOS = watchOS Simulator,name=Apple Watch Series 7 (45mm)
 
 default: test-all
 
 test-all: test-ios test-macos test-tvos
 
-test-ios:
-	xcodebuild test \
-		-scheme GoTrue \
-		-destination platform="$(PLATFORM_IOS)"
-
-test-macos:
-	xcodebuild test \
-		-scheme GoTrue \
-		-destination platform="$(PLATFORM_MACOS)"
-
-test-tvos:
-	xcodebuild test \
-		-scheme GoTrue \
-		-destination platform="$(PLATFORM_TVOS)"
+test-library:
+	for platform in "$(PLATFORM_IOS)" "$(PLATFORM_MACOS)" "$(PLATFORM_MAC_CATALYST)" "$(PLATFORM_TVOS)" "$(PLATFORM_WATCHOS)"; do \
+		xcodebuild test \
+			-workspace GoTrue.xcworkspace \
+			-scheme GoTrue \
+			-destination platform="$$platform" || exit 1; \
+	done;
 
 format:
 	@swiftformat .
@@ -29,4 +24,4 @@ api:
 	sed -i "" "s/public /internal /g" Sources/GoTrue/Generated/Paths.swift
 	$(MAKE) format
 
-.PHONY: format test-all test-ios test-macos test-tvos create-api
+.PHONY: format test-all test-library create-api
