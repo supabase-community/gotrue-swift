@@ -1,6 +1,6 @@
 import Foundation
 
-public enum GoTrueError: Error {
+public enum GoTrueError: LocalizedError {
   case missingExpClaim
   case malformedJWT
   case sessionNotFound
@@ -19,6 +19,15 @@ public enum GoTrueError: Error {
       case code
       case error
       case errorDescription = "error_description"
+    }
+  }
+
+  public var errorDescription: String? {
+    switch self {
+    case .missingExpClaim: return "Missing expiration claim on access token."
+    case .malformedJWT: return "A malformed JWT received."
+    case .sessionNotFound: return "Unable to get a valid session."
+    case let .api(error): return error.errorDescription ?? error.message ?? error.msg
     }
   }
 }

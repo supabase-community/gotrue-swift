@@ -8,10 +8,12 @@
 
 /* Begin PBXBuildFile section */
 		1820720E286B449B0009D0BF /* Secrets.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1820720D286B449B0009D0BF /* Secrets.swift */; };
-		18AD3624286B304300855046 /* GoTrue in Frameworks */ = {isa = PBXBuildFile; productRef = 18AD3623286B304300855046 /* GoTrue */; };
 		18DE58AE286B2C78005F7FF2 /* ExamplesApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 18DE589E286B2C77005F7FF2 /* ExamplesApp.swift */; };
-		18DE58B0286B2C78005F7FF2 /* SignInWithGoogleExampleView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 18DE589F286B2C77005F7FF2 /* SignInWithGoogleExampleView.swift */; };
 		18DE58B2286B2C78005F7FF2 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 18DE58A0286B2C78005F7FF2 /* Assets.xcassets */; };
+		798AD51F29072C15001B4801 /* GoTrue in Frameworks */ = {isa = PBXBuildFile; productRef = 798AD51E29072C15001B4801 /* GoTrue */; };
+		798AD52129072C22001B4801 /* AppView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 798AD52029072C22001B4801 /* AppView.swift */; };
+		798AD5232907309C001B4801 /* SessionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 798AD5222907309C001B4801 /* SessionView.swift */; };
+		798AD525290731A0001B4801 /* AuthWithEmailAndPasswordView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 798AD524290731A0001B4801 /* AuthWithEmailAndPasswordView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -19,10 +21,11 @@
 		18AD3626286B33AE00855046 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		18AD3627286B35D300855046 /* Examples.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = Examples.entitlements; sourceTree = "<group>"; };
 		18DE589E286B2C77005F7FF2 /* ExamplesApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExamplesApp.swift; sourceTree = "<group>"; };
-		18DE589F286B2C77005F7FF2 /* SignInWithGoogleExampleView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SignInWithGoogleExampleView.swift; sourceTree = "<group>"; };
 		18DE58A0286B2C78005F7FF2 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		18DE58A5286B2C78005F7FF2 /* Examples.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Examples.app; sourceTree = BUILT_PRODUCTS_DIR; };
-		18DE58BC286B2E7B005F7FF2 /* gotrue-swift */ = {isa = PBXFileReference; lastKnownFileType = wrapper; name = "gotrue-swift"; path = ..; sourceTree = "<group>"; };
+		798AD52029072C22001B4801 /* AppView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppView.swift; sourceTree = "<group>"; };
+		798AD5222907309C001B4801 /* SessionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SessionView.swift; sourceTree = "<group>"; };
+		798AD524290731A0001B4801 /* AuthWithEmailAndPasswordView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuthWithEmailAndPasswordView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -30,7 +33,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				18AD3624286B304300855046 /* GoTrue in Frameworks */,
+				798AD51F29072C15001B4801 /* GoTrue in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -47,7 +50,6 @@
 		18DE5898286B2C77005F7FF2 = {
 			isa = PBXGroup;
 			children = (
-				18DE58BC286B2E7B005F7FF2 /* gotrue-swift */,
 				18DE589D286B2C77005F7FF2 /* Shared */,
 				18DE58A6286B2C78005F7FF2 /* Products */,
 				18AD3622286B304300855046 /* Frameworks */,
@@ -58,11 +60,13 @@
 			isa = PBXGroup;
 			children = (
 				18DE58A0286B2C78005F7FF2 /* Assets.xcassets */,
-				18DE589F286B2C77005F7FF2 /* SignInWithGoogleExampleView.swift */,
 				18AD3627286B35D300855046 /* Examples.entitlements */,
 				18DE589E286B2C77005F7FF2 /* ExamplesApp.swift */,
 				18AD3626286B33AE00855046 /* Info.plist */,
 				1820720D286B449B0009D0BF /* Secrets.swift */,
+				798AD52029072C22001B4801 /* AppView.swift */,
+				798AD5222907309C001B4801 /* SessionView.swift */,
+				798AD524290731A0001B4801 /* AuthWithEmailAndPasswordView.swift */,
 			);
 			path = Shared;
 			sourceTree = "<group>";
@@ -92,7 +96,7 @@
 			);
 			name = Examples;
 			packageProductDependencies = (
-				18AD3623286B304300855046 /* GoTrue */,
+				798AD51E29072C15001B4801 /* GoTrue */,
 			);
 			productName = "Examples (iOS)";
 			productReference = 18DE58A5286B2C78005F7FF2 /* Examples.app */;
@@ -147,9 +151,11 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				18DE58B0286B2C78005F7FF2 /* SignInWithGoogleExampleView.swift in Sources */,
 				1820720E286B449B0009D0BF /* Secrets.swift in Sources */,
 				18DE58AE286B2C78005F7FF2 /* ExamplesApp.swift in Sources */,
+				798AD52129072C22001B4801 /* AppView.swift in Sources */,
+				798AD525290731A0001B4801 /* AuthWithEmailAndPasswordView.swift in Sources */,
+				798AD5232907309C001B4801 /* SessionView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -358,7 +364,7 @@
 /* End XCConfigurationList section */
 
 /* Begin XCSwiftPackageProductDependency section */
-		18AD3623286B304300855046 /* GoTrue */ = {
+		798AD51E29072C15001B4801 /* GoTrue */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = GoTrue;
 		};

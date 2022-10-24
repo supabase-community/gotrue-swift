@@ -12,17 +12,18 @@ import SwiftUI
 struct ExamplesApp: App {
   var body: some Scene {
     WindowGroup {
-      NavigationView {
-        List {
-          NavigationLink("Sign in with Google") {
-            SignInWithGoogleExampleView()
-          }
-        }
-        .navigationTitle("Examples")
-      }
+      AppView()
     }
   }
 }
 
-/// Global GoTrueClient instance.
-let gotrue = GoTrueClient(url: SUPABASE_URL, headers: ["apikey": SUPABASE_API_KEY])
+private enum GoTrueEnvironmentKey: EnvironmentKey {
+  static let defaultValue = GoTrueClient(url: SUPABASE_URL, headers: ["apikey": SUPABASE_API_KEY])
+}
+
+extension EnvironmentValues {
+  var goTrueClient: GoTrueClient {
+    get { self[GoTrueEnvironmentKey.self] }
+    set { self[GoTrueEnvironmentKey.self] = newValue }
+  }
+}
