@@ -4,22 +4,31 @@ import SwiftUI
 struct AppView: View {
   @Environment(\.goTrueClient) private var client
   @State private var session: Session?
+  @State private var clientInitialized = false
 
   var body: some View {
-    NavigationView {
-      if let session {
-        SessionView(session: session)
-      } else {
-        List {
-          NavigationLink("Auth with Email and Password") {
-            AuthWithEmailAndPasswordView()
+    if clientInitialized {
+      NavigationView {
+        if let session {
+          SessionView(session: session)
+        } else {
+          List {
+            NavigationLink("Auth with Email and Password") {
+              AuthWithEmailAndPasswordView()
+            }
           }
+          .listStyle(.plain)
+          .navigationTitle("Examples")
         }
-        .listStyle(.plain)
-        .navigationTitle("Examples")
       }
+      .task { await observeSession() }
+    } else {
+      ProgressView()
+        .task {
+          await client.initialize()
+          self.clientInitialized = true
+        }
     }
-    .task { await observeSession() }
   }
 
   private func observeSession() async {
