@@ -4,10 +4,6 @@ PLATFORM_MAC_CATALYST = macOS,variant=Mac Catalyst
 PLATFORM_TVOS = tvOS Simulator,name=Apple TV
 PLATFORM_WATCHOS = watchOS Simulator,name=Apple Watch Series 7 (45mm)
 
-default: test-all
-
-test-all: test-ios test-macos test-tvos
-
 test-library:
 	for platform in "$(PLATFORM_IOS)" "$(PLATFORM_MACOS)" "$(PLATFORM_MAC_CATALYST)" "$(PLATFORM_TVOS)" "$(PLATFORM_WATCHOS)"; do \
 		xcodebuild test \
@@ -30,4 +26,4 @@ api:
 	sed -i "" "s/public /internal /g" Sources/GoTrue/Generated/Paths.swift
 	$(MAKE) format
 
-.PHONY: format test-all test-library create-api
+.PHONY: test-library build-example format test-library create-api
