@@ -9,7 +9,8 @@ test-library:
 		xcodebuild test \
 			-workspace GoTrue.xcworkspace \
 			-scheme GoTrue \
-			-destination platform="$$platform" || exit 1; \
+			-destination platform="$$platform" \
+			-derivedDataPath .deriveddata || exit 1; \
 	done;
 	
 build-example:
