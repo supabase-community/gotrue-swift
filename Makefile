@@ -17,12 +17,10 @@ test-library:
 	done;
 	
 build-example:
-	for platform in "$(PLATFORM_IOS)" "$(PLATFORM_MACOS)" "$(PLATFORM_MAC_CATALYST)"; do \
-		xcodebuild build \
-			-workspace GoTrue.xcworkspace \
-			-scheme Examples \
-			-destination platform="$$platform" || exit 1; \
-	done;
+	xcodebuild build \
+		-workspace GoTrue.xcworkspace \
+		-scheme Examples \
+		-destination platform="$(PLATFORM_IOS)" || exit 1;
 
 format:
 	@swiftformat .
