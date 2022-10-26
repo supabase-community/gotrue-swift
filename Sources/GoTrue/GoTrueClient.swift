@@ -25,14 +25,20 @@ public final class GoTrueClient {
   init(
     url: URL,
     headers: [String: String] = [:],
-    localStorage: GoTrueLocalStorage,
+    localStorage: GoTrueLocalStorage?,
     configuration: (inout APIClient.Configuration) -> Void
   ) {
+    var headers = headers
+    headers["X-Client-Info"] = "gotrue-swift/\(version)"
+
     self.url = url
     Current = .live(
       url: url,
-      localStorage: localStorage,
-      headers: headers.merging(Constants.defaultHeaders) { old, _ in old },
+      localStorage: localStorage ?? KeychainLocalStorage(
+        service: "supabase.gotrue.swift",
+        accessGroup: nil
+      ),
+      headers: headers,
       configuration: configuration
     )
 
@@ -52,10 +58,7 @@ public final class GoTrueClient {
   public convenience init(
     url: URL,
     headers: [String: String] = [:],
-    localStorage: GoTrueLocalStorage = KeychainLocalStorage(
-      service: "supabase.gotrue.swift",
-      accessGroup: nil
-    )
+    localStorage: GoTrueLocalStorage? = nil
   ) {
     self.init(
       url: url,
@@ -353,7 +356,9 @@ public final class GoTrueClient {
   ///   - email: The email address of the user.
   ///   - redirectURL: A URL or mobile address to send the user to after they are confirmed.
   public func resetPasswordForEmail(
-    _ email: String, redirectURL: URL? = nil, captchaToken: String? = nil
+    _ email: String,
+    redirectURL: URL? = nil,
+    captchaToken: String? = nil
   ) async throws {
     try await Current.client.send(
       Paths.recover.post(
