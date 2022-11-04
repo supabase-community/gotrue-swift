@@ -293,8 +293,9 @@ public final class GoTrueClient {
     }
   }
 
+  /// Gets the session data from a OAuth2 callback URL.
   @discardableResult
-  public func session(from url: URL) async throws -> Session {
+  public func session(from url: URL, storeSession: Bool = true) async throws -> Session {
     guard let components = URLComponents(url: url, resolvingAgainstBaseURL: false) else {
       throw URLError(.badURL)
     }
@@ -331,11 +332,13 @@ public final class GoTrueClient {
       user: user
     )
 
-    try await Current.sessionManager.update(session)
-    authEventChangeContinuation.yield(.signedIn)
+    if storeSession {
+      try await Current.sessionManager.update(session)
+      authEventChangeContinuation.yield(.signedIn)
 
-    if let type = params.first(where: { $0.name == "type" })?.value, type == "recovery" {
-      authEventChangeContinuation.yield(.passwordRecovery)
+      if let type = params.first(where: { $0.name == "type" })?.value, type == "recovery" {
+        authEventChangeContinuation.yield(.passwordRecovery)
+      }
     }
 
     return session
@@ -389,9 +392,7 @@ public final class GoTrueClient {
     return session
   }
 
-  /// Calling this method will remove the logged in user and erase the tokens stored on local
-  /// storage and invalidate the token on the API. It also will trigger a
-  /// ``AuthChangeEvent.signedOut`` event.
+  /// Signs out the current user, if there is a logged in user.
   public func signOut() async throws {
     defer { authEventChangeContinuation.yield(.signedOut) }
 
@@ -458,6 +459,7 @@ public final class GoTrueClient {
     return response
   }
 
+  /// Updates user data, if there is a logged in user.
   @discardableResult
   public func update(user: UserAttributes) async throws -> User {
     var session = try await Current.sessionManager.session()
