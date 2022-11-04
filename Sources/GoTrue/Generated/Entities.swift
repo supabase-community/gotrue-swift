@@ -579,7 +579,7 @@ public enum VerifyOTPParams: Codable, Equatable {
   }
 }
 
-public enum SessionOrUser: Codable, Equatable {
+public enum AuthResponse: Codable, Equatable {
   case session(Session)
   case user(User)
 

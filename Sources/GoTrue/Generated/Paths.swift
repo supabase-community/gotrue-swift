@@ -21,7 +21,7 @@ extension Paths {
       redirectURL: URL? = nil,
       _ body: PostRequest
     ) -> Request<GoTrue.Session> {
-      Request(path: path, method: "POST", query: makePostQuery(grantType, redirectURL), body: body)
+      Request(method: "POST", url: path, query: makePostQuery(grantType, redirectURL), body: body)
     }
 
     private func makePostQuery(_ grantType: GrantType, _ redirectURL: URL?) -> [(String, String?)] {
@@ -64,8 +64,8 @@ extension Paths {
     internal func post(
       redirectURL: URL? = nil,
       _ body: GoTrue.SignUpRequest
-    ) -> Request<GoTrue.SessionOrUser> {
-      Request(path: path, method: "POST", query: makePostQuery(redirectURL), body: body)
+    ) -> Request<GoTrue.AuthResponse> {
+      Request(method: "POST", url: path, query: makePostQuery(redirectURL), body: body)
     }
 
     private func makePostQuery(_ redirectURL: URL?) -> [(String, String?)] {
@@ -86,7 +86,7 @@ extension Paths {
     internal let path: String
 
     internal func post(redirectURL: URL? = nil, _ body: GoTrue.OTPParams) -> Request<Void> {
-      Request(path: path, method: "POST", query: makePostQuery(redirectURL), body: body)
+      Request(method: "POST", url: path, query: makePostQuery(redirectURL), body: body)
     }
 
     private func makePostQuery(_ redirectURL: URL?) -> [(String, String?)] {
@@ -106,8 +106,8 @@ extension Paths {
     /// Path: `/verify`
     internal let path: String
 
-    internal func post(_ body: GoTrue.VerifyOTPParams) -> Request<GoTrue.SessionOrUser> {
-      Request(path: path, method: "POST", body: body)
+    internal func post(_ body: GoTrue.VerifyOTPParams) -> Request<GoTrue.AuthResponse> {
+      Request(method: "POST", url: path, body: body)
     }
   }
 }
@@ -122,11 +122,11 @@ extension Paths {
     internal let path: String
 
     internal var get: Request<GoTrue.User> {
-      Request(path: path, method: "GET")
+      Request(method: "GET", url: path)
     }
 
     internal func put(_ body: GoTrue.UserAttributes) -> Request<GoTrue.User> {
-      Request(path: path, method: "PUT", body: body)
+      Request(method: "PUT", url: path, body: body)
     }
   }
 }
@@ -141,7 +141,7 @@ extension Paths {
     internal let path: String
 
     internal var post: Request<Void> {
-      Request(path: path, method: "POST")
+      Request(method: "POST", url: path)
     }
   }
 }
@@ -156,7 +156,7 @@ extension Paths {
     internal let path: String
 
     internal func post(redirectURL: URL? = nil, _ body: GoTrue.RecoverParams) -> Request<Void> {
-      Request(path: path, method: "POST", query: makePostQuery(redirectURL), body: body)
+      Request(method: "POST", url: path, query: makePostQuery(redirectURL), body: body)
     }
 
     private func makePostQuery(_ redirectURL: URL?) -> [(String, String?)] {

@@ -255,7 +255,7 @@ components:
       oneOf:
         - $ref: "#/components/schemas/VerifyMobileOTPParams"
         - $ref: "#/components/schemas/VerifyEmailOTPParams"
-    SessionOrUser:
+    AuthResponse:
       oneOf:
         - $ref: "#/components/schemas/Session"
         - $ref: "#/components/schemas/User"
@@ -336,7 +336,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/SessionOrUser"
+                $ref: "#/components/schemas/AuthResponse"
   /otp:
     summary: ""
     post:
@@ -368,7 +368,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/SessionOrUser"
+                $ref: "#/components/schemas/AuthResponse"
   /user:
     summary: ""
     get:

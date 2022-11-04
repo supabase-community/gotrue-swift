@@ -77,27 +77,59 @@ public final class GoTrueClient {
     await initializationTask.value
   }
 
+  /// Creates a new user.
+  /// - Parameters:
+  ///   - email: User's email address.
+  ///   - password: Password for the user.
+  ///   - data: User's metadata.
   @discardableResult
-  public func signUp(email: String, password: String) async throws -> SessionOrUser {
-    await Current.sessionManager.remove()
-    let response = try await Current.client.send(
-      Paths.signup.post(.init(email: email, password: password))
-    ).value
-
-    if let session = response.session {
-      try await Current.sessionManager.update(session)
-      authEventChangeContinuation.yield(.signedIn)
-    }
-
-    return response
+  public func signUp(
+    email: String,
+    password: String,
+    data: [String: AnyJSON]? = nil,
+    redirectTo: URL? = nil,
+    captchaToken: String? = nil
+  ) async throws -> AuthResponse {
+    try await _signUp(
+      request: Paths.signup.post(
+        redirectURL: redirectTo,
+        .init(
+          email: email,
+          password: password,
+          data: data,
+          gotrueMetaSecurity: captchaToken.map(GoTrueMetaSecurity.init(hcaptchaToken:))
+        )
+      )
+    )
   }
 
+  /// Creates a new user.
+  /// - Parameters:
+  ///   - phone: User's phone number with international prefix.
+  ///   - password: Password for the user.
+  ///   - data: User's metadata.
   @discardableResult
-  public func signUp(phone: String, password: String) async throws -> SessionOrUser {
+  public func signUp(
+    phone: String,
+    password: String,
+    data: [String: AnyJSON]? = nil,
+    captchaToken: String? = nil
+  ) async throws -> AuthResponse {
+    try await _signUp(
+      request: Paths.signup.post(
+        .init(
+          password: password,
+          phone: phone,
+          data: data,
+          gotrueMetaSecurity: captchaToken.map(GoTrueMetaSecurity.init(hcaptchaToken:))
+        )
+      )
+    )
+  }
+
+  private func _signUp(request: Request<AuthResponse>) async throws -> AuthResponse {
     await Current.sessionManager.remove()
-    let response = try await Current.client.send(
-      Paths.signup.post(.init(password: password, phone: phone))
-    ).value
+    let response = try await Current.client.send(request).value
 
     if let session = response.session {
       try await Current.sessionManager.update(session)
@@ -109,48 +141,35 @@ public final class GoTrueClient {
 
   @discardableResult
   public func signIn(email: String, password: String) async throws -> Session {
-    await Current.sessionManager.remove()
-
-    do {
-      let session = try await Current.client.send(
-        Paths.token.post(
-          grantType: .password,
-          .userCredentials(UserCredentials(email: email, password: password))
-        )
-      ).value
-
-      if session.user.emailConfirmedAt != nil || session.user.confirmedAt != nil {
-        try await Current.sessionManager.update(session)
-        authEventChangeContinuation.yield(.signedIn)
-      }
-
-      return session
-    } catch {
-      throw error
-    }
+    try await _signIn(
+      request: Paths.token.post(
+        grantType: .password,
+        .userCredentials(UserCredentials(email: email, password: password))
+      )
+    )
   }
 
   @discardableResult
   public func signIn(phone: String, password: String) async throws -> Session {
+    try await _signIn(
+      request: Paths.token.post(
+        grantType: .password,
+        .userCredentials(UserCredentials(password: password, phone: phone))
+      )
+    )
+  }
+
+  private func _signIn(request: Request<Session>) async throws -> Session {
     await Current.sessionManager.remove()
 
-    do {
-      let session = try await Current.client.send(
-        Paths.token.post(
-          grantType: .password,
-          .userCredentials(UserCredentials(password: password, phone: phone))
-        )
-      ).value
+    let session = try await Current.client.send(request).value
 
-      if session.user.phoneConfirmedAt != nil {
-        try await Current.sessionManager.update(session)
-        authEventChangeContinuation.yield(.signedIn)
-      }
-
-      return session
-    } catch {
-      throw error
+    if session.user.emailConfirmedAt != nil || session.user.confirmedAt != nil {
+      try await Current.sessionManager.update(session)
+      authEventChangeContinuation.yield(.signedIn)
     }
+
+    return session
   }
 
   public func signIn(email: String, redirectURL: URL? = nil) async throws {
@@ -328,7 +347,7 @@ public final class GoTrueClient {
   }
 
   @discardableResult
-  public func verifyOTP(params: VerifyOTPParams) async throws -> SessionOrUser {
+  public func verifyOTP(params: VerifyOTPParams) async throws -> AuthResponse {
     let response = try await Current.client.send(Paths.verify.post(params)).value
 
     if let session = response.session {
