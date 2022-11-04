@@ -2,15 +2,15 @@ import Foundation
 import KeychainAccess
 
 public protocol GoTrueLocalStorage {
-  func store(key: String, value: Data) async throws
-  func retrieve(key: String) async throws -> Data?
-  func remove(key: String) async throws
+  func store(key: String, value: Data) throws
+  func retrieve(key: String) throws -> Data?
+  func remove(key: String) throws
 }
 
-public actor KeychainLocalStorage: GoTrueLocalStorage {
+struct KeychainLocalStorage: GoTrueLocalStorage {
   let keychain: Keychain
 
-  public init(service: String, accessGroup: String?) {
+  init(service: String, accessGroup: String?) {
     if let accessGroup = accessGroup {
       keychain = Keychain(service: service, accessGroup: accessGroup)
     } else {
@@ -18,15 +18,15 @@ public actor KeychainLocalStorage: GoTrueLocalStorage {
     }
   }
 
-  public func store(key: String, value: Data) async throws {
+  func store(key: String, value: Data) throws {
     try keychain.set(value, key: key)
   }
 
-  public func retrieve(key: String) async throws -> Data? {
+  func retrieve(key: String) throws -> Data? {
     try keychain.getData(key)
   }
 
-  public func remove(key: String) async throws {
+  func remove(key: String) throws {
     try keychain.remove(key)
   }
 }

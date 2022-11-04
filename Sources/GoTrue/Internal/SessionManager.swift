@@ -40,7 +40,7 @@ private actor LiveSessionManager {
       return try await task.value
     }
 
-    guard let currentSession = try await Current.localStorage.getSession() else {
+    guard let currentSession = try Current.localStorage.getSession() else {
       throw GoTrueError.sessionNotFound
     }
 
@@ -52,34 +52,34 @@ private actor LiveSessionManager {
       defer { self.task = nil }
 
       let session = try await Current.sessionRefresher(currentSession.session.refreshToken)
-      try await update(session)
+      try update(session)
       return session
     }
 
     return try await task!.value
   }
 
-  func update(_ session: Session) async throws {
-    try await Current.localStorage.storeSession(StoredSession(session: session))
+  func update(_ session: Session) throws {
+    try Current.localStorage.storeSession(StoredSession(session: session))
   }
 
-  func remove() async {
-    await Current.localStorage.deleteSession()
+  func remove() {
+    Current.localStorage.deleteSession()
   }
 }
 
 extension GoTrueLocalStorage {
-  fileprivate func getSession() async throws -> StoredSession? {
-    try await retrieve(key: "supabase.session").flatMap {
+  fileprivate func getSession() throws -> StoredSession? {
+    try retrieve(key: "supabase.session").flatMap {
       try JSONDecoder.goTrue.decode(StoredSession.self, from: $0)
     }
   }
 
-  fileprivate func storeSession(_ session: StoredSession) async throws {
-    try await store(key: "supabase.session", value: JSONEncoder.goTrue.encode(session))
+  fileprivate func storeSession(_ session: StoredSession) throws {
+    try store(key: "supabase.session", value: JSONEncoder.goTrue.encode(session))
   }
 
-  fileprivate func deleteSession() async {
-    try? await remove(key: "supabase.session")
+  fileprivate func deleteSession() {
+    try? remove(key: "supabase.session")
   }
 }

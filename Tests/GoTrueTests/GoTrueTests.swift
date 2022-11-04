@@ -3,19 +3,26 @@ import XCTest
 
 @testable import GoTrue
 
-actor InMemoryLocalStorage: GoTrueLocalStorage {
+final class InMemoryLocalStorage: GoTrueLocalStorage {
+  private let queue = DispatchQueue(label: "InMemoryLocalStorage")
   private var storage: [String: Data] = [:]
 
-  func store(key: String, value: Data) async throws {
-    storage[key] = value
+  func store(key: String, value: Data) throws {
+    queue.sync {
+      storage[key] = value
+    }
   }
 
-  func retrieve(key: String) async throws -> Data? {
-    storage[key]
+  func retrieve(key: String) throws -> Data? {
+    queue.sync {
+      storage[key]
+    }
   }
 
-  func remove(key: String) async throws {
-    storage[key] = nil
+  func remove(key: String) throws {
+    queue.sync {
+      storage[key] = nil
+    }
   }
 }
 
@@ -52,7 +59,7 @@ final class GoTrueTests: XCTestCase {
   func testSignInWithProvider() throws {
     let url = try sut.getOAuthSignInURL(
       provider: .github, scopes: "read,write",
-      redirectURL: URL(string: "https://dummy-url.com/redirect")!,
+      redirectTo: URL(string: "https://dummy-url.com/redirect")!,
       queryParams: [("extra_key", "extra_value")]
     )
     XCTAssertEqual(

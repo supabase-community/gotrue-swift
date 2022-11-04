@@ -92,7 +92,7 @@ public final class GoTrueClient {
   ) async throws -> AuthResponse {
     try await _signUp(
       request: Paths.signup.post(
-        redirectURL: redirectTo,
+        redirectTo: redirectTo,
         .init(
           email: email,
           password: password,
@@ -181,13 +181,13 @@ public final class GoTrueClient {
   /// If the `{{ .Token }}` variable is specified in the email template, an OTP will be sent.
   /// - Parameters:
   ///   - email: User's email address.
-  ///   - redirectURL: Redirect URL embedded in the email link.
+  ///   - redirectTo: Redirect URL embedded in the email link.
   ///   - shouldCreateUser: Creates a new user, defaults to `true`.
   ///   - data: User's metadata.
   ///   - captchaToken: Captcha verification token.
   public func signInWithOTP(
     email: String,
-    redirectURL: URL? = nil,
+    redirectTo: URL? = nil,
     shouldCreateUser: Bool? = nil,
     data: [String: AnyJSON]? = nil,
     captchaToken: String? = nil
@@ -195,7 +195,7 @@ public final class GoTrueClient {
     await Current.sessionManager.remove()
     try await Current.client.send(
       Paths.otp.post(
-        redirectURL: redirectURL,
+        redirectTo: redirectTo,
         .init(
           email: email,
           createUser: shouldCreateUser,
@@ -236,7 +236,7 @@ public final class GoTrueClient {
   public func getOAuthSignInURL(
     provider: Provider,
     scopes: String? = nil,
-    redirectURL: URL? = nil,
+    redirectTo: URL? = nil,
     queryParams: [(name: String, value: String?)] = []
   ) throws -> URL {
     guard
@@ -255,8 +255,8 @@ public final class GoTrueClient {
       queryItems.append(URLQueryItem(name: "scopes", value: scopes))
     }
 
-    if let redirectURL = redirectURL {
-      queryItems.append(URLQueryItem(name: "redirect_to", value: redirectURL.absoluteString))
+    if let redirectTo = redirectTo {
+      queryItems.append(URLQueryItem(name: "redirect_to", value: redirectTo.absoluteString))
     }
 
     queryItems.append(contentsOf: queryParams.map(URLQueryItem.init))
@@ -410,12 +410,12 @@ public final class GoTrueClient {
     email: String,
     token: String,
     type: OTPType,
-    redirectURL: URL? = nil,
+    redirectTo: URL? = nil,
     captchaToken: String? = nil
   ) async throws -> AuthResponse {
     try await _verifyOTP(
       request: Paths.verify.post(
-        redirectURL: redirectURL,
+        redirectTo: redirectTo,
         .init(
           email: email,
           token: token,
@@ -473,17 +473,14 @@ public final class GoTrueClient {
   }
 
   /// Sends a reset request to an email address.
-  /// - Parameters:
-  ///   - email: The email address of the user.
-  ///   - redirectURL: A URL or mobile address to send the user to after they are confirmed.
   public func resetPasswordForEmail(
     _ email: String,
-    redirectURL: URL? = nil,
+    redirectTo: URL? = nil,
     captchaToken: String? = nil
   ) async throws {
     try await Current.client.send(
       Paths.recover.post(
-        redirectURL: redirectURL,
+        redirectTo: redirectTo,
         RecoverParams(
           email: email,
           gotrueMetaSecurity: captchaToken.map(GoTrueMetaSecurity.init(hcaptchaToken:))

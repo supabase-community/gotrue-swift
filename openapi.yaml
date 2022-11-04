@@ -9,8 +9,8 @@ components:
       type: http
       scheme: bearer
   parameters:
-    redirect_url:
-      name: redirect_url
+    redirect_to:
+      name: redirect_to
       in: query
       schema:
         type: string
@@ -290,7 +290,7 @@ paths:
               - password
               - refresh_token
               - id_token
-        - $ref: "#/components/parameters/redirect_url"
+        - $ref: "#/components/parameters/redirect_to"
       requestBody:
         description: ""
         required: true
@@ -311,7 +311,7 @@ paths:
     summary: ""
     post:
       parameters:
-        - $ref: "#/components/parameters/redirect_url"
+        - $ref: "#/components/parameters/redirect_to"
       requestBody:
         description: ""
         required: true
@@ -330,7 +330,7 @@ paths:
     summary: ""
     post:
       parameters:
-        - $ref: "#/components/parameters/redirect_url"
+        - $ref: "#/components/parameters/redirect_to"
       requestBody:
         description: ""
         required: true
@@ -345,7 +345,7 @@ paths:
     summary: ""
     post:
       parameters:
-        - $ref: "#/components/parameters/redirect_url"
+        - $ref: "#/components/parameters/redirect_to"
       requestBody:
         description: ""
         required: true
@@ -401,7 +401,7 @@ paths:
     summary: ""
     post:
       parameters:
-        - $ref: "#/components/parameters/redirect_url"
+        - $ref: "#/components/parameters/redirect_to"
       requestBody:
         description: ""
         required: true
