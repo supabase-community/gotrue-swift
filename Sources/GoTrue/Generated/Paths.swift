@@ -106,8 +106,17 @@ extension Paths {
     /// Path: `/verify`
     internal let path: String
 
-    internal func post(_ body: GoTrue.VerifyOTPParams) -> Request<GoTrue.AuthResponse> {
-      Request(method: "POST", url: path, body: body)
+    internal func post(
+      redirectURL: URL? = nil,
+      _ body: GoTrue.VerifyOTPParams
+    ) -> Request<GoTrue.AuthResponse> {
+      Request(method: "POST", url: path, query: makePostQuery(redirectURL), body: body)
+    }
+
+    private func makePostQuery(_ redirectURL: URL?) -> [(String, String?)] {
+      let encoder = URLQueryEncoder()
+      encoder.encode(redirectURL, forKey: "redirect_url")
+      return encoder.items
     }
   }
 }

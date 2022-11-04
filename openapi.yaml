@@ -218,45 +218,32 @@ components:
           type: object
         gotrue_meta_security:
           $ref: "#/components/schemas/GoTrueMetaSecurity"
-    VerifyMobileOTPParams:
+    VerifyOTPParams:
       type: object
       properties:
+        email:
+          type: string
         phone:
           type: string
         token:
           type: string
         type:
-          type: string
-          enum:
-            - sms
-            - phone_change
+          $ref: "#/components/schemas/OTPType"
+        gotrue_meta_security:
+          $ref: "#/components/schemas/GoTrueMetaSecurity"
       required:
-        - phone
         - token
         - type
-    VerifyEmailOTPParams:
-      type: object
-      properties:
-        email:
-          type: string
-        token:
-          type: string
-        type:
-          type: string
-          enum:
-            - signup
-            - invite
-            - magiclink
-            - recovery
-            - email_change
-      required:
-        - email
-        - token
-        - type
-    VerifyOTPParams:
-      oneOf:
-        - $ref: "#/components/schemas/VerifyMobileOTPParams"
-        - $ref: "#/components/schemas/VerifyEmailOTPParams"
+    OTPType:
+      type: string
+      enum:
+        - sms
+        - phone_change
+        - signup
+        - invite
+        - magiclink
+        - recovery
+        - email_change
     AuthResponse:
       oneOf:
         - $ref: "#/components/schemas/Session"
@@ -357,6 +344,8 @@ paths:
   /verify:
     summary: ""
     post:
+      parameters:
+        - $ref: "#/components/parameters/redirect_url"
       requestBody:
         description: ""
         required: true

@@ -50,7 +50,7 @@ final class GoTrueTests: XCTestCase {
   #endif
 
   func testSignInWithProvider() throws {
-    let url = try sut.signIn(
+    let url = try sut.getOAuthSignInURL(
       provider: .github, scopes: "read,write",
       redirectURL: URL(string: "https://dummy-url.com/redirect")!,
       queryParams: [("extra_key", "extra_value")]

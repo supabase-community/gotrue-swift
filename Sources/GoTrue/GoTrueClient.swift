@@ -232,7 +232,8 @@ public final class GoTrueClient {
     )
   }
 
-  public func signIn(
+  /// Log in an existing user via a third-party provider.
+  public func getOAuthSignInURL(
     provider: Provider,
     scopes: String? = nil,
     redirectURL: URL? = nil,
@@ -402,9 +403,52 @@ public final class GoTrueClient {
     }
   }
 
+  /// Log in an user given a User supplied OTP received via email.
   @discardableResult
-  public func verifyOTP(params: VerifyOTPParams) async throws -> AuthResponse {
-    let response = try await Current.client.send(Paths.verify.post(params)).value
+  public func verifyOTP(
+    email: String,
+    token: String,
+    type: OTPType,
+    redirectURL: URL? = nil,
+    captchaToken: String? = nil
+  ) async throws -> AuthResponse {
+    try await _verifyOTP(
+      request: Paths.verify.post(
+        redirectURL: redirectURL,
+        .init(
+          email: email,
+          token: token,
+          type: type,
+          gotrueMetaSecurity: captchaToken.map(GoTrueMetaSecurity.init(hcaptchaToken:))
+        )
+      )
+    )
+  }
+
+  /// Log in an user given a User supplied OTP received via mobile.
+  @discardableResult
+  public func verifyOTP(
+    phone: String,
+    token: String,
+    type: OTPType,
+    captchaToken: String? = nil
+  ) async throws -> AuthResponse {
+    try await _verifyOTP(
+      request: Paths.verify.post(
+        .init(
+          phone: phone,
+          token: token,
+          type: type,
+          gotrueMetaSecurity: captchaToken.map(GoTrueMetaSecurity.init(hcaptchaToken:))
+        )
+      )
+    )
+  }
+
+  private func _verifyOTP(request: Request<AuthResponse>) async throws -> AuthResponse {
+    await Current.sessionManager.remove()
+
+    let response = try await Current.client.send(request).value
 
     if let session = response.session {
       try await Current.sessionManager.update(session)

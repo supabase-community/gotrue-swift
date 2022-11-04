@@ -492,96 +492,57 @@ public struct OTPParams: Codable, Equatable {
   }
 }
 
-public struct VerifyMobileOTPParams: Codable, Equatable {
-  public var phone: String
+public struct VerifyOTPParams: Codable, Equatable {
+  public var email: String?
+  public var phone: String?
   public var token: String
-  public var type: `Type`
+  public var type: OTPType
+  public var gotrueMetaSecurity: GoTrueMetaSecurity?
 
-  public enum `Type`: String, Codable, CaseIterable {
-    case sms
-    case phoneChange = "phone_change"
-  }
-
-  public init(phone: String, token: String, type: Type) {
+  public init(
+    email: String? = nil,
+    phone: String? = nil,
+    token: String,
+    type: OTPType,
+    gotrueMetaSecurity: GoTrueMetaSecurity? = nil
+  ) {
+    self.email = email
     self.phone = phone
     self.token = token
     self.type = type
+    self.gotrueMetaSecurity = gotrueMetaSecurity
   }
 
   public init(from decoder: Decoder) throws {
     let values = try decoder.container(keyedBy: StringCodingKey.self)
-    phone = try values.decode(String.self, forKey: "phone")
+    email = try values.decodeIfPresent(String.self, forKey: "email")
+    phone = try values.decodeIfPresent(String.self, forKey: "phone")
     token = try values.decode(String.self, forKey: "token")
-    type = try values.decode(Type.self, forKey: "type")
+    type = try values.decode(OTPType.self, forKey: "type")
+    gotrueMetaSecurity = try values.decodeIfPresent(
+      GoTrueMetaSecurity.self,
+      forKey: "gotrue_meta_security"
+    )
   }
 
   public func encode(to encoder: Encoder) throws {
     var values = encoder.container(keyedBy: StringCodingKey.self)
-    try values.encode(phone, forKey: "phone")
+    try values.encodeIfPresent(email, forKey: "email")
+    try values.encodeIfPresent(phone, forKey: "phone")
     try values.encode(token, forKey: "token")
     try values.encode(type, forKey: "type")
+    try values.encodeIfPresent(gotrueMetaSecurity, forKey: "gotrue_meta_security")
   }
 }
 
-public struct VerifyEmailOTPParams: Codable, Equatable {
-  public var email: String
-  public var token: String
-  public var type: `Type`
-
-  public enum `Type`: String, Codable, CaseIterable {
-    case signup
-    case invite
-    case magiclink
-    case recovery
-    case emailChange = "email_change"
-  }
-
-  public init(email: String, token: String, type: Type) {
-    self.email = email
-    self.token = token
-    self.type = type
-  }
-
-  public init(from decoder: Decoder) throws {
-    let values = try decoder.container(keyedBy: StringCodingKey.self)
-    email = try values.decode(String.self, forKey: "email")
-    token = try values.decode(String.self, forKey: "token")
-    type = try values.decode(Type.self, forKey: "type")
-  }
-
-  public func encode(to encoder: Encoder) throws {
-    var values = encoder.container(keyedBy: StringCodingKey.self)
-    try values.encode(email, forKey: "email")
-    try values.encode(token, forKey: "token")
-    try values.encode(type, forKey: "type")
-  }
-}
-
-public enum VerifyOTPParams: Codable, Equatable {
-  case verifyMobileOTPParams(VerifyMobileOTPParams)
-  case verifyEmailOTPParams(VerifyEmailOTPParams)
-
-  public init(from decoder: Decoder) throws {
-    let container = try decoder.singleValueContainer()
-    if let value = try? container.decode(VerifyMobileOTPParams.self) {
-      self = .verifyMobileOTPParams(value)
-    } else if let value = try? container.decode(VerifyEmailOTPParams.self) {
-      self = .verifyEmailOTPParams(value)
-    } else {
-      throw DecodingError.dataCorruptedError(
-        in: container,
-        debugDescription: "Data could not be decoded as any of the expected types (VerifyMobileOTPParams, VerifyEmailOTPParams)."
-      )
-    }
-  }
-
-  public func encode(to encoder: Encoder) throws {
-    var container = encoder.singleValueContainer()
-    switch self {
-    case let .verifyMobileOTPParams(value): try container.encode(value)
-    case let .verifyEmailOTPParams(value): try container.encode(value)
-    }
-  }
+public enum OTPType: String, Codable, CaseIterable {
+  case sms
+  case phoneChange = "phone_change"
+  case signup
+  case invite
+  case magiclink
+  case recovery
+  case emailChange = "email_change"
 }
 
 public enum AuthResponse: Codable, Equatable {
