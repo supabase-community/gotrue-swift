@@ -33,7 +33,7 @@ final class GoTrueTests: XCTestCase {
   func testDecodeSessionOrUser() {
     XCTAssertNoThrow(
       try JSONDecoder.goTrue.decode(
-        SessionOrUser.self, from: sessionJSON.data(using: .utf8)!
+        AuthResponse.self, from: sessionJSON.data(using: .utf8)!
       )
     )
   }
