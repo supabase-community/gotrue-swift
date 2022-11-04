@@ -453,17 +453,20 @@ public struct OTPParams: Codable, Equatable {
   public var email: String?
   public var phone: String?
   public var createUser: Bool
+  public var data: [String: AnyJSON]?
   public var gotrueMetaSecurity: GoTrueMetaSecurity?
 
   public init(
     email: String? = nil,
     phone: String? = nil,
     createUser: Bool? = nil,
+    data: [String: AnyJSON]? = nil,
     gotrueMetaSecurity: GoTrueMetaSecurity? = nil
   ) {
     self.email = email
     self.phone = phone
     self.createUser = createUser ?? true
+    self.data = data
     self.gotrueMetaSecurity = gotrueMetaSecurity
   }
 
@@ -472,6 +475,7 @@ public struct OTPParams: Codable, Equatable {
     email = try values.decodeIfPresent(String.self, forKey: "email")
     phone = try values.decodeIfPresent(String.self, forKey: "phone")
     createUser = try values.decodeIfPresent(Bool.self, forKey: "create_user") ?? true
+    data = try values.decodeIfPresent([String: AnyJSON].self, forKey: "data")
     gotrueMetaSecurity = try values.decodeIfPresent(
       GoTrueMetaSecurity.self,
       forKey: "gotrue_meta_security"
@@ -483,6 +487,7 @@ public struct OTPParams: Codable, Equatable {
     try values.encodeIfPresent(email, forKey: "email")
     try values.encodeIfPresent(phone, forKey: "phone")
     try values.encodeIfPresent(createUser, forKey: "create_user")
+    try values.encodeIfPresent(data, forKey: "data")
     try values.encodeIfPresent(gotrueMetaSecurity, forKey: "gotrue_meta_security")
   }
 }

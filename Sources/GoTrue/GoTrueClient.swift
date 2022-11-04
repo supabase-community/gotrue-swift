@@ -174,8 +174,62 @@ public final class GoTrueClient {
     return session
   }
 
-  public func signIn(email: String, redirectURL: URL? = nil) async throws {
-    try await Current.client.send(Paths.otp.post(redirectURL: redirectURL, .init(email: email)))
+  /// Log in user using magic link.
+  ///
+  /// If the `{{ .ConfirmationURL }}` variable is specified in the email template, a magic link will
+  /// be sent.
+  /// If the `{{ .Token }}` variable is specified in the email template, an OTP will be sent.
+  /// - Parameters:
+  ///   - email: User's email address.
+  ///   - redirectURL: Redirect URL embedded in the email link.
+  ///   - shouldCreateUser: Creates a new user, defaults to `true`.
+  ///   - data: User's metadata.
+  ///   - captchaToken: Captcha verification token.
+  public func signInWithOTP(
+    email: String,
+    redirectURL: URL? = nil,
+    shouldCreateUser: Bool? = nil,
+    data: [String: AnyJSON]? = nil,
+    captchaToken: String? = nil
+  ) async throws {
+    await Current.sessionManager.remove()
+    try await Current.client.send(
+      Paths.otp.post(
+        redirectURL: redirectURL,
+        .init(
+          email: email,
+          createUser: shouldCreateUser,
+          data: data,
+          gotrueMetaSecurity: captchaToken.map(GoTrueMetaSecurity.init(hcaptchaToken:))
+        )
+      )
+    )
+  }
+
+  /// Log in user using a one-time password (OTP)..
+  ///
+  /// - Parameters:
+  ///   - phone: User's phone with international prefix.
+  ///   - shouldCreateUser: Creates a new user, defaults to `true`.
+  ///   - data: User's metadata.
+  ///   - captchaToken: Captcha verification token.
+  public func signInWithOTP(
+    phone: String,
+    shouldCreateUser: Bool? = nil,
+    data: [String: AnyJSON]? = nil,
+    captchaToken: String? = nil
+  ) async throws {
+    await Current.sessionManager.remove()
+    try await Current.client.send(
+      Paths.otp.post(
+        .init(
+          phone: phone,
+          createUser: shouldCreateUser,
+          data: data,
+          gotrueMetaSecurity: captchaToken.map(GoTrueMetaSecurity.init(hcaptchaToken:))
+        )
+      )
+    )
   }
 
   public func signIn(

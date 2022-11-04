@@ -214,6 +214,8 @@ components:
         create_user:
           type: boolean
           default: "true"
+        data:
+          type: object
         gotrue_meta_security:
           $ref: "#/components/schemas/GoTrueMetaSecurity"
     VerifyMobileOTPParams:
