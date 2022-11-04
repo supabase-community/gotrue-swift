@@ -139,6 +139,7 @@ public final class GoTrueClient {
     return response
   }
 
+  /// Log in an existing user with an email and password.
   @discardableResult
   public func signIn(email: String, password: String) async throws -> Session {
     try await _signIn(
@@ -149,6 +150,7 @@ public final class GoTrueClient {
     )
   }
 
+  /// Log in an existing user with a phone and password.
   @discardableResult
   public func signIn(phone: String, password: String) async throws -> Session {
     try await _signIn(
