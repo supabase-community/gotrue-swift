@@ -9,8 +9,8 @@ components:
       type: http
       scheme: bearer
   parameters:
-    redirect_url:
-      name: redirect_url
+    redirect_to:
+      name: redirect_to
       in: query
       schema:
         type: string
@@ -49,17 +49,21 @@ components:
       properties:
         provider_token:
           type: string
+          description: "The oauth provider token. If present, this can be used to make external API requests to the oauth provider used."
         provider_refresh_token:
           type: string
+          description: "The oauth provider refresh token. If present, this can be used to refresh the provider_token via the oauth provider's API. Not all oauth providers return a provider refresh token. If the provider_refresh_token is missing, please refer to the oauth provider's documentation for information on how to obtain the provider refresh token."
         access_token:
           type: string
+          description: "The access token jwt. It is recommended to set the JWT_EXPIRY to a shorter expiry value."
         token_type:
           type: string
         expires_in:
           type: number
-          description: "The number of seconds until the token expires (since it was issued)."
+          description: "The number of seconds until the token expires (since it was issued). Returned when a login is confirmed."
         refresh_token:
           type: string
+          description: "A one-time used refresh token that never expires."
         user:
           $ref: "#/components/schemas/User"
       required:
@@ -213,49 +217,38 @@ components:
           type: string
         create_user:
           type: boolean
-          default: "true"
+          default: true
+        data:
+          type: object
         gotrue_meta_security:
           $ref: "#/components/schemas/GoTrueMetaSecurity"
-    VerifyMobileOTPParams:
+    VerifyOTPParams:
       type: object
       properties:
+        email:
+          type: string
         phone:
           type: string
         token:
           type: string
         type:
-          type: string
-          enum:
-            - sms
-            - phone_change
+          $ref: "#/components/schemas/OTPType"
+        gotrue_meta_security:
+          $ref: "#/components/schemas/GoTrueMetaSecurity"
       required:
-        - phone
         - token
         - type
-    VerifyEmailOTPParams:
-      type: object
-      properties:
-        email:
-          type: string
-        token:
-          type: string
-        type:
-          type: string
-          enum:
-            - signup
-            - invite
-            - magiclink
-            - recovery
-            - email_change
-      required:
-        - email
-        - token
-        - type
-    VerifyOTPParams:
-      oneOf:
-        - $ref: "#/components/schemas/VerifyMobileOTPParams"
-        - $ref: "#/components/schemas/VerifyEmailOTPParams"
-    SessionOrUser:
+    OTPType:
+      type: string
+      enum:
+        - sms
+        - phone_change
+        - signup
+        - invite
+        - magiclink
+        - recovery
+        - email_change
+    AuthResponse:
       oneOf:
         - $ref: "#/components/schemas/Session"
         - $ref: "#/components/schemas/User"
@@ -276,7 +269,7 @@ components:
           description: "An email change token."
         data:
           type: object
-          description: "A custom data object for `user_metadata` that a user can modify. Can be any JSON."
+          description: "A custom data object to store the user's metadata. This maps to the `auth.users.user_metadata` column. The `data` should be a JSON object that includes user-specific info, such as their first and last name."
     RecoverParams:
       type: object
       properties:
@@ -289,7 +282,6 @@ components:
 
 paths:
   /token:
-    summary: ""
     post:
       parameters:
         - name: grant_type
@@ -301,7 +293,7 @@ paths:
               - password
               - refresh_token
               - id_token
-        - $ref: "#/components/parameters/redirect_url"
+        - $ref: "#/components/parameters/redirect_to"
       requestBody:
         description: ""
         required: true
@@ -322,7 +314,7 @@ paths:
     summary: ""
     post:
       parameters:
-        - $ref: "#/components/parameters/redirect_url"
+        - $ref: "#/components/parameters/redirect_to"
       requestBody:
         description: ""
         required: true
@@ -336,12 +328,12 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/SessionOrUser"
+                $ref: "#/components/schemas/AuthResponse"
   /otp:
     summary: ""
     post:
       parameters:
-        - $ref: "#/components/parameters/redirect_url"
+        - $ref: "#/components/parameters/redirect_to"
       requestBody:
         description: ""
         required: true
@@ -355,6 +347,8 @@ paths:
   /verify:
     summary: ""
     post:
+      parameters:
+        - $ref: "#/components/parameters/redirect_to"
       requestBody:
         description: ""
         required: true
@@ -368,7 +362,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/SessionOrUser"
+                $ref: "#/components/schemas/AuthResponse"
   /user:
     summary: ""
     get:
@@ -410,7 +404,7 @@ paths:
     summary: ""
     post:
       parameters:
-        - $ref: "#/components/parameters/redirect_url"
+        - $ref: "#/components/parameters/redirect_to"
       requestBody:
         description: ""
         required: true

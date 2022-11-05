@@ -1,4 +1,4 @@
-// swift-tools-version:5.5
+// swift-tools-version:5.6
 // The swift-tools-version declares the minimum version of Swift required to build this package.
 
 import PackageDescription
@@ -16,28 +16,23 @@ let package = Package(
     .library(name: "GoTrue", targets: ["GoTrue"]),
   ],
   dependencies: [
-    .package(url: "https://github.com/WeTransfer/Mocker", from: "2.7.0"),
-    .package(url: "https://github.com/binaryscraping/swift-composable-keychain", from: "0.0.2"),
-    .package(url: "https://github.com/kean/Get", from: "2.0.0"),
+    .package(url: "https://github.com/kean/Get", from: "2.1.4"),
     .package(url: "https://github.com/kean/URLQueryEncoder", from: "0.2.0"),
-    .package(url: "https://github.com/auth0/JWTDecode.swift", from: "3.0.0"),
+    .package(url: "https://github.com/kishikawakatsumi/KeychainAccess", from: "4.2.2"),
+    .package(url: "https://github.com/WeTransfer/Mocker", from: "3.0.0"),
   ],
   targets: [
     .target(
       name: "GoTrue",
       dependencies: [
         .product(name: "Get", package: "Get"),
-        .product(name: "ComposableKeychain", package: "swift-composable-keychain"),
+        .product(name: "KeychainAccess", package: "KeychainAccess"),
         .product(name: "URLQueryEncoder", package: "URLQueryEncoder"),
-        .product(name: "JWTDecode", package: "JWTDecode.swift"),
       ]
     ),
     .testTarget(
       name: "GoTrueTests",
-      dependencies: [
-        "GoTrue",
-        "Mocker",
-      ],
+      dependencies: ["GoTrue", "Mocker"],
       resources: [
         .process("Resources"),
       ]

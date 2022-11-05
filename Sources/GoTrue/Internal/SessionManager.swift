@@ -1,8 +1,5 @@
-import ComposableKeychain
 import Foundation
 import KeychainAccess
-
-struct SessionNotFound: Error {}
 
 struct StoredSession: Codable {
   var session: Session
@@ -19,7 +16,6 @@ struct StoredSession: Codable {
 }
 
 struct SessionManager {
-  var storedSession: () -> Session?
   var session: () async throws -> Session
   var update: (_ session: Session) async throws -> Void
   var remove: () async -> Void
@@ -29,7 +25,6 @@ extension SessionManager {
   static var live: Self {
     let instance = LiveSessionManager()
     return Self(
-      storedSession: { instance.storedSession },
       session: { try await instance.session() },
       update: { try await instance.update($0) },
       remove: { await instance.remove() }
@@ -45,8 +40,8 @@ private actor LiveSessionManager {
       return try await task.value
     }
 
-    guard let currentSession = try Current.keychain.getSession() else {
-      throw SessionNotFound()
+    guard let currentSession = try Env.localStorage.getSession() else {
+      throw GoTrueError.sessionNotFound
     }
 
     if currentSession.isValid {
@@ -56,7 +51,7 @@ private actor LiveSessionManager {
     task = Task {
       defer { self.task = nil }
 
-      let session = try await Current.sessionRefresher(currentSession.session.refreshToken)
+      let session = try await Env.sessionRefresher(currentSession.session.refreshToken)
       try update(session)
       return session
     }
@@ -65,36 +60,26 @@ private actor LiveSessionManager {
   }
 
   func update(_ session: Session) throws {
-    try Current.keychain.storeSession(StoredSession(session: session))
+    try Env.localStorage.storeSession(StoredSession(session: session))
   }
 
   func remove() {
-    Current.keychain.deleteSession()
-  }
-
-  /// Returns the currently stored session without checking if it's still valid.
-  nonisolated var storedSession: Session? {
-    try? Current.keychain.getSession()?.session
+    Env.localStorage.deleteSession()
   }
 }
 
-extension KeychainClient.Key {
-  static var session = Self("supabase.session")
-  static var expirationDate = Self("supabase.session.expiration_date")
-}
-
-extension KeychainClient {
-  func getSession() throws -> StoredSession? {
-    try getData(.session).flatMap {
+extension GoTrueLocalStorage {
+  fileprivate func getSession() throws -> StoredSession? {
+    try retrieve(key: "supabase.session").flatMap {
       try JSONDecoder.goTrue.decode(StoredSession.self, from: $0)
     }
   }
 
-  func storeSession(_ session: StoredSession) throws {
-    try setData(JSONEncoder.goTrue.encode(session), .session)
+  fileprivate func storeSession(_ session: StoredSession) throws {
+    try store(key: "supabase.session", value: JSONEncoder.goTrue.encode(session))
   }
 
-  func deleteSession() {
-    try? remove(.session)
+  fileprivate func deleteSession() {
+    try? remove(key: "supabase.session")
   }
 }

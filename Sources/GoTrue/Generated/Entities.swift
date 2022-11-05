@@ -55,7 +55,7 @@ struct StringCodingKey: CodingKey, ExpressibleByStringLiteral {
   private let string: String
   private var int: Int?
 
-  var stringValue: String { return string }
+  var stringValue: String { string }
 
   init(string: String) {
     self.string = string
@@ -65,7 +65,7 @@ struct StringCodingKey: CodingKey, ExpressibleByStringLiteral {
     string = stringValue
   }
 
-  var intValue: Int? { return int }
+  var intValue: Int? { int }
 
   init?(intValue: Int) {
     string = String(describing: intValue)
@@ -156,12 +156,21 @@ public struct SignUpRequest: Codable, Equatable {
 }
 
 public struct Session: Codable, Equatable {
+  /// The oauth provider token. If present, this can be used to make external API requests to the
+  /// oauth provider used.
   public var providerToken: String?
+  /// The oauth provider refresh token. If present, this can be used to refresh the provider_token
+  /// via the oauth provider's API. Not all oauth providers return a provider refresh token. If the
+  /// provider_refresh_token is missing, please refer to the oauth provider's documentation for
+  /// information on how to obtain the provider refresh token.
   public var providerRefreshToken: String?
+  /// The access token jwt. It is recommended to set the JWT_EXPIRY to a shorter expiry value.
   public var accessToken: String
   public var tokenType: String
-  /// The number of seconds until the token expires (since it was issued).
+  /// The number of seconds until the token expires (since it was issued). Returned when a login is
+  /// confirmed.
   public var expiresIn: Double
+  /// A one-time used refresh token that never expires.
   public var refreshToken: String
   public var user: User
 
@@ -453,17 +462,20 @@ public struct OTPParams: Codable, Equatable {
   public var email: String?
   public var phone: String?
   public var createUser: Bool
+  public var data: [String: AnyJSON]?
   public var gotrueMetaSecurity: GoTrueMetaSecurity?
 
   public init(
     email: String? = nil,
     phone: String? = nil,
     createUser: Bool? = nil,
+    data: [String: AnyJSON]? = nil,
     gotrueMetaSecurity: GoTrueMetaSecurity? = nil
   ) {
     self.email = email
     self.phone = phone
     self.createUser = createUser ?? true
+    self.data = data
     self.gotrueMetaSecurity = gotrueMetaSecurity
   }
 
@@ -472,6 +484,7 @@ public struct OTPParams: Codable, Equatable {
     email = try values.decodeIfPresent(String.self, forKey: "email")
     phone = try values.decodeIfPresent(String.self, forKey: "phone")
     createUser = try values.decodeIfPresent(Bool.self, forKey: "create_user") ?? true
+    data = try values.decodeIfPresent([String: AnyJSON].self, forKey: "data")
     gotrueMetaSecurity = try values.decodeIfPresent(
       GoTrueMetaSecurity.self,
       forKey: "gotrue_meta_security"
@@ -483,103 +496,65 @@ public struct OTPParams: Codable, Equatable {
     try values.encodeIfPresent(email, forKey: "email")
     try values.encodeIfPresent(phone, forKey: "phone")
     try values.encodeIfPresent(createUser, forKey: "create_user")
+    try values.encodeIfPresent(data, forKey: "data")
     try values.encodeIfPresent(gotrueMetaSecurity, forKey: "gotrue_meta_security")
   }
 }
 
-public struct VerifyMobileOTPParams: Codable, Equatable {
-  public var phone: String
+public struct VerifyOTPParams: Codable, Equatable {
+  public var email: String?
+  public var phone: String?
   public var token: String
-  public var type: `Type`
+  public var type: OTPType
+  public var gotrueMetaSecurity: GoTrueMetaSecurity?
 
-  public enum `Type`: String, Codable, CaseIterable {
-    case sms
-    case phoneChange = "phone_change"
-  }
-
-  public init(phone: String, token: String, type: Type) {
+  public init(
+    email: String? = nil,
+    phone: String? = nil,
+    token: String,
+    type: OTPType,
+    gotrueMetaSecurity: GoTrueMetaSecurity? = nil
+  ) {
+    self.email = email
     self.phone = phone
     self.token = token
     self.type = type
+    self.gotrueMetaSecurity = gotrueMetaSecurity
   }
 
   public init(from decoder: Decoder) throws {
     let values = try decoder.container(keyedBy: StringCodingKey.self)
-    phone = try values.decode(String.self, forKey: "phone")
+    email = try values.decodeIfPresent(String.self, forKey: "email")
+    phone = try values.decodeIfPresent(String.self, forKey: "phone")
     token = try values.decode(String.self, forKey: "token")
-    type = try values.decode(Type.self, forKey: "type")
+    type = try values.decode(OTPType.self, forKey: "type")
+    gotrueMetaSecurity = try values.decodeIfPresent(
+      GoTrueMetaSecurity.self,
+      forKey: "gotrue_meta_security"
+    )
   }
 
   public func encode(to encoder: Encoder) throws {
     var values = encoder.container(keyedBy: StringCodingKey.self)
-    try values.encode(phone, forKey: "phone")
+    try values.encodeIfPresent(email, forKey: "email")
+    try values.encodeIfPresent(phone, forKey: "phone")
     try values.encode(token, forKey: "token")
     try values.encode(type, forKey: "type")
+    try values.encodeIfPresent(gotrueMetaSecurity, forKey: "gotrue_meta_security")
   }
 }
 
-public struct VerifyEmailOTPParams: Codable, Equatable {
-  public var email: String
-  public var token: String
-  public var type: `Type`
-
-  public enum `Type`: String, Codable, CaseIterable {
-    case signup
-    case invite
-    case magiclink
-    case recovery
-    case emailChange = "email_change"
-  }
-
-  public init(email: String, token: String, type: Type) {
-    self.email = email
-    self.token = token
-    self.type = type
-  }
-
-  public init(from decoder: Decoder) throws {
-    let values = try decoder.container(keyedBy: StringCodingKey.self)
-    email = try values.decode(String.self, forKey: "email")
-    token = try values.decode(String.self, forKey: "token")
-    type = try values.decode(Type.self, forKey: "type")
-  }
-
-  public func encode(to encoder: Encoder) throws {
-    var values = encoder.container(keyedBy: StringCodingKey.self)
-    try values.encode(email, forKey: "email")
-    try values.encode(token, forKey: "token")
-    try values.encode(type, forKey: "type")
-  }
+public enum OTPType: String, Codable, CaseIterable {
+  case sms
+  case phoneChange = "phone_change"
+  case signup
+  case invite
+  case magiclink
+  case recovery
+  case emailChange = "email_change"
 }
 
-public enum VerifyOTPParams: Codable, Equatable {
-  case verifyMobileOTPParams(VerifyMobileOTPParams)
-  case verifyEmailOTPParams(VerifyEmailOTPParams)
-
-  public init(from decoder: Decoder) throws {
-    let container = try decoder.singleValueContainer()
-    if let value = try? container.decode(VerifyMobileOTPParams.self) {
-      self = .verifyMobileOTPParams(value)
-    } else if let value = try? container.decode(VerifyEmailOTPParams.self) {
-      self = .verifyEmailOTPParams(value)
-    } else {
-      throw DecodingError.dataCorruptedError(
-        in: container,
-        debugDescription: "Data could not be decoded as any of the expected types (VerifyMobileOTPParams, VerifyEmailOTPParams)."
-      )
-    }
-  }
-
-  public func encode(to encoder: Encoder) throws {
-    var container = encoder.singleValueContainer()
-    switch self {
-    case let .verifyMobileOTPParams(value): try container.encode(value)
-    case let .verifyEmailOTPParams(value): try container.encode(value)
-    }
-  }
-}
-
-public enum SessionOrUser: Codable, Equatable {
+public enum AuthResponse: Codable, Equatable {
   case session(Session)
   case user(User)
 
@@ -615,7 +590,9 @@ public struct UserAttributes: Codable, Equatable {
   public var password: String?
   /// An email change token.
   public var emailChangeToken: String?
-  /// A custom data object for `user_metadata` that a user can modify. Can be any JSON.
+  /// A custom data object to store the user's metadata. This maps to the `auth.users.user_metadata`
+  /// column. The `data` should be a JSON object that includes user-specific info, such as their
+  /// first and last name.
   public var data: [String: AnyJSON]?
 
   public init(

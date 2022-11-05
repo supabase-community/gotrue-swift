@@ -18,16 +18,16 @@ extension Paths {
 
     internal func post(
       grantType: GrantType,
-      redirectURL: URL? = nil,
+      redirectTo: URL? = nil,
       _ body: PostRequest
     ) -> Request<GoTrue.Session> {
-      Request(path: path, method: "POST", query: makePostQuery(grantType, redirectURL), body: body)
+      Request(method: "POST", url: path, query: makePostQuery(grantType, redirectTo), body: body)
     }
 
-    private func makePostQuery(_ grantType: GrantType, _ redirectURL: URL?) -> [(String, String?)] {
+    private func makePostQuery(_ grantType: GrantType, _ redirectTo: URL?) -> [(String, String?)] {
       let encoder = URLQueryEncoder()
       encoder.encode(grantType, forKey: "grant_type")
-      encoder.encode(redirectURL, forKey: "redirect_url")
+      encoder.encode(redirectTo, forKey: "redirect_to")
       return encoder.items
     }
 
@@ -62,15 +62,15 @@ extension Paths {
     internal let path: String
 
     internal func post(
-      redirectURL: URL? = nil,
+      redirectTo: URL? = nil,
       _ body: GoTrue.SignUpRequest
-    ) -> Request<GoTrue.SessionOrUser> {
-      Request(path: path, method: "POST", query: makePostQuery(redirectURL), body: body)
+    ) -> Request<GoTrue.AuthResponse> {
+      Request(method: "POST", url: path, query: makePostQuery(redirectTo), body: body)
     }
 
-    private func makePostQuery(_ redirectURL: URL?) -> [(String, String?)] {
+    private func makePostQuery(_ redirectTo: URL?) -> [(String, String?)] {
       let encoder = URLQueryEncoder()
-      encoder.encode(redirectURL, forKey: "redirect_url")
+      encoder.encode(redirectTo, forKey: "redirect_to")
       return encoder.items
     }
   }
@@ -85,13 +85,13 @@ extension Paths {
     /// Path: `/otp`
     internal let path: String
 
-    internal func post(redirectURL: URL? = nil, _ body: GoTrue.OTPParams) -> Request<Void> {
-      Request(path: path, method: "POST", query: makePostQuery(redirectURL), body: body)
+    internal func post(redirectTo: URL? = nil, _ body: GoTrue.OTPParams) -> Request<Void> {
+      Request(method: "POST", url: path, query: makePostQuery(redirectTo), body: body)
     }
 
-    private func makePostQuery(_ redirectURL: URL?) -> [(String, String?)] {
+    private func makePostQuery(_ redirectTo: URL?) -> [(String, String?)] {
       let encoder = URLQueryEncoder()
-      encoder.encode(redirectURL, forKey: "redirect_url")
+      encoder.encode(redirectTo, forKey: "redirect_to")
       return encoder.items
     }
   }
@@ -106,8 +106,17 @@ extension Paths {
     /// Path: `/verify`
     internal let path: String
 
-    internal func post(_ body: GoTrue.VerifyOTPParams) -> Request<GoTrue.SessionOrUser> {
-      Request(path: path, method: "POST", body: body)
+    internal func post(
+      redirectTo: URL? = nil,
+      _ body: GoTrue.VerifyOTPParams
+    ) -> Request<GoTrue.AuthResponse> {
+      Request(method: "POST", url: path, query: makePostQuery(redirectTo), body: body)
+    }
+
+    private func makePostQuery(_ redirectTo: URL?) -> [(String, String?)] {
+      let encoder = URLQueryEncoder()
+      encoder.encode(redirectTo, forKey: "redirect_to")
+      return encoder.items
     }
   }
 }
@@ -122,11 +131,11 @@ extension Paths {
     internal let path: String
 
     internal var get: Request<GoTrue.User> {
-      Request(path: path, method: "GET")
+      Request(method: "GET", url: path)
     }
 
     internal func put(_ body: GoTrue.UserAttributes) -> Request<GoTrue.User> {
-      Request(path: path, method: "PUT", body: body)
+      Request(method: "PUT", url: path, body: body)
     }
   }
 }
@@ -141,7 +150,7 @@ extension Paths {
     internal let path: String
 
     internal var post: Request<Void> {
-      Request(path: path, method: "POST")
+      Request(method: "POST", url: path)
     }
   }
 }
@@ -155,13 +164,13 @@ extension Paths {
     /// Path: `/recover`
     internal let path: String
 
-    internal func post(redirectURL: URL? = nil, _ body: GoTrue.RecoverParams) -> Request<Void> {
-      Request(path: path, method: "POST", query: makePostQuery(redirectURL), body: body)
+    internal func post(redirectTo: URL? = nil, _ body: GoTrue.RecoverParams) -> Request<Void> {
+      Request(method: "POST", url: path, query: makePostQuery(redirectTo), body: body)
     }
 
-    private func makePostQuery(_ redirectURL: URL?) -> [(String, String?)] {
+    private func makePostQuery(_ redirectTo: URL?) -> [(String, String?)] {
       let encoder = URLQueryEncoder()
-      encoder.encode(redirectURL, forKey: "redirect_url")
+      encoder.encode(redirectTo, forKey: "redirect_to")
       return encoder.items
     }
   }

@@ -1,6 +1,6 @@
 import Get
 
-extension SessionOrUser {
+extension AuthResponse {
   public var user: User? {
     if case let .user(user) = self { return user }
     return nil

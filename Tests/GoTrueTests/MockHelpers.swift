@@ -1,4 +1,5 @@
 import Foundation
+@testable import GoTrue
 import Mocker
 
 func json(named name: String) -> Data {

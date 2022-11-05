@@ -1,4 +1,3 @@
-import ComposableKeychain
 import Foundation
 import Get
 import KeychainAccess
@@ -8,17 +7,17 @@ typealias SessionRefresher = (_ refreshToken: String) async throws -> Session
 struct Environment {
   var client: APIClient
   var sessionRefresher: SessionRefresher
-  var keychain: KeychainClient
+  var localStorage: GoTrueLocalStorage
   var sessionManager: SessionManager
   var date: () -> Date
 }
 
-var Current: Environment!
+var Env: Environment!
 
 extension Environment {
   static func live(
     url: URL,
-    accessGroup: String?,
+    localStorage: GoTrueLocalStorage,
     headers: [String: String],
     configuration: (inout APIClient.Configuration) -> Void
   ) -> Environment {
@@ -36,17 +35,14 @@ extension Environment {
     return Environment(
       client: client,
       sessionRefresher: { refreshToken in
-        try await Current.client.send(
+        try await Env.client.send(
           Paths.token.post(
             grantType: .refreshToken,
             .userCredentials(UserCredentials(refreshToken: refreshToken))
           )
         ).value
       },
-      keychain: .live(
-        keychain: accessGroup.map { Keychain(service: "supabase.gotrue.swift", accessGroup: $0) }
-          ?? Keychain(service: "supabase.gotrue.swift")
-      ),
+      localStorage: localStorage,
       sessionManager: .live,
       date: Date.init
     )
@@ -60,7 +56,7 @@ private let dateFormatter = { () -> ISO8601DateFormatter in
 }()
 
 extension JSONDecoder {
-  public static let goTrue = { () -> JSONDecoder in
+  static let goTrue = { () -> JSONDecoder in
     let decoder = JSONDecoder()
     decoder.dateDecodingStrategy = .custom { decoder in
       let container = try decoder.singleValueContainer()
@@ -79,7 +75,7 @@ extension JSONDecoder {
 }
 
 extension JSONEncoder {
-  public static let goTrue = { () -> JSONEncoder in
+  static let goTrue = { () -> JSONEncoder in
     let encoder = JSONEncoder()
     encoder.dateEncodingStrategy = .custom { date, encoder in
       var container = encoder.singleValueContainer()
@@ -99,10 +95,10 @@ private struct Delegate: APIClientDelegate {
       return
     }
 
-    guard let error = try? JSONDecoder.goTrue.decode(GoTrueError.self, from: data) else {
+    guard let error = try? JSONDecoder.goTrue.decode(GoTrueError.APIError.self, from: data) else {
       throw APIError.unacceptableStatusCode(response.statusCode)
     }
 
-    throw error
+    throw GoTrueError.api(error)
   }
 }

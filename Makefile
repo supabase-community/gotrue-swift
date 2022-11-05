@@ -1,35 +1,29 @@
-PLATFORM_IOS = iOS Simulator,name=iPhone 11 Pro Max
+PLATFORM_IOS = iOS Simulator,name=iPhone 14 Pro Max
 PLATFORM_MACOS = macOS
-PLATFORM_TVOS = tvOS Simulator,name=Apple TV 4K (at 1080p) (2nd generation)
+PLATFORM_MAC_CATALYST = macOS,variant=Mac Catalyst
+PLATFORM_TVOS = tvOS Simulator,name=Apple TV
+PLATFORM_WATCHOS = watchOS Simulator,name=Apple Watch Series 7 (45mm)
 
-default: test-all
-
-test-all: test-ios test-macos test-tvos
-
-test-ios:
-	xcodebuild test \
-		-scheme GoTrue \
-		-destination platform="$(PLATFORM_IOS)"
-
-test-macos:
-	xcodebuild test \
-		-scheme GoTrue \
-		-destination platform="$(PLATFORM_MACOS)"
-
-test-tvos:
-	xcodebuild test \
-		-scheme GoTrue \
-		-destination platform="$(PLATFORM_TVOS)"
+test-library:
+	for platform in "$(PLATFORM_IOS)" "$(PLATFORM_MACOS)" "$(PLATFORM_MAC_CATALYST)" "$(PLATFORM_TVOS)" "$(PLATFORM_WATCHOS)"; do \
+		xcodebuild test \
+			-workspace GoTrue.xcworkspace \
+			-scheme GoTrue \
+			-destination platform="$$platform" || exit 1; \
+	done;
+	
+build-example:
+	xcodebuild build \
+		-workspace GoTrue.xcworkspace \
+		-scheme Examples \
+		-destination platform="$(PLATFORM_IOS)" || exit 1;
 
 format:
-	swift format \
-		--ignore-unparsable-files \
-		--in-place \
-		--recursive .
+	@swiftformat .
 
 api:
 	create-api generate --output Sources/GoTrue/Generated --config .createapi.yml openapi.yaml
 	sed -i "" "s/public /internal /g" Sources/GoTrue/Generated/Paths.swift
 	$(MAKE) format
 
-.PHONY: format test-all test-ios test-macos test-tvos create-api
+.PHONY: test-library build-example format test-library create-api
