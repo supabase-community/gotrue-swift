@@ -61,12 +61,8 @@
 			children = (
 				18DE58A0286B2C78005F7FF2 /* Assets.xcassets */,
 				18AD3627286B35D300855046 /* Examples.entitlements */,
-				18DE589E286B2C77005F7FF2 /* ExamplesApp.swift */,
 				18AD3626286B33AE00855046 /* Info.plist */,
-				1820720D286B449B0009D0BF /* Secrets.swift */,
-				798AD52029072C22001B4801 /* AppView.swift */,
-				798AD5222907309C001B4801 /* SessionView.swift */,
-				798AD524290731A0001B4801 /* AuthWithEmailAndPasswordView.swift */,
+				79E38C622916675E0006DE6E /* Sources */,
 			);
 			path = Shared;
 			sourceTree = "<group>";
@@ -77,6 +73,18 @@
 				18DE58A5286B2C78005F7FF2 /* Examples.app */,
 			);
 			name = Products;
+			sourceTree = "<group>";
+		};
+		79E38C622916675E0006DE6E /* Sources */ = {
+			isa = PBXGroup;
+			children = (
+				798AD52029072C22001B4801 /* AppView.swift */,
+				798AD524290731A0001B4801 /* AuthWithEmailAndPasswordView.swift */,
+				18DE589E286B2C77005F7FF2 /* ExamplesApp.swift */,
+				1820720D286B449B0009D0BF /* Secrets.swift */,
+				798AD5222907309C001B4801 /* SessionView.swift */,
+			);
+			path = Sources;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */

@@ -49,17 +49,21 @@ components:
       properties:
         provider_token:
           type: string
+          description: "The oauth provider token. If present, this can be used to make external API requests to the oauth provider used."
         provider_refresh_token:
           type: string
+          description: "The oauth provider refresh token. If present, this can be used to refresh the provider_token via the oauth provider's API. Not all oauth providers return a provider refresh token. If the provider_refresh_token is missing, please refer to the oauth provider's documentation for information on how to obtain the provider refresh token."
         access_token:
           type: string
+          description: "The access token jwt. It is recommended to set the JWT_EXPIRY to a shorter expiry value."
         token_type:
           type: string
         expires_in:
           type: number
-          description: "The number of seconds until the token expires (since it was issued)."
+          description: "The number of seconds until the token expires (since it was issued). Returned when a login is confirmed."
         refresh_token:
           type: string
+          description: "A one-time used refresh token that never expires."
         user:
           $ref: "#/components/schemas/User"
       required:
@@ -213,7 +217,7 @@ components:
           type: string
         create_user:
           type: boolean
-          default: "true"
+          default: true
         data:
           type: object
         gotrue_meta_security:
@@ -265,7 +269,7 @@ components:
           description: "An email change token."
         data:
           type: object
-          description: "A custom data object for `user_metadata` that a user can modify. Can be any JSON."
+          description: "A custom data object to store the user's metadata. This maps to the `auth.users.user_metadata` column. The `data` should be a JSON object that includes user-specific info, such as their first and last name."
     RecoverParams:
       type: object
       properties:
@@ -278,7 +282,6 @@ components:
 
 paths:
   /token:
-    summary: ""
     post:
       parameters:
         - name: grant_type

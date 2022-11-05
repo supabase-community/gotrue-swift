@@ -12,7 +12,7 @@ struct Environment {
   var date: () -> Date
 }
 
-var Current: Environment!
+var Env: Environment!
 
 extension Environment {
   static func live(
@@ -35,7 +35,7 @@ extension Environment {
     return Environment(
       client: client,
       sessionRefresher: { refreshToken in
-        try await Current.client.send(
+        try await Env.client.send(
           Paths.token.post(
             grantType: .refreshToken,
             .userCredentials(UserCredentials(refreshToken: refreshToken))
@@ -56,7 +56,7 @@ private let dateFormatter = { () -> ISO8601DateFormatter in
 }()
 
 extension JSONDecoder {
-  public static let goTrue = { () -> JSONDecoder in
+  static let goTrue = { () -> JSONDecoder in
     let decoder = JSONDecoder()
     decoder.dateDecodingStrategy = .custom { decoder in
       let container = try decoder.singleValueContainer()
@@ -75,7 +75,7 @@ extension JSONDecoder {
 }
 
 extension JSONEncoder {
-  public static let goTrue = { () -> JSONEncoder in
+  static let goTrue = { () -> JSONEncoder in
     let encoder = JSONEncoder()
     encoder.dateEncodingStrategy = .custom { date, encoder in
       var container = encoder.singleValueContainer()

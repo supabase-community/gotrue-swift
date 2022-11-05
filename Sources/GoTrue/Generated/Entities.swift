@@ -156,12 +156,21 @@ public struct SignUpRequest: Codable, Equatable {
 }
 
 public struct Session: Codable, Equatable {
+  /// The oauth provider token. If present, this can be used to make external API requests to the
+  /// oauth provider used.
   public var providerToken: String?
+  /// The oauth provider refresh token. If present, this can be used to refresh the provider_token
+  /// via the oauth provider's API. Not all oauth providers return a provider refresh token. If the
+  /// provider_refresh_token is missing, please refer to the oauth provider's documentation for
+  /// information on how to obtain the provider refresh token.
   public var providerRefreshToken: String?
+  /// The access token jwt. It is recommended to set the JWT_EXPIRY to a shorter expiry value.
   public var accessToken: String
   public var tokenType: String
-  /// The number of seconds until the token expires (since it was issued).
+  /// The number of seconds until the token expires (since it was issued). Returned when a login is
+  /// confirmed.
   public var expiresIn: Double
+  /// A one-time used refresh token that never expires.
   public var refreshToken: String
   public var user: User
 
@@ -581,7 +590,9 @@ public struct UserAttributes: Codable, Equatable {
   public var password: String?
   /// An email change token.
   public var emailChangeToken: String?
-  /// A custom data object for `user_metadata` that a user can modify. Can be any JSON.
+  /// A custom data object to store the user's metadata. This maps to the `auth.users.user_metadata`
+  /// column. The `data` should be a JSON object that includes user-specific info, such as their
+  /// first and last name.
   public var data: [String: AnyJSON]?
 
   public init(

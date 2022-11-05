@@ -18,7 +18,7 @@ public final class GoTrueClient {
   public var session: Session {
     get async throws {
       await initialize()
-      return try await Current.sessionManager.session()
+      return try await Env.sessionManager.session()
     }
   }
 
@@ -32,7 +32,7 @@ public final class GoTrueClient {
     headers["X-Client-Info"] = "gotrue-swift/\(version)"
 
     self.url = url
-    Current = .live(
+    Env = .live(
       url: url,
       localStorage: localStorage ?? KeychainLocalStorage(
         service: "supabase.gotrue.swift",
@@ -47,7 +47,7 @@ public final class GoTrueClient {
     authEventChangeContinuation = continuation
     initializationTask = Task {
       do {
-        _ = try await Current.sessionManager.session()
+        _ = try await Env.sessionManager.session()
         continuation.yield(.signedIn)
       } catch {
         continuation.yield(.signedOut)
@@ -128,11 +128,11 @@ public final class GoTrueClient {
   }
 
   private func _signUp(request: Request<AuthResponse>) async throws -> AuthResponse {
-    await Current.sessionManager.remove()
-    let response = try await Current.client.send(request).value
+    await Env.sessionManager.remove()
+    let response = try await Env.client.send(request).value
 
     if let session = response.session {
-      try await Current.sessionManager.update(session)
+      try await Env.sessionManager.update(session)
       authEventChangeContinuation.yield(.signedIn)
     }
 
@@ -162,12 +162,12 @@ public final class GoTrueClient {
   }
 
   private func _signIn(request: Request<Session>) async throws -> Session {
-    await Current.sessionManager.remove()
+    await Env.sessionManager.remove()
 
-    let session = try await Current.client.send(request).value
+    let session = try await Env.client.send(request).value
 
     if session.user.emailConfirmedAt != nil || session.user.confirmedAt != nil {
-      try await Current.sessionManager.update(session)
+      try await Env.sessionManager.update(session)
       authEventChangeContinuation.yield(.signedIn)
     }
 
@@ -192,8 +192,8 @@ public final class GoTrueClient {
     data: [String: AnyJSON]? = nil,
     captchaToken: String? = nil
   ) async throws {
-    await Current.sessionManager.remove()
-    try await Current.client.send(
+    await Env.sessionManager.remove()
+    try await Env.client.send(
       Paths.otp.post(
         redirectTo: redirectTo,
         .init(
@@ -219,8 +219,8 @@ public final class GoTrueClient {
     data: [String: AnyJSON]? = nil,
     captchaToken: String? = nil
   ) async throws {
-    await Current.sessionManager.remove()
-    try await Current.client.send(
+    await Env.sessionManager.remove()
+    try await Env.client.send(
       Paths.otp.post(
         .init(
           phone: phone,
@@ -273,7 +273,7 @@ public final class GoTrueClient {
   @discardableResult
   public func refreshSession(refreshToken: String) async throws -> Session {
     do {
-      let session = try await Current.client.send(
+      let session = try await Env.client.send(
         Paths.token.post(
           grantType: .refreshToken,
           .userCredentials(UserCredentials(refreshToken: refreshToken))
@@ -283,7 +283,7 @@ public final class GoTrueClient {
       if session.user.phoneConfirmedAt != nil || session.user.emailConfirmedAt != nil || session
         .user.confirmedAt != nil
       {
-        try await Current.sessionManager.update(session)
+        try await Env.sessionManager.update(session)
         authEventChangeContinuation.yield(.signedIn)
       }
 
@@ -318,7 +318,7 @@ public final class GoTrueClient {
     let providerToken = params.first(where: { $0.name == "provider_token" })?.value
     let providerRefreshToken = params.first(where: { $0.name == "provider_refresh_token" })?.value
 
-    let user = try await Current.client.send(
+    let user = try await Env.client.send(
       Paths.user.get.withAuthorization(accessToken, type: tokenType)
     ).value
 
@@ -333,7 +333,7 @@ public final class GoTrueClient {
     )
 
     if storeSession {
-      try await Current.sessionManager.update(session)
+      try await Env.sessionManager.update(session)
       authEventChangeContinuation.yield(.signedIn)
 
       if let type = params.first(where: { $0.name == "type" })?.value, type == "recovery" {
@@ -371,7 +371,7 @@ public final class GoTrueClient {
     if hasExpired {
       session = try await refreshSession(refreshToken: refreshToken)
     } else {
-      let user = try await Current.client.send(
+      let user = try await Env.client.send(
         Paths.user.get.withAuthorization(accessToken)
       ).value
       session = Session(
@@ -387,7 +387,7 @@ public final class GoTrueClient {
       throw GoTrueError.sessionNotFound
     }
 
-    try await Current.sessionManager.update(session)
+    try await Env.sessionManager.update(session)
     authEventChangeContinuation.yield(.tokenRefreshed)
     return session
   }
@@ -396,11 +396,11 @@ public final class GoTrueClient {
   public func signOut() async throws {
     defer { authEventChangeContinuation.yield(.signedOut) }
 
-    let session = try? await Current.sessionManager.session()
-    await Current.sessionManager.remove()
+    let session = try? await Env.sessionManager.session()
+    await Env.sessionManager.remove()
 
     if let session = session {
-      try await Current.client.send(Paths.logout.post.withAuthorization(session.accessToken)).value
+      try await Env.client.send(Paths.logout.post.withAuthorization(session.accessToken)).value
     }
   }
 
@@ -447,12 +447,12 @@ public final class GoTrueClient {
   }
 
   private func _verifyOTP(request: Request<AuthResponse>) async throws -> AuthResponse {
-    await Current.sessionManager.remove()
+    await Env.sessionManager.remove()
 
-    let response = try await Current.client.send(request).value
+    let response = try await Env.client.send(request).value
 
     if let session = response.session {
-      try await Current.sessionManager.update(session)
+      try await Env.sessionManager.update(session)
       authEventChangeContinuation.yield(.signedIn)
     }
 
@@ -462,12 +462,12 @@ public final class GoTrueClient {
   /// Updates user data, if there is a logged in user.
   @discardableResult
   public func update(user: UserAttributes) async throws -> User {
-    var session = try await Current.sessionManager.session()
-    let user = try await Current.client.send(
+    var session = try await Env.sessionManager.session()
+    let user = try await Env.client.send(
       Paths.user.put(user).withAuthorization(session.accessToken)
     ).value
     session.user = user
-    try await Current.sessionManager.update(session)
+    try await Env.sessionManager.update(session)
     authEventChangeContinuation.yield(.userUpdated)
     return user
   }
@@ -478,7 +478,7 @@ public final class GoTrueClient {
     redirectTo: URL? = nil,
     captchaToken: String? = nil
   ) async throws {
-    try await Current.client.send(
+    try await Env.client.send(
       Paths.recover.post(
         redirectTo: redirectTo,
         RecoverParams(

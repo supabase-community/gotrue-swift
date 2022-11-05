@@ -40,7 +40,7 @@ private actor LiveSessionManager {
       return try await task.value
     }
 
-    guard let currentSession = try Current.localStorage.getSession() else {
+    guard let currentSession = try Env.localStorage.getSession() else {
       throw GoTrueError.sessionNotFound
     }
 
@@ -51,7 +51,7 @@ private actor LiveSessionManager {
     task = Task {
       defer { self.task = nil }
 
-      let session = try await Current.sessionRefresher(currentSession.session.refreshToken)
+      let session = try await Env.sessionRefresher(currentSession.session.refreshToken)
       try update(session)
       return session
     }
@@ -60,11 +60,11 @@ private actor LiveSessionManager {
   }
 
   func update(_ session: Session) throws {
-    try Current.localStorage.storeSession(StoredSession(session: session))
+    try Env.localStorage.storeSession(StoredSession(session: session))
   }
 
   func remove() {
-    Current.localStorage.deleteSession()
+    Env.localStorage.deleteSession()
   }
 }
 
