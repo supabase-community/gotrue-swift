@@ -334,7 +334,7 @@ public struct UserIdentity: Codable, Equatable {
   public var id: String
   public var userID: UUID
   public var identityData: [String: AnyJSON]
-  public var provider: Provider
+  public var provider: String
   public var createdAt: Date
   public var lastSignInAt: Date
   public var updatedAt: Date
@@ -343,7 +343,7 @@ public struct UserIdentity: Codable, Equatable {
     id: String,
     userID: UUID,
     identityData: [String: AnyJSON],
-    provider: Provider,
+    provider: String,
     createdAt: Date,
     lastSignInAt: Date,
     updatedAt: Date
@@ -362,7 +362,7 @@ public struct UserIdentity: Codable, Equatable {
     id = try values.decode(String.self, forKey: "id")
     userID = try values.decode(UUID.self, forKey: "user_id")
     identityData = try values.decode([String: AnyJSON].self, forKey: "identity_data")
-    provider = try values.decode(Provider.self, forKey: "provider")
+    provider = try values.decode(String.self, forKey: "provider")
     createdAt = try values.decode(Date.self, forKey: "created_at")
     lastSignInAt = try values.decode(Date.self, forKey: "last_sign_in_at")
     updatedAt = try values.decode(Date.self, forKey: "updated_at")

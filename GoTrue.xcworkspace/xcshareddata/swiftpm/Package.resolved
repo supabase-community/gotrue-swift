@@ -5,8 +5,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/kean/Get",
       "state" : {
-        "revision" : "4750914f0fc8ae6c20a52d028b413d0cebce87fc",
-        "version" : "2.1.4"
+        "revision" : "12830cc64f31789ae6f4352d2d51d03a25fc3741",
+        "version" : "2.1.6"
       }
     },
     {
@@ -23,8 +23,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/WeTransfer/Mocker",
       "state" : {
-        "revision" : "295b4368651fd9ce419dbc56bea732f6756c0c94",
-        "version" : "3.0.0"
+        "revision" : "4384e015cae4916a6828252467a4437173c7ae17",
+        "version" : "3.0.1"
       }
     },
     {
@@ -32,8 +32,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/kean/URLQueryEncoder",
       "state" : {
-        "revision" : "4cc975d4d075d0e62699a796a08284e217d4ee93",
-        "version" : "0.2.0"
+        "revision" : "4ce950479707ea109f229d7230ec074a133b15d7",
+        "version" : "0.2.1"
       }
     }
   ],
