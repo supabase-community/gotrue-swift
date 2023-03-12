@@ -44,3 +44,9 @@ private func base64URLDecode(_ value: String) -> Data? {
   }
   return Data(base64Encoded: base64, options: .ignoreUnknownCharacters)
 }
+
+func randomString(length: Int) -> String {
+    let letters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
+    return String((0..<length).map{ _ in letters.randomElement()! })
+}
+

@@ -35,17 +35,20 @@ extension Paths {
       case password
       case refreshToken = "refresh_token"
       case idToken = "id_token"
+      case pkce = "oauth_pkce"
     }
 
     internal enum PostRequest: Encodable, Equatable {
       case userCredentials(GoTrue.UserCredentials)
       case openIDConnectCredentials(GoTrue.OpenIDConnectCredentials)
+      case codeVerifier(GoTrue.PKCECodeVerifier)
 
       internal func encode(to encoder: Encoder) throws {
         var container = encoder.singleValueContainer()
         switch self {
         case let .userCredentials(value): try container.encode(value)
         case let .openIDConnectCredentials(value): try container.encode(value)
+        case let .codeVerifier(value): try container.encode(value)
         }
       }
     }
@@ -175,3 +178,4 @@ extension Paths {
     }
   }
 }
+

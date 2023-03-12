@@ -652,3 +652,33 @@ public struct RecoverParams: Codable, Equatable {
     try values.encodeIfPresent(gotrueMetaSecurity, forKey: "gotrue_meta_security")
   }
 }
+
+public enum flowType: String {
+    case implicit = "implicit"
+    case pkce = "pkce"
+}
+
+public struct PKCECodeVerifier: Codable, Equatable {
+  public var authCode: String?
+  public var codeVerifier: String?
+
+  public init(
+    authCode: String? = nil,
+    codeVerifier: String? = nil
+  ) {
+    self.authCode = authCode
+    self.codeVerifier = codeVerifier
+  }
+
+  public init(from decoder: Decoder) throws {
+    let values = try decoder.container(keyedBy: StringCodingKey.self)
+    authCode = try values.decodeIfPresent(String.self, forKey: "auth_code")
+    codeVerifier = try values.decodeIfPresent(String.self, forKey: "code_verifier")
+  }
+
+  public func encode(to encoder: Encoder) throws {
+    var values = encoder.container(keyedBy: StringCodingKey.self)
+    try values.encodeIfPresent(authCode, forKey: "auth_code")
+    try values.encodeIfPresent(codeVerifier, forKey: "code_verifier")
+  }
+}

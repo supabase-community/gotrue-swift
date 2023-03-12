@@ -237,6 +237,7 @@ public final class GoTrueClient {
     provider: Provider,
     scopes: String? = nil,
     redirectTo: URL? = nil,
+    flowType: flowType = .implicit,
     queryParams: [(name: String, value: String?)] = []
   ) throws -> URL {
     guard
@@ -254,6 +255,12 @@ public final class GoTrueClient {
     if let scopes = scopes {
       queryItems.append(URLQueryItem(name: "scopes", value: scopes))
     }
+      
+    if flowType == .pkce {
+        queryItems.append(URLQueryItem(name: "flow_type", value: flowType.rawValue))
+        queryItems.append(URLQueryItem(name: "code_challenge", value: CodeVerifierManager().generateCodeVerifier()))
+        queryItems.append(URLQueryItem(name: "code_challenge_method", value: "s256"))
+    }
 
     if let redirectTo = redirectTo {
       queryItems.append(URLQueryItem(name: "redirect_to", value: redirectTo.absoluteString))
@@ -269,6 +276,25 @@ public final class GoTrueClient {
 
     return url
   }
+    
+    public func exchangeAuthCode(authCode: String) async throws -> Session {
+        do {
+          let session = try await Env.client.send(
+            Paths.token.post(grantType: .pkce,
+                            .codeVerifier(PKCECodeVerifier(authCode: authCode, codeVerifier: CodeVerifierManager().getCodeVerifier())))
+          ).value
+
+          if session.user.phoneConfirmedAt != nil || session.user.emailConfirmedAt != nil || session
+            .user.confirmedAt != nil
+          {
+            try await Env.sessionManager.update(session)
+            authEventChangeContinuation.yield(.signedIn)
+          }
+          return session
+        } catch {
+          throw error
+        }
+    }
 
   @discardableResult
   public func refreshSession(refreshToken: String) async throws -> Session {
