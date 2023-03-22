@@ -11,6 +11,17 @@ Oauth2:
 - `signIn` with OAuth2 provider only return provider url. Users have to launch that url to continue the auth flow.
 - After receiving callback uri from OAuth2 provider, use `session(from url: URL)` to parse session data.
 
+## Running Examples
+
+For running the examples project you'll have to provide your own Supabase project.
+
+```sh
+$ cp Examples/Shared/Sources/_Secrets.swift Examples/Shared/Sources/Secrets.swift
+$ Examples/Shared/Sources/Secrets.swift # Or use you favorite editor
+```
+
+Replace `{PROJECT_ID}` and `{ANON_KEY}` with real values for your project on the Supabase portal.
+
 Check [Examples](/Examples) for example usages.
 
 ## Contributing
@@ -24,7 +35,6 @@ Check [Examples](/Examples) for example usages.
 ## License
 
 This repo is licensed under MIT.
-
 
 ## Credits
 

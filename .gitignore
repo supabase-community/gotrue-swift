@@ -134,3 +134,4 @@ iOSInjectionProject/
 
 # Custom
 .deriveddata
+Secrets.swift
