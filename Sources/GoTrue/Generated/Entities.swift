@@ -10,7 +10,7 @@ public enum AnyJSON: Equatable, Codable {
   case array([AnyJSON])
   case bool(Bool)
 
-  var value: Any {
+  public var value: Any {
     switch self {
     case let .string(string): return string
     case let .number(double): return double
