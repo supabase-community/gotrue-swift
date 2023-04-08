@@ -215,7 +215,7 @@ public struct Session: Codable, Equatable {
   }
 }
 
-public struct User: Codable, Equatable {
+public struct User: Codable, Equatable, Identifiable {
   public var id: UUID
   public var appMetadata: [String: AnyJSON]
   public var userMetadata: [String: AnyJSON]
