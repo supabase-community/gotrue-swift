@@ -95,7 +95,7 @@ struct AppView: View {
     
 }
 
-func stringfy<T: Codable>(_ value: T) -> String {
+func stringfy(_ value: some Codable) -> String {
   let encoder = JSONEncoder()
   encoder.outputFormatting = [.prettyPrinted, .sortedKeys]
   let data = try? encoder.encode(value)

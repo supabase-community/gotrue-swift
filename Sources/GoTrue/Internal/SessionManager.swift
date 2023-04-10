@@ -36,7 +36,7 @@ private actor LiveSessionManager {
   private var task: Task<Session, Error>?
 
   func session() async throws -> Session {
-    if let task = task {
+    if let task {
       return try await task.value
     }
 
