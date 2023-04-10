@@ -7,7 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		080C254329DF159E0013DEFA /* AuthWithPhoneAndOTP.swift in Sources */ = {isa = PBXBuildFile; fileRef = 080C254229DF159E0013DEFA /* AuthWithPhoneAndOTP.swift */; };
+		080C254329DF159E0013DEFA /* AuthWithEmailAndOTP.swift in Sources */ = {isa = PBXBuildFile; fileRef = 080C254229DF159E0013DEFA /* AuthWithEmailAndOTP.swift */; };
+		08BA8D5929E4540F00BD340E /* LoadingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 08BA8D5829E4540F00BD340E /* LoadingView.swift */; };
 		1820720E286B449B0009D0BF /* Secrets.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1820720D286B449B0009D0BF /* Secrets.swift */; };
 		18DE58AE286B2C78005F7FF2 /* ExamplesApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 18DE589E286B2C77005F7FF2 /* ExamplesApp.swift */; };
 		18DE58B2286B2C78005F7FF2 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 18DE58A0286B2C78005F7FF2 /* Assets.xcassets */; };
@@ -18,8 +19,9 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
-		080C254229DF159E0013DEFA /* AuthWithPhoneAndOTP.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuthWithPhoneAndOTP.swift; sourceTree = "<group>"; };
+		080C254229DF159E0013DEFA /* AuthWithEmailAndOTP.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuthWithEmailAndOTP.swift; sourceTree = "<group>"; };
 		089F9ED029DDB5B100197CC2 /* gotrue-swift-community */ = {isa = PBXFileReference; lastKnownFileType = wrapper; name = "gotrue-swift-community"; path = ..; sourceTree = "<group>"; };
+		08BA8D5829E4540F00BD340E /* LoadingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoadingView.swift; sourceTree = "<group>"; };
 		1820720D286B449B0009D0BF /* Secrets.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Secrets.swift; sourceTree = "<group>"; };
 		18AD3626286B33AE00855046 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		18AD3627286B35D300855046 /* Examples.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = Examples.entitlements; sourceTree = "<group>"; };
@@ -95,7 +97,8 @@
 				18DE589E286B2C77005F7FF2 /* ExamplesApp.swift */,
 				1820720D286B449B0009D0BF /* Secrets.swift */,
 				798AD5222907309C001B4801 /* SessionView.swift */,
-				080C254229DF159E0013DEFA /* AuthWithPhoneAndOTP.swift */,
+				080C254229DF159E0013DEFA /* AuthWithEmailAndOTP.swift */,
+				08BA8D5829E4540F00BD340E /* LoadingView.swift */,
 			);
 			path = Sources;
 			sourceTree = "<group>";
@@ -172,11 +175,12 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				080C254329DF159E0013DEFA /* AuthWithPhoneAndOTP.swift in Sources */,
+				080C254329DF159E0013DEFA /* AuthWithEmailAndOTP.swift in Sources */,
 				1820720E286B449B0009D0BF /* Secrets.swift in Sources */,
 				18DE58AE286B2C78005F7FF2 /* ExamplesApp.swift in Sources */,
 				798AD52129072C22001B4801 /* AppView.swift in Sources */,
 				798AD525290731A0001B4801 /* AuthWithEmailAndPasswordView.swift in Sources */,
+				08BA8D5929E4540F00BD340E /* LoadingView.swift in Sources */,
 				798AD5232907309C001B4801 /* SessionView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

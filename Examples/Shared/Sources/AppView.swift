@@ -65,6 +65,9 @@ struct AppView: View {
                   NavigationLink("Auth with Email and Password") {
                       AuthWithEmailAndPasswordView()
                   }
+                  NavigationLink("Auth with Email and OTP") {
+                      AuthWithEmailAndOTP()
+                  }
                     Button("Google Sign In") {
                         signInModel.signInGoogle(client: client)
                     }
