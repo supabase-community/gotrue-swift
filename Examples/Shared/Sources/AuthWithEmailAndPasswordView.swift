@@ -52,26 +52,24 @@ struct AuthWithEmailAndPasswordView: View {
   private func signInButtonTapped() {
       isLoading = true
     Task {
-        do {
-            self.error = nil
-            try await client.signIn(email: email, password: password)
-        } catch {
-            self.error = error
-        }
-        isLoading = false
+      do {
+        error = nil
+        try await client.signIn(email: email, password: password)
+      } catch {
+        self.error = error
+      }
     }
   }
 
   private func signUpButtonTapped() {
       isLoading = true
     Task {
-        do {
-            self.error = nil
-            try await client.signUp(email: email, password: password)
-        } catch {
-            self.error = error
-        }
-        isLoading = false
+      do {
+        error = nil
+        try await client.signUp(email: email, password: password)
+      } catch {
+        self.error = error
+      }
     }
   }
 }
