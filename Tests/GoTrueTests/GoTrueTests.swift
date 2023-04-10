@@ -78,8 +78,8 @@ final class GoTrueTests: XCTestCase {
     )!
 
     var mock = Mock.get(path: "user", json: "user")
-    mock.onRequest = { urlRequest, _ in
-      let authorizationHeader = urlRequest.allHTTPHeaderFields?["Authorization"]
+    mock.onRequestHandler = OnRequestHandler { request in
+      let authorizationHeader = request.allHTTPHeaderFields?["Authorization"]
       XCTAssertEqual(authorizationHeader, "bearer accesstoken")
     }
     mock.register()
