@@ -49,7 +49,7 @@ struct AuthWithEmailAndPasswordView: View {
   private func signInButtonTapped() {
     Task {
       do {
-        self.error = nil
+        error = nil
         try await client.signIn(email: email, password: password)
       } catch {
         self.error = error
@@ -60,7 +60,7 @@ struct AuthWithEmailAndPasswordView: View {
   private func signUpButtonTapped() {
     Task {
       do {
-        self.error = nil
+        error = nil
         try await client.signUp(email: email, password: password)
       } catch {
         self.error = error

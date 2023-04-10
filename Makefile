@@ -21,9 +21,4 @@ build-example:
 format:
 	@swiftformat .
 
-api:
-	create-api generate --output Sources/GoTrue/Generated --config .createapi.yml openapi.yaml
-	sed -i "" "s/public /internal /g" Sources/GoTrue/Generated/Paths.swift
-	$(MAKE) format
-
-.PHONY: test-library build-example format test-library create-api
+.PHONY: test-library build-example format test-library

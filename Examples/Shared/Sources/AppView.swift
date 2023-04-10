@@ -26,7 +26,7 @@ struct AppView: View {
       ProgressView()
         .task {
           await client.initialize()
-          self.clientInitialized = true
+          clientInitialized = true
         }
     }
   }
