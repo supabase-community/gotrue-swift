@@ -97,7 +97,7 @@ public final class GoTrueClient {
           email: email,
           password: password,
           data: data,
-          gotrueMetaSecurity: captchaToken.map(GoTrueMetaSecurity.init(hcaptchaToken:))
+          gotrueMetaSecurity: captchaToken.map(GoTrueMetaSecurity.init(captchaToken:))
         )
       )
     )
@@ -121,7 +121,7 @@ public final class GoTrueClient {
           password: password,
           phone: phone,
           data: data,
-          gotrueMetaSecurity: captchaToken.map(GoTrueMetaSecurity.init(hcaptchaToken:))
+          gotrueMetaSecurity: captchaToken.map(GoTrueMetaSecurity.init(captchaToken:))
         )
       )
     )
@@ -157,6 +157,18 @@ public final class GoTrueClient {
       request: Paths.token.post(
         grantType: .password,
         .userCredentials(UserCredentials(password: password, phone: phone))
+      )
+    )
+  }
+
+  /// Allows signing in with an ID token issued by certain supported providers.
+  /// The ID token is verified for validity and a new session is established.
+  @discardableResult
+  public func signInWithIdToken(credentials: OpenIDConnectCredentials) async throws -> Session {
+    try await _signIn(
+      request: Paths.token.post(
+        grantType: .idToken,
+        .openIDConnectCredentials(credentials)
       )
     )
   }
@@ -200,7 +212,7 @@ public final class GoTrueClient {
           email: email,
           createUser: shouldCreateUser,
           data: data,
-          gotrueMetaSecurity: captchaToken.map(GoTrueMetaSecurity.init(hcaptchaToken:))
+          gotrueMetaSecurity: captchaToken.map(GoTrueMetaSecurity.init(captchaToken:))
         )
       )
     )
@@ -226,7 +238,7 @@ public final class GoTrueClient {
           phone: phone,
           createUser: shouldCreateUser,
           data: data,
-          gotrueMetaSecurity: captchaToken.map(GoTrueMetaSecurity.init(hcaptchaToken:))
+          gotrueMetaSecurity: captchaToken.map(GoTrueMetaSecurity.init(captchaToken:))
         )
       )
     )
@@ -251,11 +263,11 @@ public final class GoTrueClient {
       URLQueryItem(name: "provider", value: provider.rawValue),
     ]
 
-    if let scopes = scopes {
+    if let scopes {
       queryItems.append(URLQueryItem(name: "scopes", value: scopes))
     }
 
-    if let redirectTo = redirectTo {
+    if let redirectTo {
       queryItems.append(URLQueryItem(name: "redirect_to", value: redirectTo.absoluteString))
     }
 
@@ -383,7 +395,7 @@ public final class GoTrueClient {
       )
     }
 
-    guard let session = session else {
+    guard let session else {
       throw GoTrueError.sessionNotFound
     }
 
@@ -399,7 +411,7 @@ public final class GoTrueClient {
     let session = try? await Env.sessionManager.session()
     await Env.sessionManager.remove()
 
-    if let session = session {
+    if let session {
       try await Env.client.send(Paths.logout.post.withAuthorization(session.accessToken)).value
     }
   }
@@ -420,7 +432,7 @@ public final class GoTrueClient {
           email: email,
           token: token,
           type: type,
-          gotrueMetaSecurity: captchaToken.map(GoTrueMetaSecurity.init(hcaptchaToken:))
+          gotrueMetaSecurity: captchaToken.map(GoTrueMetaSecurity.init(captchaToken:))
         )
       )
     )
@@ -440,7 +452,7 @@ public final class GoTrueClient {
           phone: phone,
           token: token,
           type: type,
-          gotrueMetaSecurity: captchaToken.map(GoTrueMetaSecurity.init(hcaptchaToken:))
+          gotrueMetaSecurity: captchaToken.map(GoTrueMetaSecurity.init(captchaToken:))
         )
       )
     )
@@ -483,7 +495,7 @@ public final class GoTrueClient {
         redirectTo: redirectTo,
         RecoverParams(
           email: email,
-          gotrueMetaSecurity: captchaToken.map(GoTrueMetaSecurity.init(hcaptchaToken:))
+          gotrueMetaSecurity: captchaToken.map(GoTrueMetaSecurity.init(captchaToken:))
         )
       )
     ).value
