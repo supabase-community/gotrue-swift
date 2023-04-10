@@ -263,11 +263,11 @@ public final class GoTrueClient {
       URLQueryItem(name: "provider", value: provider.rawValue),
     ]
 
-    if let scopes = scopes {
+    if let scopes {
       queryItems.append(URLQueryItem(name: "scopes", value: scopes))
     }
 
-    if let redirectTo = redirectTo {
+    if let redirectTo {
       queryItems.append(URLQueryItem(name: "redirect_to", value: redirectTo.absoluteString))
     }
 
@@ -395,7 +395,7 @@ public final class GoTrueClient {
       )
     }
 
-    guard let session = session else {
+    guard let session else {
       throw GoTrueError.sessionNotFound
     }
 
@@ -411,7 +411,7 @@ public final class GoTrueClient {
     let session = try? await Env.sessionManager.session()
     await Env.sessionManager.remove()
 
-    if let session = session {
+    if let session {
       try await Env.client.send(Paths.logout.post.withAuthorization(session.accessToken)).value
     }
   }

@@ -11,7 +11,7 @@ struct KeychainLocalStorage: GoTrueLocalStorage {
   let keychain: Keychain
 
   init(service: String, accessGroup: String?) {
-    if let accessGroup = accessGroup {
+    if let accessGroup {
       keychain = Keychain(service: service, accessGroup: accessGroup)
     } else {
       keychain = Keychain(service: service)

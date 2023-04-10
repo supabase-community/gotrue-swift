@@ -46,7 +46,6 @@ final class GoTrueTests: XCTestCase {
   }
 
   #if !os(watchOS)
-    // Not working on watchOS, don't know why.
     func test_signUpWithEmailAndPassword() async throws {
       Mock.post(path: "signup", json: "signup-response").register()
 
@@ -54,20 +53,20 @@ final class GoTrueTests: XCTestCase {
 
       XCTAssertEqual(user?.email, "guilherme@grds.dev")
     }
+
+    func testSignInWithIdToken() async throws {
+      Mock(
+        url: URL(string: "http://localhost:54321/auth/v1/token?grant_type=id_token")!,
+        dataType: .json,
+        statusCode: 200,
+        data: [.post: json(named: "session")]
+      ).register()
+
+      let session = try await sut
+        .signInWithIdToken(credentials: OpenIDConnectCredentials(token: "dummy-token-1234"))
+      XCTAssertEqual(session.user.email, "guilherme@binaryscraping.co")
+    }
   #endif
-
-  func testSignInWithIdToken() async throws {
-    Mock(
-      url: URL(string: "http://localhost:54321/auth/v1/token?grant_type=id_token")!,
-      dataType: .json,
-      statusCode: 200,
-      data: [.post: json(named: "session")]
-    ).register()
-
-    let session = try await sut
-      .signInWithIdToken(credentials: OpenIDConnectCredentials(token: "dummy-token-1234"))
-    XCTAssertEqual(session.user.email, "guilherme@binaryscraping.co")
-  }
 
   func testSignInWithProvider() throws {
     let url = try sut.getOAuthSignInURL(
