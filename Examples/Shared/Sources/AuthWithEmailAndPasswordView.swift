@@ -58,6 +58,7 @@ struct AuthWithEmailAndPasswordView: View {
       } catch {
         self.error = error
       }
+      isLoading = false
     }
   }
 
@@ -70,6 +71,7 @@ struct AuthWithEmailAndPasswordView: View {
       } catch {
         self.error = error
       }
+      isLoading = false
     }
   }
 }
