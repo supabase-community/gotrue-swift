@@ -305,7 +305,7 @@
 				CODE_SIGN_ENTITLEMENTS = Shared/Examples.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = Q32DUZ4D8N;
+				DEVELOPMENT_TEAM = "";
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = Shared/Info.plist;
@@ -320,7 +320,7 @@
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = "com.moigioitot.gotrue-swift.Examples";
+				PRODUCT_BUNDLE_IDENTIFIER = "com.supabase.gotrue-swift.Examples";
 				PRODUCT_NAME = Examples;
 				SDKROOT = iphoneos;
 				SUPPORTS_MACCATALYST = YES;
@@ -339,7 +339,7 @@
 				CODE_SIGN_ENTITLEMENTS = Shared/Examples.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = Q32DUZ4D8N;
+				DEVELOPMENT_TEAM = "";
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = Shared/Info.plist;
@@ -354,7 +354,7 @@
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = "com.moigioitot.gotrue-swift.Examples";
+				PRODUCT_BUNDLE_IDENTIFIER = "com.supabase.gotrue-swift.Examples";
 				PRODUCT_NAME = Examples;
 				SDKROOT = iphoneos;
 				SUPPORTS_MACCATALYST = YES;
