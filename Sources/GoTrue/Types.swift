@@ -301,44 +301,52 @@ public enum Provider: String, Codable, CaseIterable {
 }
 
 public struct OpenIDConnectCredentials: Codable, Hashable {
-  public var idToken: String
-  public var nonce: String
-  public var clientID: String?
-  public var issuer: String?
+  /// Only Apple and Google ID tokens are supported for use from within iOS or Android applications.
   public var provider: Provider?
 
+  /// ID token issued by Apple or Google.
+  public var token: String
+
+  /// If the ID token contains a `nonce`, then the hash of this value is compared to the value in
+  /// the ID token.
+  public var nonce: String?
+
+  /// Verification token received when the user completes the captcha on the site.
+  public var gotrueMetaSecurity: GoTrueMetaSecurity?
+
   public init(
-    idToken: String,
-    nonce: String,
-    clientID: String? = nil,
-    issuer: String? = nil,
-    provider: Provider? = nil
+    provider: Provider? = nil,
+    token: String,
+    nonce: String? = nil,
+    gotrueMetaSecurity: GoTrueMetaSecurity? = nil
   ) {
-    self.idToken = idToken
-    self.nonce = nonce
-    self.clientID = clientID
-    self.issuer = issuer
     self.provider = provider
+    self.token = token
+    self.nonce = nonce
+    self.gotrueMetaSecurity = gotrueMetaSecurity
   }
 
   public enum CodingKeys: String, CodingKey {
-    case idToken = "id_token"
-    case nonce
-    case clientID = "client_id"
-    case issuer
     case provider
+    case token
+    case nonce
+    case gotrueMetaSecurity = "gotrue_meta_security"
+  }
+
+  public enum Provider: String, Codable, Hashable {
+    case google, apple
   }
 }
 
 public struct GoTrueMetaSecurity: Codable, Hashable {
-  public var hcaptchaToken: String
+  public var captchaToken: String
 
-  public init(hcaptchaToken: String) {
-    self.hcaptchaToken = hcaptchaToken
+  public init(captchaToken: String) {
+    self.captchaToken = captchaToken
   }
 
   public enum CodingKeys: String, CodingKey {
-    case hcaptchaToken = "hcaptcha_token"
+    case captchaToken = "captcha_token"
   }
 }
 
