@@ -97,7 +97,7 @@ public final class GoTrueClient {
           email: email,
           password: password,
           data: data,
-          gotrueMetaSecurity: captchaToken.map(GoTrueMetaSecurity.init)
+          gotrueMetaSecurity: captchaToken.map(GoTrueMetaSecurity.init(captchaToken:))
         )
       )
     )
@@ -121,7 +121,7 @@ public final class GoTrueClient {
           password: password,
           phone: phone,
           data: data,
-          gotrueMetaSecurity: captchaToken.map(GoTrueMetaSecurity.init)
+          gotrueMetaSecurity: captchaToken.map(GoTrueMetaSecurity.init(captchaToken:))
         )
       )
     )
@@ -212,7 +212,7 @@ public final class GoTrueClient {
           email: email,
           createUser: shouldCreateUser,
           data: data,
-          gotrueMetaSecurity: captchaToken.map(GoTrueMetaSecurity.init)
+          gotrueMetaSecurity: captchaToken.map(GoTrueMetaSecurity.init(captchaToken:))
         )
       )
     )
@@ -238,7 +238,7 @@ public final class GoTrueClient {
           phone: phone,
           createUser: shouldCreateUser,
           data: data,
-          gotrueMetaSecurity: captchaToken.map(GoTrueMetaSecurity.init)
+          gotrueMetaSecurity: captchaToken.map(GoTrueMetaSecurity.init(captchaToken:))
         )
       )
     )
@@ -432,7 +432,7 @@ public final class GoTrueClient {
           email: email,
           token: token,
           type: type,
-          gotrueMetaSecurity: captchaToken.map(GoTrueMetaSecurity.init)
+          gotrueMetaSecurity: captchaToken.map(GoTrueMetaSecurity.init(captchaToken:))
         )
       )
     )
@@ -452,7 +452,7 @@ public final class GoTrueClient {
           phone: phone,
           token: token,
           type: type,
-          gotrueMetaSecurity: captchaToken.map(GoTrueMetaSecurity.init)
+          gotrueMetaSecurity: captchaToken.map(GoTrueMetaSecurity.init(captchaToken:))
         )
       )
     )
@@ -495,7 +495,7 @@ public final class GoTrueClient {
         redirectTo: redirectTo,
         RecoverParams(
           email: email,
-          gotrueMetaSecurity: captchaToken.map(GoTrueMetaSecurity.init)
+          gotrueMetaSecurity: captchaToken.map(GoTrueMetaSecurity.init(captchaToken:))
         )
       )
     ).value
