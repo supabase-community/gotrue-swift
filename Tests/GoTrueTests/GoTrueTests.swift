@@ -63,7 +63,7 @@ final class GoTrueTests: XCTestCase {
       ).register()
 
       let session = try await sut
-        .signInWithIdToken(credentials: OpenIDConnectCredentials(token: "dummy-token-1234"))
+        .signInWithIdToken(credentials: OpenIDConnectCredentials(idToken: "dummy-token-1234"))
       XCTAssertEqual(session.user.email, "guilherme@binaryscraping.co")
     }
   #endif

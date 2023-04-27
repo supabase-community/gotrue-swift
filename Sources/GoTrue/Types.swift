@@ -305,7 +305,7 @@ public struct OpenIDConnectCredentials: Codable, Hashable {
   public var provider: Provider?
 
   /// ID token issued by Apple or Google.
-  public var token: String
+  public var idToken: String
 
   /// If the ID token contains a `nonce`, then the hash of this value is compared to the value in
   /// the ID token.
@@ -316,19 +316,19 @@ public struct OpenIDConnectCredentials: Codable, Hashable {
 
   public init(
     provider: Provider? = nil,
-    token: String,
+    idToken: String,
     nonce: String? = nil,
     gotrueMetaSecurity: GoTrueMetaSecurity? = nil
   ) {
     self.provider = provider
-    self.token = token
+    self.idToken = idToken
     self.nonce = nonce
     self.gotrueMetaSecurity = gotrueMetaSecurity
   }
 
   public enum CodingKeys: String, CodingKey {
     case provider
-    case token = "id_token"
+    case idToken = "id_token"
     case nonce
     case gotrueMetaSecurity = "gotrue_meta_security"
   }
