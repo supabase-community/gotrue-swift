@@ -328,7 +328,7 @@ public struct OpenIDConnectCredentials: Codable, Hashable {
 
   public enum CodingKeys: String, CodingKey {
     case provider
-    case token
+    case token = "id_token"
     case nonce
     case gotrueMetaSecurity = "gotrue_meta_security"
   }
