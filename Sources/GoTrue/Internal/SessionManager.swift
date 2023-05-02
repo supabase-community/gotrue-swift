@@ -5,8 +5,8 @@ struct StoredSession: Codable {
   var session: Session
   var expirationDate: Date
 
-  var isValid: Bool {
-    expirationDate > Date().addingTimeInterval(60)
+  func isValid(refreshToleranceInterval: TimeInterval) -> Bool {
+    expirationDate > Date().addingTimeInterval(refreshToleranceInterval)
   }
 
   init(session: Session, expirationDate: Date? = nil) {
@@ -22,10 +22,13 @@ struct SessionManager {
 }
 
 extension SessionManager {
-  static var live: Self {
+  
+  /// - Parameter refreshToleranceInterval: The amount of time added to "now", which determines when the current access token needs to be refreshed.
+  /// A value of 60 would mean that a token which expires within 60 seconds of "now" would need to be refreshed.
+  static func live(refreshToleranceInterval: TimeInterval) -> Self {
     let instance = LiveSessionManager()
     return Self(
-      session: { try await instance.session() },
+      session: { try await instance.session(refreshToleranceInterval: refreshToleranceInterval) },
       update: { try await instance.update($0) },
       remove: { await instance.remove() }
     )
@@ -34,8 +37,8 @@ extension SessionManager {
 
 private actor LiveSessionManager {
   private var task: Task<Session, Error>?
-
-  func session() async throws -> Session {
+  
+  func session(refreshToleranceInterval: TimeInterval) async throws -> Session {
     if let task {
       return try await task.value
     }
@@ -44,7 +47,7 @@ private actor LiveSessionManager {
       throw GoTrueError.sessionNotFound
     }
 
-    if currentSession.isValid {
+    if currentSession.isValid(refreshToleranceInterval: refreshToleranceInterval) {
       return currentSession.session
     }
 

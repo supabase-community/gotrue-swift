@@ -26,6 +26,7 @@ public final class GoTrueClient {
     url: URL,
     headers: [String: String] = [:],
     localStorage: GoTrueLocalStorage?,
+    refreshToleranceInterval: TimeInterval,
     configuration: (inout APIClient.Configuration) -> Void
   ) {
     var headers = headers
@@ -39,6 +40,7 @@ public final class GoTrueClient {
         accessGroup: nil
       ),
       headers: headers,
+      refreshToleranceInterval: refreshToleranceInterval,
       configuration: configuration
     )
 
@@ -58,12 +60,14 @@ public final class GoTrueClient {
   public convenience init(
     url: URL,
     headers: [String: String] = [:],
+    refreshToleranceInterval: TimeInterval = 60,
     localStorage: GoTrueLocalStorage? = nil
   ) {
     self.init(
       url: url,
       headers: headers,
       localStorage: localStorage,
+      refreshToleranceInterval: refreshToleranceInterval,
       configuration: { _ in }
     )
   }

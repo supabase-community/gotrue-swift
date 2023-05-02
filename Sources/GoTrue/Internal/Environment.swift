@@ -19,6 +19,7 @@ extension Environment {
     url: URL,
     localStorage: GoTrueLocalStorage,
     headers: [String: String],
+    refreshToleranceInterval: TimeInterval,
     configuration: (inout APIClient.Configuration) -> Void
   ) -> Environment {
     let client = APIClient(baseURL: url) {
@@ -43,7 +44,7 @@ extension Environment {
         ).value
       },
       localStorage: localStorage,
-      sessionManager: .live,
+      sessionManager: .live(refreshToleranceInterval: refreshToleranceInterval),
       date: Date.init
     )
   }
