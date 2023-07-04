@@ -278,6 +278,17 @@ public struct UserIdentity: Codable, Hashable, Identifiable {
     case lastSignInAt = "last_sign_in_at"
     case updatedAt = "updated_at"
   }
+
+  public init(from decoder: Decoder) throws {
+    let container = try decoder.container(keyedBy: CodingKeys.self)
+    self.id = try container.decode(String.self, forKey: .id)
+    self.userID = try container.decode(UUID.self, forKey: .userID)
+    self.identityData = try container.decodeIfPresent([String : AnyJSON].self, forKey: .identityData) ?? [:]
+    self.provider = try container.decode(String.self, forKey: .provider)
+    self.createdAt = try container.decode(Date.self, forKey: .createdAt)
+    self.lastSignInAt = try container.decode(Date.self, forKey: .lastSignInAt)
+    self.updatedAt = try container.decode(Date.self, forKey: .updatedAt)
+  }
 }
 
 public enum Provider: String, Codable, CaseIterable {
