@@ -2,6 +2,7 @@ import AuthenticationServices
 import Foundation
 
 extension GoTrueClient {
+  @_spi(Experimental)
   @discardableResult
   public func signInWithApple() async throws -> Session {
     let provider = ASAuthorizationAppleIDProvider()

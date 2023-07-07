@@ -8,6 +8,7 @@
 import AuthenticationServices
 import CryptoKit
 import SwiftUI
+@_spi(Experimental) import GoTrue
 
 struct SignInWithAppleView: View {
   @Environment(\.goTrueClient) private var client
