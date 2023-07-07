@@ -1,6 +1,6 @@
 import Foundation
 
-public enum AnyJSON: Hashable, Codable {
+public enum AnyJSON: Hashable, Codable, Sendable {
   case string(String)
   case number(Double)
   case object([String: AnyJSON])
@@ -48,7 +48,7 @@ public enum AnyJSON: Hashable, Codable {
   }
 }
 
-public struct UserCredentials: Codable, Hashable {
+public struct UserCredentials: Codable, Hashable, Sendable {
   public var email: String?
   public var password: String?
   public var phone: String?
@@ -74,7 +74,7 @@ public struct UserCredentials: Codable, Hashable {
   }
 }
 
-public struct SignUpRequest: Codable, Hashable {
+public struct SignUpRequest: Codable, Hashable, Sendable {
   public var email: String?
   public var password: String?
   public var phone: String?
@@ -104,7 +104,7 @@ public struct SignUpRequest: Codable, Hashable {
   }
 }
 
-public struct Session: Codable, Hashable {
+public struct Session: Codable, Hashable, Sendable {
   /// The oauth provider token. If present, this can be used to make external API requests to the
   /// oauth provider used.
   public var providerToken: String?
@@ -152,7 +152,7 @@ public struct Session: Codable, Hashable {
   }
 }
 
-public struct User: Codable, Hashable, Identifiable {
+public struct User: Codable, Hashable, Identifiable, Sendable {
   public var id: UUID
   public var appMetadata: [String: AnyJSON]
   public var userMetadata: [String: AnyJSON]
@@ -242,7 +242,7 @@ public struct User: Codable, Hashable, Identifiable {
   }
 }
 
-public struct UserIdentity: Codable, Hashable, Identifiable {
+public struct UserIdentity: Codable, Hashable, Identifiable, Sendable {
   public var id: String
   public var userID: UUID
   public var identityData: [String: AnyJSON]
@@ -292,7 +292,7 @@ public struct UserIdentity: Codable, Hashable, Identifiable {
   }
 }
 
-public enum Provider: String, Codable, CaseIterable {
+public enum Provider: String, Codable, CaseIterable, Sendable {
   case apple
   case azure
   case bitbucket
@@ -312,15 +312,23 @@ public enum Provider: String, Codable, CaseIterable {
   case workos
 }
 
-public struct OpenIDConnectCredentials: Codable, Hashable {
-  /// Only Apple and Google ID tokens are supported for use from within iOS or Android applications.
+public struct OpenIDConnectCredentials: Codable, Hashable, Sendable {
+  /// Provider name or OIDC `iss` value identifying which provider should be used to verify the
+  /// provided token. Supported names: `google`, `apple`, `azure`, `facebook`.
   public var provider: Provider?
 
-  /// ID token issued by Apple or Google.
+  /// OIDC ID token issued by the specified provider. The `iss` claim in the ID token must match the
+  /// supplied provider. Some ID tokens contain an `at_hash` which require that you provide an
+  /// `access_token` value to be accepted properly. If the token contains a `nonce` claim you must
+  /// supply the nonce used to obtain the ID token.
   public var idToken: String
 
-  /// If the ID token contains a `nonce`, then the hash of this value is compared to the value in
-  /// the ID token.
+  /// If the ID token contains an `at_hash` claim, then the hash of this value is compared to the
+  /// value in the ID token.
+  public var accessToken: String?
+
+  /// If the ID token contains a `nonce` claim, then the hash of this value is compared to the value
+  /// in the ID token.
   public var nonce: String?
 
   /// Verification token received when the user completes the captcha on the site.
@@ -329,11 +337,13 @@ public struct OpenIDConnectCredentials: Codable, Hashable {
   public init(
     provider: Provider? = nil,
     idToken: String,
+    accessToken: String? = nil,
     nonce: String? = nil,
     gotrueMetaSecurity: GoTrueMetaSecurity? = nil
   ) {
     self.provider = provider
     self.idToken = idToken
+    self.accessToken = accessToken
     self.nonce = nonce
     self.gotrueMetaSecurity = gotrueMetaSecurity
   }
@@ -341,16 +351,17 @@ public struct OpenIDConnectCredentials: Codable, Hashable {
   public enum CodingKeys: String, CodingKey {
     case provider
     case idToken = "id_token"
+    case accessToken = "access_token"
     case nonce
     case gotrueMetaSecurity = "gotrue_meta_security"
   }
 
-  public enum Provider: String, Codable, Hashable {
-    case google, apple
+  public enum Provider: String, Codable, Hashable, Sendable {
+    case google, apple, azure, facebook
   }
 }
 
-public struct GoTrueMetaSecurity: Codable, Hashable {
+public struct GoTrueMetaSecurity: Codable, Hashable, Sendable {
   public var captchaToken: String
 
   public init(captchaToken: String) {
@@ -362,7 +373,7 @@ public struct GoTrueMetaSecurity: Codable, Hashable {
   }
 }
 
-public struct OTPParams: Codable, Hashable {
+public struct OTPParams: Codable, Hashable, Sendable {
   public var email: String?
   public var phone: String?
   public var createUser: Bool
@@ -392,7 +403,7 @@ public struct OTPParams: Codable, Hashable {
   }
 }
 
-public struct VerifyOTPParams: Codable, Hashable {
+public struct VerifyOTPParams: Codable, Hashable, Sendable {
   public var email: String?
   public var phone: String?
   public var token: String
@@ -422,7 +433,7 @@ public struct VerifyOTPParams: Codable, Hashable {
   }
 }
 
-public enum OTPType: String, Codable, CaseIterable {
+public enum OTPType: String, Codable, CaseIterable, Sendable {
   case sms
   case phoneChange = "phone_change"
   case signup
@@ -432,7 +443,7 @@ public enum OTPType: String, Codable, CaseIterable {
   case emailChange = "email_change"
 }
 
-public enum AuthResponse: Codable, Hashable {
+public enum AuthResponse: Codable, Hashable, Sendable {
   case session(Session)
   case user(User)
 
@@ -459,7 +470,7 @@ public enum AuthResponse: Codable, Hashable {
   }
 }
 
-public struct UserAttributes: Codable, Hashable {
+public struct UserAttributes: Codable, Hashable, Sendable {
   /// The user's email.
   public var email: String?
   /// The user's phone.
@@ -496,7 +507,7 @@ public struct UserAttributes: Codable, Hashable {
   }
 }
 
-public struct RecoverParams: Codable, Hashable {
+public struct RecoverParams: Codable, Hashable, Sendable {
   public var email: String
   public var gotrueMetaSecurity: GoTrueMetaSecurity?
 

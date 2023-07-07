@@ -3,7 +3,7 @@ import XCTest
 
 @testable import GoTrue
 
-final class InMemoryLocalStorage: GoTrueLocalStorage {
+final class InMemoryLocalStorage: GoTrueLocalStorage, @unchecked Sendable {
   private let queue = DispatchQueue(label: "InMemoryLocalStorage")
   private var storage: [String: Data] = [:]
 
