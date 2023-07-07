@@ -1,8 +1,0 @@
-module: GoTrue
-mergeSources: true
-generate: [entities, paths, enums]
-spaceWidth: 2
-access: public
-useSwiftyPropertyNames: false
-entities:
-  protocols: [Codable, Equatable]
