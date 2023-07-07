@@ -15,10 +15,18 @@ concurrency:
 jobs:
   library:
     runs-on: macos-latest
+    strategy:
+      matrix:
+        platform: 
+          - iOS Simulator,name=iPhone 14 Pro Max
+          - macOS
+          - tvOS Simulator,name=Apple TV
+          - watchOS Simulator,name=Apple Watch Series 7 (45mm)
+
     steps:
       - uses: actions/checkout@v3
       - name: Run tests
-        run: make test-library
+        run: PLATFORM="${{ matrix.platform }}" make test-library
 
   example:
     runs-on: macos-latest
