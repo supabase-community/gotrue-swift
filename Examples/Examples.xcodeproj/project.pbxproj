@@ -14,6 +14,7 @@
 		798AD52129072C22001B4801 /* AppView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 798AD52029072C22001B4801 /* AppView.swift */; };
 		798AD5232907309C001B4801 /* SessionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 798AD5222907309C001B4801 /* SessionView.swift */; };
 		798AD525290731A0001B4801 /* AuthWithEmailAndPasswordView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 798AD524290731A0001B4801 /* AuthWithEmailAndPasswordView.swift */; };
+		79C17A802A589EC000C67A61 /* SignInWithAppleView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 79C17A7F2A589EC000C67A61 /* SignInWithAppleView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -26,6 +27,7 @@
 		798AD52029072C22001B4801 /* AppView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppView.swift; sourceTree = "<group>"; };
 		798AD5222907309C001B4801 /* SessionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SessionView.swift; sourceTree = "<group>"; };
 		798AD524290731A0001B4801 /* AuthWithEmailAndPasswordView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuthWithEmailAndPasswordView.swift; sourceTree = "<group>"; };
+		79C17A7F2A589EC000C67A61 /* SignInWithAppleView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SignInWithAppleView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -83,6 +85,7 @@
 				18DE589E286B2C77005F7FF2 /* ExamplesApp.swift */,
 				1820720D286B449B0009D0BF /* Secrets.swift */,
 				798AD5222907309C001B4801 /* SessionView.swift */,
+				79C17A7F2A589EC000C67A61 /* SignInWithAppleView.swift */,
 			);
 			path = Sources;
 			sourceTree = "<group>";
@@ -164,6 +167,7 @@
 				798AD52129072C22001B4801 /* AppView.swift in Sources */,
 				798AD525290731A0001B4801 /* AuthWithEmailAndPasswordView.swift in Sources */,
 				798AD5232907309C001B4801 /* SessionView.swift in Sources */,
+				79C17A802A589EC000C67A61 /* SignInWithAppleView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

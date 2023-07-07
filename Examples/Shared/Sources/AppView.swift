@@ -16,6 +16,10 @@ struct AppView: View {
             NavigationLink("Auth with Email and Password") {
               AuthWithEmailAndPasswordView()
             }
+
+            NavigationLink("Sign in with Apple") {
+              SignInWithAppleView()
+            }
           }
           .listStyle(.plain)
           .navigationTitle("Examples")
