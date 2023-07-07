@@ -1,4 +1,4 @@
-public enum AuthChangeEvent: String {
+public enum AuthChangeEvent: String, Sendable {
   case passwordRecovery = "PASSWORD_RECOVERY"
   case signedIn = "SIGNED_IN"
   case signedOut = "SIGNED_OUT"

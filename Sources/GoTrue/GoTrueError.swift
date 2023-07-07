@@ -1,12 +1,12 @@
 import Foundation
 
-public enum GoTrueError: LocalizedError {
+public enum GoTrueError: LocalizedError, Sendable {
   case missingExpClaim
   case malformedJWT
   case sessionNotFound
   case api(APIError)
 
-  public struct APIError: Error, Decodable {
+  public struct APIError: Error, Decodable, Sendable {
     public var message: String?
     public var msg: String?
     public var code: Int?
