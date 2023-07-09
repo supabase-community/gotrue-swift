@@ -2,7 +2,7 @@ import Foundation
 import Get
 import KeychainAccess
 
-typealias SessionRefresher = (_ refreshToken: String) async throws -> Session
+typealias SessionRefresher = @Sendable (_ refreshToken: String) async throws -> Session
 
 struct Environment {
   var client: APIClient
@@ -11,8 +11,6 @@ struct Environment {
   var sessionManager: SessionManager
   var date: () -> Date
 }
-
-var Env: Environment!
 
 extension Environment {
   static func live(
@@ -32,18 +30,24 @@ extension Environment {
       configuration(&$0)
     }
 
+    let sessionRefresher: SessionRefresher = { refreshToken in
+      try await client.send(
+        Paths.token.post(
+          grantType: .refreshToken,
+          .userCredentials(UserCredentials(refreshToken: refreshToken))
+        )
+      ).value
+    }
+    let sessionManager = SessionManager(
+      localStorage: localStorage,
+      sessionRefresher: sessionRefresher
+    )
+
     return Environment(
       client: client,
-      sessionRefresher: { refreshToken in
-        try await Env.client.send(
-          Paths.token.post(
-            grantType: .refreshToken,
-            .userCredentials(UserCredentials(refreshToken: refreshToken))
-          )
-        ).value
-      },
+      sessionRefresher: sessionRefresher,
       localStorage: localStorage,
-      sessionManager: .live,
+      sessionManager: sessionManager,
       date: Date.init
     )
   }

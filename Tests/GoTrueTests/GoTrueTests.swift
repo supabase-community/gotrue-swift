@@ -3,7 +3,7 @@ import XCTest
 
 @testable import GoTrue
 
-final class InMemoryLocalStorage: GoTrueLocalStorage {
+final class InMemoryLocalStorage: GoTrueLocalStorage, @unchecked Sendable {
   private let queue = DispatchQueue(label: "InMemoryLocalStorage")
   private var storage: [String: Data] = [:]
 
@@ -63,7 +63,7 @@ final class GoTrueTests: XCTestCase {
       ).register()
 
       let session = try await sut
-        .signInWithIdToken(credentials: OpenIDConnectCredentials(token: "dummy-token-1234"))
+        .signInWithIdToken(credentials: OpenIDConnectCredentials(idToken: "dummy-token-1234"))
       XCTAssertEqual(session.user.email, "guilherme@binaryscraping.co")
     }
   #endif
@@ -90,7 +90,7 @@ final class GoTrueTests: XCTestCase {
     )!
 
     var mock = Mock.get(path: "user", json: "user")
-    mock.onRequestHandler = OnRequestHandler { request in
+    mock.onRequestHandler = OnRequestHandler(httpBodyType: Session?.self) { request, _ in
       let authorizationHeader = request.allHTTPHeaderFields?["Authorization"]
       XCTAssertEqual(authorizationHeader, "bearer accesstoken")
     }

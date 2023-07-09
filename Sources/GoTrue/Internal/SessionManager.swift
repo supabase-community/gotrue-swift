@@ -6,7 +6,7 @@ struct StoredSession: Codable {
   var expirationDate: Date
 
   var isValid: Bool {
-    expirationDate > Date().addingTimeInterval(-60)
+    expirationDate > Date().addingTimeInterval(60)
   }
 
   init(session: Session, expirationDate: Date? = nil) {
@@ -15,32 +15,22 @@ struct StoredSession: Codable {
   }
 }
 
-struct SessionManager {
-  var session: () async throws -> Session
-  var update: (_ session: Session) async throws -> Void
-  var remove: () async -> Void
-}
-
-extension SessionManager {
-  static var live: Self {
-    let instance = LiveSessionManager()
-    return Self(
-      session: { try await instance.session() },
-      update: { try await instance.update($0) },
-      remove: { await instance.remove() }
-    )
-  }
-}
-
-private actor LiveSessionManager {
+actor SessionManager {
   private var task: Task<Session, Error>?
+  private let localStorage: GoTrueLocalStorage
+  private let sessionRefresher: SessionRefresher
+
+  init(localStorage: GoTrueLocalStorage, sessionRefresher: @escaping SessionRefresher) {
+    self.localStorage = localStorage
+    self.sessionRefresher = sessionRefresher
+  }
 
   func session() async throws -> Session {
     if let task {
       return try await task.value
     }
 
-    guard let currentSession = try Env.localStorage.getSession() else {
+    guard let currentSession = try localStorage.getSession() else {
       throw GoTrueError.sessionNotFound
     }
 
@@ -51,7 +41,7 @@ private actor LiveSessionManager {
     task = Task {
       defer { self.task = nil }
 
-      let session = try await Env.sessionRefresher(currentSession.session.refreshToken)
+      let session = try await sessionRefresher(currentSession.session.refreshToken)
       try update(session)
       return session
     }
@@ -60,11 +50,11 @@ private actor LiveSessionManager {
   }
 
   func update(_ session: Session) throws {
-    try Env.localStorage.storeSession(StoredSession(session: session))
+    try localStorage.storeSession(StoredSession(session: session))
   }
 
   func remove() {
-    Env.localStorage.deleteSession()
+    localStorage.deleteSession()
   }
 }
 
