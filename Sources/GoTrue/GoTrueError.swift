@@ -4,7 +4,6 @@ public enum GoTrueError: LocalizedError, Sendable {
   case missingExpClaim
   case malformedJWT
   case sessionNotFound
-  case missingOrInvalidIdToken
   case api(APIError)
 
   public struct APIError: Error, Decodable, Sendable {
@@ -28,7 +27,6 @@ public enum GoTrueError: LocalizedError, Sendable {
     case .missingExpClaim: return "Missing expiration claim on access token."
     case .malformedJWT: return "A malformed JWT received."
     case .sessionNotFound: return "Unable to get a valid session."
-    case .missingOrInvalidIdToken: return "Missing or invalid idToken provided."
     case let .api(error): return error.errorDescription ?? error.message ?? error.msg
     }
   }

@@ -12,36 +12,73 @@ import SwiftUI
 
 struct SignInWithAppleView: View {
   @Environment(\.goTrueClient) private var client
-
-  @State var siwaHandle: SignInWithAppHandle?
+  @State var nonce: String?
 
   var body: some View {
-    VStack {
-      Button("Sign in with Apple") {
-        Task {
-          do {
-            try await client.signInWithApple()
-          } catch {
-            dump(error)
+    SignInWithAppleButton { request in
+//      self.nonce = sha256(randomString())
+//      request.nonce = nonce
+      request.requestedScopes = [.email, .fullName]
+    } onCompletion: { result in
+      Task {
+        do {
+          guard let credential = try result.get().credential as? ASAuthorizationAppleIDCredential
+          else {
+            return
           }
-        }
-      }
 
-      SignInWithAppleButton { request in
-        request.requestedScopes = [.email, .fullName]
-        siwaHandle = client.signInWithApple(request)
-      } onCompletion: { result in
-        Task {
-          do {
-            try await siwaHandle?.process(result.get())
-          } catch {
-            dump(error)
+          guard let idToken = credential.identityToken
+            .flatMap({ String(data: $0, encoding: .utf8) })
+          else {
+            return
           }
+
+          try await client.signInWithIdToken(
+            credentials: .init(
+              provider: .apple,
+              idToken: idToken
+//              ,
+//              nonce: self.nonce
+            )
+          )
+        } catch {
+          dump(error)
         }
       }
-      .fixedSize()
     }
+    .fixedSize()
   }
+}
+
+func randomString(length: Int = 32) -> String {
+  precondition(length > 0)
+  var randomBytes = [UInt8](repeating: 0, count: length)
+  let errorCode = SecRandomCopyBytes(kSecRandomDefault, randomBytes.count, &randomBytes)
+  if errorCode != errSecSuccess {
+    fatalError(
+      "Unable to generate nonce. SecRandomCopyBytes failed with OSStatus \(errorCode)"
+    )
+  }
+
+  let charset: [Character] =
+    Array("0123456789ABCDEFGHIJKLMNOPQRSTUVXYZabcdefghijklmnopqrstuvwxyz-._")
+
+  let nonce = randomBytes.map { byte in
+    // Pick a random character from the set, wrapping around if needed.
+    charset[Int(byte) % charset.count]
+  }
+
+  return String(nonce)
+}
+
+func sha256(_ input: String) -> String {
+  let inputData = Data(input.utf8)
+  let hashedData = SHA256.hash(data: inputData)
+  let hashString = hashedData.compactMap {
+    String(format: "%02x", $0)
+  }.joined()
+
+  return hashString
 }
 
 #Preview {
