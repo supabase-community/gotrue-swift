@@ -13,7 +13,7 @@
 			<string>com.supabase.gotrue-swift.Examples</string>
 			<key>CFBundleURLSchemes</key>
 			<array>
-				<string>{REDIRECT_URL}</string>
+				<string>supabase://</string>
 			</array>
 		</dict>
 	</array>

@@ -1,61 +1,41 @@
 {
-  "object": {
-    "pins": [
-      {
-        "package": "Get",
-        "repositoryURL": "https://github.com/kean/Get",
-        "state": {
-          "branch": null,
-          "revision": "d2ded8526d647a8ca25905025cd5503dfe51e874",
-          "version": "2.0.0"
-        }
-      },
-      {
-        "package": "KeychainAccess",
-        "repositoryURL": "https://github.com/kishikawakatsumi/KeychainAccess",
-        "state": {
-          "branch": null,
-          "revision": "84e546727d66f1adc5439debad16270d0fdd04e7",
-          "version": "4.2.2"
-        }
-      },
-      {
-        "package": "Mocker",
-        "repositoryURL": "https://github.com/WeTransfer/Mocker",
-        "state": {
-          "branch": null,
-          "revision": "e7165fb0378193c6784f1d46a9ab2b6184c384fa",
-          "version": "2.7.0"
-        }
-      },
-      {
-        "package": "ComposableKeychain",
-        "repositoryURL": "https://github.com/binaryscraping/swift-composable-keychain",
-        "state": {
-          "branch": null,
-          "revision": "3ebddfe9e9232218bada99ab6d6b3ca1fd94f112",
-          "version": "0.0.2"
-        }
-      },
-      {
-        "package": "URLQueryEncoder",
-        "repositoryURL": "https://github.com/kean/URLQueryEncoder",
-        "state": {
-          "branch": null,
-          "revision": "4cc975d4d075d0e62699a796a08284e217d4ee93",
-          "version": "0.2.0"
-        }
-      },
-      {
-        "package": "xctest-dynamic-overlay",
-        "repositoryURL": "https://github.com/pointfreeco/xctest-dynamic-overlay",
-        "state": {
-          "branch": null,
-          "revision": "38bc9242e4388b80bd23ddfdf3071428859e3260",
-          "version": "0.4.0"
-        }
+  "pins" : [
+    {
+      "identity" : "get",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/kean/Get",
+      "state" : {
+        "revision" : "12830cc64f31789ae6f4352d2d51d03a25fc3741",
+        "version" : "2.1.6"
       }
-    ]
-  },
-  "version": 1
+    },
+    {
+      "identity" : "keychainaccess",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/kishikawakatsumi/KeychainAccess",
+      "state" : {
+        "revision" : "84e546727d66f1adc5439debad16270d0fdd04e7",
+        "version" : "4.2.2"
+      }
+    },
+    {
+      "identity" : "mocker",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/WeTransfer/Mocker",
+      "state" : {
+        "revision" : "4384e015cae4916a6828252467a4437173c7ae17",
+        "version" : "3.0.1"
+      }
+    },
+    {
+      "identity" : "urlqueryencoder",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/kean/URLQueryEncoder",
+      "state" : {
+        "revision" : "4ce950479707ea109f229d7230ec074a133b15d7",
+        "version" : "0.2.1"
+      }
+    }
+  ],
+  "version" : 2
 }
