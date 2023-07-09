@@ -13,15 +13,33 @@ import SwiftUI
 struct SignInWithAppleView: View {
   @Environment(\.goTrueClient) private var client
 
+  @State var siwaHandle: SignInWithAppHandle?
+
   var body: some View {
-    Button("Sign in with Apple") {
-      Task {
-        do {
-          try await client.signInWithApple()
-        } catch {
-          dump(error)
+    VStack {
+      Button("Sign in with Apple") {
+        Task {
+          do {
+            try await client.signInWithApple()
+          } catch {
+            dump(error)
+          }
         }
       }
+
+      SignInWithAppleButton { request in
+        request.requestedScopes = [.email, .fullName]
+        siwaHandle = client.signInWithApple(request)
+      } onCompletion: { result in
+        Task {
+          do {
+            try await siwaHandle?.process(result.get())
+          } catch {
+            dump(error)
+          }
+        }
+      }
+      .fixedSize()
     }
   }
 }
