@@ -1,7 +1,7 @@
 import Mocker
 import XCTest
 
-@testable import GoTrue
+@testable @_spi(Experimental) import GoTrue
 
 final class InMemoryLocalStorage: GoTrueLocalStorage, @unchecked Sendable {
   private let queue = DispatchQueue(label: "InMemoryLocalStorage")
