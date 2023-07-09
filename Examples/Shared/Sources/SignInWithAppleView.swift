@@ -80,6 +80,8 @@ func sha256(_ input: String) -> String {
   return hashString
 }
 
-#Preview {
-  SignInWithAppleView()
+struct SignInWithApple_PreviewProvider: PreviewProvider {
+  static var previews: some View {
+    SignInWithAppleView()
+  }
 }
