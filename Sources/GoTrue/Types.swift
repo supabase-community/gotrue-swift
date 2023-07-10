@@ -154,8 +154,8 @@ public struct Session: Codable, Hashable, Sendable {
 
 public struct User: Codable, Hashable, Identifiable, Sendable {
   public var id: UUID
-  public var appMetadata: [String: AnyJSON]
-  public var userMetadata: [String: AnyJSON]
+  public var appMetadata: [String: AnyJSON?]
+  public var userMetadata: [String: AnyJSON?]
   public var aud: String
   public var confirmationSentAt: Date?
   public var recoverySentAt: Date?
@@ -176,8 +176,8 @@ public struct User: Codable, Hashable, Identifiable, Sendable {
 
   public init(
     id: UUID,
-    appMetadata: [String: AnyJSON],
-    userMetadata: [String: AnyJSON],
+    appMetadata: [String: AnyJSON?],
+    userMetadata: [String: AnyJSON?],
     aud: String,
     confirmationSentAt: Date? = nil,
     recoverySentAt: Date? = nil,
