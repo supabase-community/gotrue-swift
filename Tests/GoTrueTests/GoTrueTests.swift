@@ -37,6 +37,12 @@ final class GoTrueTests: XCTestCase {
     $0.sessionConfiguration.protocolClasses = [MockingURLProtocol.self]
   }
 
+  func testDecodeUser() {
+    XCTAssertNoThrow(
+      try JSONDecoder.goTrue.decode(User.self, from: json(named: "user"))
+    )
+  }
+
   func testDecodeSessionOrUser() {
     XCTAssertNoThrow(
       try JSONDecoder.goTrue.decode(
