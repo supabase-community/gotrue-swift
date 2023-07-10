@@ -11,7 +11,9 @@
       "email"
     ]
   },
-  "user_metadata": {},
+  "user_metadata": {
+    "referrer_id": null
+  },
   "identities": [
     {
       "id": "859f402d-b3de-4105-a1b9-932836d9193b",
