@@ -6,14 +6,16 @@ public enum AnyJSON: Hashable, Codable, Sendable {
   case object([String: AnyJSON])
   case array([AnyJSON])
   case bool(Bool)
+  case null
 
-  public var value: Any {
+  public var value: Any? {
     switch self {
     case let .string(string): return string
     case let .number(double): return double
     case let .object(dictionary): return dictionary
     case let .array(array): return array
     case let .bool(bool): return bool
+    case .null: return nil
     }
   }
 
@@ -25,6 +27,7 @@ public enum AnyJSON: Hashable, Codable, Sendable {
     case let .string(string): try container.encode(string)
     case let .number(number): try container.encode(number)
     case let .bool(bool): try container.encode(bool)
+    case .null: try container.encodeNil()
     }
   }
 
@@ -40,6 +43,8 @@ public enum AnyJSON: Hashable, Codable, Sendable {
       self = .bool(bool)
     } else if let number = try? container.decode(Double.self) {
       self = .number(number)
+    } else if container.decodeNil() {
+        self = .null
     } else {
       throw DecodingError.dataCorrupted(
         .init(codingPath: decoder.codingPath, debugDescription: "Invalid JSON value.")
