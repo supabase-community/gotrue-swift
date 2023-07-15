@@ -33,9 +33,7 @@ final class GoTrueTests: XCTestCase {
     url: GoTrueTests.baseURL,
     headers: ["apikey": "dummy.api.key"],
     localStorage: InMemoryLocalStorage()
-  ) {
-    $0.sessionConfiguration.protocolClasses = [MockingURLProtocol.self]
-  }
+  )
 
   func testDecodeUser() {
     XCTAssertNoThrow(
