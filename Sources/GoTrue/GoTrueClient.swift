@@ -6,9 +6,40 @@ import Get
 #endif
 
 public final class GoTrueClient {
+  public typealias FetchHandler = @Sendable (_ request: URLRequest) async throws -> (
+    Data,
+    URLResponse
+  )
+
+  public struct Configuration {
+    public let url: URL
+    public var headers: [String: String]
+    public let localStorage: GoTrueLocalStorage
+    public let fetch: FetchHandler
+
+    public init(
+      url: URL,
+      headers: [String: String] = [:],
+      localStorage: GoTrueLocalStorage? = nil,
+      fetch: @escaping FetchHandler = { try await URLSession.shared.data(for: $0) }
+    ) {
+      self.url = url
+      self.headers = headers
+      self.localStorage = localStorage ?? KeychainLocalStorage(
+        service: "supabase.gotrue.swift",
+        accessGroup: nil
+      )
+      self.fetch = fetch
+    }
+  }
+
   let env: Environment
 
-  private let url: URL
+  private let configuration: Configuration
+
+  private var url: URL {
+    configuration.url
+  }
 
   private let authEventChangeContinuation: AsyncStream<AuthChangeEvent>.Continuation
   /// Asynchronous sequence of authentication change events emitted during life of `GoTrueClient`.
@@ -24,27 +55,36 @@ public final class GoTrueClient {
     }
   }
 
-  init(
+  public convenience init(
     url: URL,
     headers: [String: String] = [:],
-    localStorage: GoTrueLocalStorage?,
-    configuration: (inout APIClient.Configuration) -> Void
+    localStorage: GoTrueLocalStorage? = nil,
+    fetch: @escaping FetchHandler = { try await URLSession.shared.data(for: $0) }
   ) {
-    var headers = headers
-    headers["X-Client-Info"] = "gotrue-swift/\(version)"
+    self.init(configuration: Configuration(
+      url: url,
+      headers: headers,
+      localStorage: localStorage,
+      fetch: fetch
+    ))
+  }
 
-    self.url = url
+  public convenience init(configuration: Configuration) {
+    self.init(configuration: configuration, clientConfiguration: { _ in })
+  }
+
+  init(configuration: Configuration, clientConfiguration: (inout APIClient.Configuration) -> Void) {
+    var configuration = configuration
+    configuration.headers["X-Client-Info"] = "gotrue-swift/\(version)"
 
     let env = Environment.live(
-      url: url,
-      localStorage: localStorage ?? KeychainLocalStorage(
-        service: "supabase.gotrue.swift",
-        accessGroup: nil
-      ),
-      headers: headers,
-      configuration: configuration
+      url: configuration.url,
+      localStorage: configuration.localStorage,
+      headers: configuration.headers,
+      configuration: clientConfiguration
     )
     self.env = env
+    self.configuration = configuration
 
     let (stream, continuation) = AsyncStream<AuthChangeEvent>.streamWithContinuation()
     authEventChange = stream
@@ -57,19 +97,6 @@ public final class GoTrueClient {
         continuation.yield(.signedOut)
       }
     }
-  }
-
-  public convenience init(
-    url: URL,
-    headers: [String: String] = [:],
-    localStorage: GoTrueLocalStorage? = nil
-  ) {
-    self.init(
-      url: url,
-      headers: headers,
-      localStorage: localStorage,
-      configuration: { _ in }
-    )
   }
 
   /// Initialize the client session from storage.
@@ -203,16 +230,17 @@ public final class GoTrueClient {
   ///   - captchaToken: Captcha verification token.
   public func signInWithOTP(
     email: String,
-    redirectTo: URL? = nil,
+    redirectTo _: URL? = nil,
     shouldCreateUser: Bool? = nil,
     data: [String: AnyJSON]? = nil,
     captchaToken: String? = nil
   ) async throws {
     await env.sessionManager.remove()
-    try await env.client.send(
-      Paths.otp.post(
-        redirectTo: redirectTo,
-        .init(
+    try await execute(
+      method: "POST",
+      path: "/otp",
+      body: JSONEncoder.goTrue.encode(
+        OTPParams(
           email: email,
           createUser: shouldCreateUser,
           data: data,
@@ -236,9 +264,11 @@ public final class GoTrueClient {
     captchaToken: String? = nil
   ) async throws {
     await env.sessionManager.remove()
-    try await env.client.send(
-      Paths.otp.post(
-        .init(
+    try await execute(
+      method: "POST",
+      path: "/otp",
+      body: JSONEncoder.goTrue.encode(
+        OTPParams(
           phone: phone,
           createUser: shouldCreateUser,
           data: data,
@@ -334,9 +364,11 @@ public final class GoTrueClient {
     let providerToken = params.first(where: { $0.name == "provider_token" })?.value
     let providerRefreshToken = params.first(where: { $0.name == "provider_refresh_token" })?.value
 
-    let user = try await env.client.send(
-      Paths.user.get.withAuthorization(accessToken, type: tokenType)
-    ).value
+    let user = try await execute(
+      method: "GET",
+      path: "/user",
+      headers: ["Authorization": "\(tokenType) \(accessToken)"]
+    ).decoded(as: User.self)
 
     let session = Session(
       providerToken: providerToken,
@@ -387,9 +419,7 @@ public final class GoTrueClient {
     if hasExpired {
       session = try await refreshSession(refreshToken: refreshToken)
     } else {
-      let user = try await env.client.send(
-        Paths.user.get.withAuthorization(accessToken)
-      ).value
+      let user = try await authorizedExecute(method: "GET", path: "/user").decoded(as: User.self)
       session = Session(
         accessToken: accessToken,
         tokenType: "bearer",
@@ -413,10 +443,12 @@ public final class GoTrueClient {
     defer { authEventChangeContinuation.yield(.signedOut) }
 
     let session = try? await env.sessionManager.session()
-    await env.sessionManager.remove()
-
-    if let session {
-      try await env.client.send(Paths.logout.post.withAuthorization(session.accessToken)).value
+    if session != nil {
+      try await authorizedExecute(
+        method: "POST",
+        path: "/logout"
+      )
+      await env.sessionManager.remove()
     }
   }
 
@@ -494,14 +526,71 @@ public final class GoTrueClient {
     redirectTo: URL? = nil,
     captchaToken: String? = nil
   ) async throws {
-    try await env.client.send(
-      Paths.recover.post(
-        redirectTo: redirectTo,
+    try await execute(
+      method: "POST",
+      path: "/recover",
+      query: [
+        redirectTo.map { ("redirect_to", $0.absoluteString) },
+      ].compactMap { $0 },
+      body: JSONEncoder.goTrue.encode(
         RecoverParams(
           email: email,
           gotrueMetaSecurity: captchaToken.map(GoTrueMetaSecurity.init(captchaToken:))
         )
       )
-    ).value
+    )
+  }
+
+  @discardableResult
+  private func authorizedExecute(
+    method: String,
+    path: String, query: [(name: String, value: String?)] = [],
+    headers: [String: String] = [:],
+    body: Data? = nil
+  ) async throws -> Response {
+    let session = try await env.sessionManager.session()
+
+    var headers = headers
+    headers["Authorization"] = "Bearer \(session.accessToken)"
+
+    return try await execute(method: method, path: path, query: query, headers: headers, body: body)
+  }
+
+  @discardableResult
+  private func execute(
+    method: String,
+    path: String, query: [(name: String, value: String?)] = [],
+    headers: [String: String] = [:],
+    body: Data? = nil
+  ) async throws -> Response {
+    let request = try URLRequest(
+      baseURL: configuration.url,
+      path: path,
+      method: method,
+      query: query.map(URLQueryItem.init),
+      headers: configuration.headers.merging(headers) { _, execute in execute },
+      body: body
+    )
+
+    let (data, response) = try await configuration.fetch(request)
+    guard let httpResponse = response as? HTTPURLResponse else {
+      throw URLError(.badServerResponse)
+    }
+
+    guard (200 ..< 300).contains(httpResponse.statusCode) else {
+      // TODO: throw another error
+      throw URLError(.badServerResponse)
+    }
+
+    return Response(data: data, response: httpResponse)
+  }
+}
+
+struct Response {
+  let data: Data
+  let response: HTTPURLResponse
+
+  func decoded<T: Decodable>(as _: T.Type, decoder: JSONDecoder = .goTrue) throws -> T {
+    try decoder.decode(T.self, from: data)
   }
 }
