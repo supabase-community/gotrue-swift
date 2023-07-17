@@ -1,3 +1,4 @@
+import Combine
 import Foundation
 
 #if canImport(FoundationNetworking)
@@ -46,24 +47,18 @@ public final class GoTrueClient {
     sessionRefresher: { try await self.refreshSession(refreshToken: $0) }
   )
 
-  private let authEventChangeContinuation: AsyncStream<AuthChangeEvent>.Continuation
+  private let authEventChangeSubject = PassthroughSubject<AuthChangeEvent, Never>()
   /// Asynchronous sequence of authentication change events emitted during life of `GoTrueClient`.
-  public let authEventChange: AsyncStream<AuthChangeEvent>
-
-  private lazy var initializationTask = Task {
-    do {
-      _ = try await sessionManager.session()
-      authEventChangeContinuation.yield(.signedIn)
-    } catch {
-      authEventChangeContinuation.yield(.signedOut)
-    }
+  public var authEventChange: AnyPublisher<AuthChangeEvent, Never> {
+    authEventChangeSubject.shareReplay(1).eraseToAnyPublisher()
   }
+
+  //  private let initializationTask: Task<Void, Never>
 
   /// Returns the session, refreshing it if necessary.
   public var session: Session {
     get async throws {
-      await initialize()
-      return try await sessionManager.session()
+      try await sessionManager.session()
     }
   }
 
@@ -91,9 +86,14 @@ public final class GoTrueClient {
     configuration.headers["X-Client-Info"] = "gotrue-swift/\(version)"
     self.configuration = configuration
 
-    let (stream, continuation) = AsyncStream<AuthChangeEvent>.streamWithContinuation()
-    authEventChange = stream
-    authEventChangeContinuation = continuation
+    Task {
+      do {
+        _ = try await sessionManager.session()
+        authEventChangeSubject.send(.signedIn)
+      } catch {
+        authEventChangeSubject.send(.signedOut)
+      }
+    }
   }
 
   /// Initialize the client session from storage.
@@ -101,9 +101,9 @@ public final class GoTrueClient {
   /// This method should be called on the app startup, for making sure that the client is fully
   /// initialized
   /// before proceeding.
-  public func initialize() async {
-    await initializationTask.value
-  }
+  //  public func initialize() async {
+  //    await initializationTask.value
+  //  }
 
   /// Creates a new user.
   /// - Parameters:
@@ -174,7 +174,7 @@ public final class GoTrueClient {
 
     if let session = response.session {
       try await sessionManager.update(session)
-      authEventChangeContinuation.yield(.signedIn)
+      authEventChangeSubject.send(.signedIn)
     }
 
     return response
@@ -234,7 +234,7 @@ public final class GoTrueClient {
 
     if session.user.emailConfirmedAt != nil || session.user.confirmedAt != nil {
       try await sessionManager.update(session)
-      authEventChangeContinuation.yield(.signedIn)
+      authEventChangeSubject.send(.signedIn)
     }
 
     return session
@@ -360,7 +360,7 @@ public final class GoTrueClient {
           .user.confirmedAt != nil
       {
         try await sessionManager.update(session)
-        authEventChangeContinuation.yield(.signedIn)
+        authEventChangeSubject.send(.signedIn)
       }
 
       return session
@@ -414,10 +414,10 @@ public final class GoTrueClient {
 
     if storeSession {
       try await sessionManager.update(session)
-      authEventChangeContinuation.yield(.signedIn)
+      authEventChangeSubject.send(.signedIn)
 
       if let type = params.first(where: { $0.name == "type" })?.value, type == "recovery" {
-        authEventChangeContinuation.yield(.passwordRecovery)
+        authEventChangeSubject.send(.passwordRecovery)
       }
     }
 
@@ -467,13 +467,13 @@ public final class GoTrueClient {
     }
 
     try await sessionManager.update(session)
-    authEventChangeContinuation.yield(.tokenRefreshed)
+    authEventChangeSubject.send(.tokenRefreshed)
     return session
   }
 
   /// Signs out the current user, if there is a logged in user.
   public func signOut() async throws {
-    defer { authEventChangeContinuation.yield(.signedOut) }
+    defer { authEventChangeSubject.send(.signedOut) }
 
     let session = try? await sessionManager.session()
     if session != nil {
@@ -549,7 +549,7 @@ public final class GoTrueClient {
 
     if let session = response.session {
       try await sessionManager.update(session)
-      authEventChangeContinuation.yield(.signedIn)
+      authEventChangeSubject.send(.signedIn)
     }
 
     return response
@@ -564,7 +564,7 @@ public final class GoTrueClient {
     ).decoded(as: User.self, decoder: configuration.decoder)
     session.user = user
     try await sessionManager.update(session)
-    authEventChangeContinuation.yield(.userUpdated)
+    authEventChangeSubject.send(.userUpdated)
     return user
   }
 
