@@ -89,29 +89,32 @@ final class GoTrueTests: XCTestCase {
     )
   }
 
-  func testSessionFromURL() async throws {
-    let url = URL(
-      string:
-        "https://dummy-url.com/callback#access_token=accesstoken&expires_in=60&refresh_token=refreshtoken&token_type=bearer"
-    )!
+  #if !os(watchOS)
+    // Not working on watchOS.
+    func testSessionFromURL() async throws {
+      let url = URL(
+        string:
+          "https://dummy-url.com/callback#access_token=accesstoken&expires_in=60&refresh_token=refreshtoken&token_type=bearer"
+      )!
 
-    var mock = Mock.get(path: "user", json: "user")
-    mock.onRequestHandler = OnRequestHandler(httpBodyType: Session?.self) { request, _ in
-      let authorizationHeader = request.allHTTPHeaderFields?["Authorization"]
-      XCTAssertEqual(authorizationHeader, "bearer accesstoken")
+      var mock = Mock.get(path: "user", json: "user")
+      mock.onRequestHandler = OnRequestHandler(httpBodyType: Session?.self) { request, _ in
+        let authorizationHeader = request.allHTTPHeaderFields?["Authorization"]
+        XCTAssertEqual(authorizationHeader, "bearer accesstoken")
+      }
+      mock.register()
+
+      let session = try await sut.session(from: url)
+      let expectedSession = Session(
+        accessToken: "accesstoken",
+        tokenType: "bearer",
+        expiresIn: 60,
+        refreshToken: "refreshtoken",
+        user: User(fromMockNamed: "user")
+      )
+      XCTAssertEqual(session, expectedSession)
     }
-    mock.register()
-
-    let session = try await sut.session(from: url)
-    let expectedSession = Session(
-      accessToken: "accesstoken",
-      tokenType: "bearer",
-      expiresIn: 60,
-      refreshToken: "refreshtoken",
-      user: User(fromMockNamed: "user")
-    )
-    XCTAssertEqual(session, expectedSession)
-  }
+  #endif
 
   func testSessionFromURLWithMissingComponent() async {
     let url = URL(
