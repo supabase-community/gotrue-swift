@@ -1,14 +1,13 @@
 import Foundation
 
-extension URLRequest {
-  init(
-    baseURL: URL,
-    path: String,
-    method: String,
-    query: [URLQueryItem],
-    headers: [String: String],
-    body: Data?
-  ) throws {
+struct _Request {
+  var path: String
+  var method: String
+  var query: [URLQueryItem] = []
+  var headers: [String: String] = [:]
+  var body: Data?
+
+  func urlRequest(withBaseURL baseURL: URL) throws -> URLRequest {
     var url = baseURL.appendingPathComponent(path)
     if !query.isEmpty {
       guard var components = URLComponents(url: url, resolvingAgainstBaseURL: false) else {
@@ -32,6 +31,15 @@ extension URLRequest {
       request.setValue(value, forHTTPHeaderField: name)
     }
 
-    self = request
+    return request
+  }
+}
+
+struct Response {
+  let data: Data
+  let response: HTTPURLResponse
+
+  func decoded<T: Decodable>(as _: T.Type, decoder: JSONDecoder = .goTrue) throws -> T {
+    try decoder.decode(T.self, from: data)
   }
 }

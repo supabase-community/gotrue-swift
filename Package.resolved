@@ -1,15 +1,6 @@
 {
   "pins" : [
     {
-      "identity" : "get",
-      "kind" : "remoteSourceControl",
-      "location" : "https://github.com/kean/Get",
-      "state" : {
-        "revision" : "7209fdb015686fd90918b2037cb2039206405bd3",
-        "version" : "2.1.5"
-      }
-    },
-    {
       "identity" : "keychainaccess",
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/kishikawakatsumi/KeychainAccess",
@@ -25,15 +16,6 @@
       "state" : {
         "revision" : "295b4368651fd9ce419dbc56bea732f6756c0c94",
         "version" : "3.0.0"
-      }
-    },
-    {
-      "identity" : "urlqueryencoder",
-      "kind" : "remoteSourceControl",
-      "location" : "https://github.com/kean/URLQueryEncoder",
-      "state" : {
-        "revision" : "4cc975d4d075d0e62699a796a08284e217d4ee93",
-        "version" : "0.2.0"
       }
     }
   ],

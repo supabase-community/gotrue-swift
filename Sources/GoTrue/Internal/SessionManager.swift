@@ -16,6 +16,8 @@ struct StoredSession: Codable {
 }
 
 actor SessionManager {
+  typealias SessionRefresher = @Sendable (_ refreshToken: String) async throws -> Session
+
   private var task: Task<Session, Error>?
   private let localStorage: GoTrueLocalStorage
   private let sessionRefresher: SessionRefresher

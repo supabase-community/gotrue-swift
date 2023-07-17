@@ -16,8 +16,6 @@ let package = Package(
     .library(name: "GoTrue", targets: ["GoTrue"]),
   ],
   dependencies: [
-    .package(url: "https://github.com/kean/Get", from: "2.1.4"),
-    .package(url: "https://github.com/kean/URLQueryEncoder", from: "0.2.0"),
     .package(url: "https://github.com/kishikawakatsumi/KeychainAccess", from: "4.2.2"),
     .package(url: "https://github.com/WeTransfer/Mocker", from: "3.0.0"),
   ],
@@ -25,9 +23,7 @@ let package = Package(
     .target(
       name: "GoTrue",
       dependencies: [
-        .product(name: "Get", package: "Get"),
         .product(name: "KeychainAccess", package: "KeychainAccess"),
-        .product(name: "URLQueryEncoder", package: "URLQueryEncoder"),
       ]
     ),
     .testTarget(
