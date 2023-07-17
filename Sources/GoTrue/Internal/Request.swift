@@ -1,6 +1,6 @@
 import Foundation
 
-struct _Request {
+struct Request {
   var path: String
   var method: String
   var query: [URLQueryItem] = []
@@ -39,7 +39,7 @@ struct Response {
   let data: Data
   let response: HTTPURLResponse
 
-  func decoded<T: Decodable>(as _: T.Type, decoder: JSONDecoder = .goTrue) throws -> T {
+  func decoded<T: Decodable>(as _: T.Type, decoder: JSONDecoder) throws -> T {
     try decoder.decode(T.self, from: data)
   }
 }

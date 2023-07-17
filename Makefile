@@ -13,6 +13,6 @@ build-example:
 		-destination platform="$(PLATFORM)" || exit 1;
 
 format:
-	@swiftformat .
+	@swift format -i -r .
 
 .PHONY: test-library build-example format test-library

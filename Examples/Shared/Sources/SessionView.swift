@@ -35,20 +35,21 @@ struct SessionView: View {
 struct SessionView_Previews: PreviewProvider {
   static var previews: some View {
     NavigationView {
-      SessionView(session: .init(
-        accessToken: "placeholder",
-        tokenType: "bearer",
-        expiresIn: 3600,
-        refreshToken: "refreshToken",
-        user: User(
-          id: UUID(),
-          appMetadata: [:],
-          userMetadata: [:],
-          aud: "",
-          createdAt: Date(),
-          updatedAt: Date()
-        )
-      ))
+      SessionView(
+        session: .init(
+          accessToken: "placeholder",
+          tokenType: "bearer",
+          expiresIn: 3600,
+          refreshToken: "refreshToken",
+          user: User(
+            id: UUID(),
+            appMetadata: [:],
+            userMetadata: [:],
+            aud: "",
+            createdAt: Date(),
+            updatedAt: Date()
+          )
+        ))
     }
   }
 }

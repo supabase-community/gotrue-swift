@@ -1,6 +1,7 @@
 import Foundation
-@testable import GoTrue
 import Mocker
+
+@testable import GoTrue
 
 func json(named name: String) -> Data {
   let url = Bundle.module.url(forResource: name, withExtension: "json")
@@ -20,7 +21,7 @@ extension Mock {
       dataType: .json,
       statusCode: statusCode,
       data: [
-        .post: json(named: name),
+        .post: json(named: name)
       ]
     )
   }
@@ -31,7 +32,7 @@ extension Mock {
       dataType: .json,
       statusCode: statusCode,
       data: [
-        .get: json(named: name),
+        .get: json(named: name)
       ]
     )
   }

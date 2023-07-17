@@ -13,7 +13,7 @@ let package = Package(
     .tvOS(.v13),
   ],
   products: [
-    .library(name: "GoTrue", targets: ["GoTrue"]),
+    .library(name: "GoTrue", targets: ["GoTrue"])
   ],
   dependencies: [
     .package(url: "https://github.com/kishikawakatsumi/KeychainAccess", from: "4.2.2"),
@@ -23,14 +23,14 @@ let package = Package(
     .target(
       name: "GoTrue",
       dependencies: [
-        .product(name: "KeychainAccess", package: "KeychainAccess"),
+        .product(name: "KeychainAccess", package: "KeychainAccess")
       ]
     ),
     .testTarget(
       name: "GoTrueTests",
       dependencies: ["GoTrue", "Mocker"],
       resources: [
-        .process("Resources"),
+        .process("Resources")
       ]
     ),
   ]

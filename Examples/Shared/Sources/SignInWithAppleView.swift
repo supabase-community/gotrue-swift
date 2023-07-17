@@ -28,8 +28,9 @@ struct SignInWithAppleView: View {
             return
           }
 
-          guard let idToken = credential.identityToken
-            .flatMap({ String(data: $0, encoding: .utf8) })
+          guard
+            let idToken = credential.identityToken
+              .flatMap({ String(data: $0, encoding: .utf8) })
           else {
             return
           }

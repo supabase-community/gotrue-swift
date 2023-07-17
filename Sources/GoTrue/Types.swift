@@ -1,5 +1,14 @@
 import Foundation
 
+public enum AuthChangeEvent: String, Sendable {
+  case passwordRecovery = "PASSWORD_RECOVERY"
+  case signedIn = "SIGNED_IN"
+  case signedOut = "SIGNED_OUT"
+  case tokenRefreshed = "TOKEN_REFRESHED"
+  case userUpdated = "USER_UPDATED"
+  case userDeleted = "USER_DELETED"
+}
+
 public enum AnyJSON: Hashable, Codable, Sendable {
   case string(String)
   case number(Double)
@@ -288,7 +297,8 @@ public struct UserIdentity: Codable, Hashable, Identifiable, Sendable {
     let container = try decoder.container(keyedBy: CodingKeys.self)
     id = try container.decode(String.self, forKey: .id)
     userID = try container.decode(UUID.self, forKey: .userID)
-    identityData = try container
+    identityData =
+      try container
       .decodeIfPresent([String: AnyJSON].self, forKey: .identityData) ?? [:]
     provider = try container.decode(String.self, forKey: .provider)
     createdAt = try container.decode(Date.self, forKey: .createdAt)
@@ -525,4 +535,53 @@ public struct RecoverParams: Codable, Hashable, Sendable {
     case email
     case gotrueMetaSecurity = "gotrue_meta_security"
   }
+}
+
+// MARK: - Encodable & Decodable
+
+private let dateFormatterWithFractionalSeconds = { () -> ISO8601DateFormatter in
+  let formatter = ISO8601DateFormatter()
+  formatter.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
+  return formatter
+}()
+
+private let dateFormatter = { () -> ISO8601DateFormatter in
+  let formatter = ISO8601DateFormatter()
+  formatter.formatOptions = [.withInternetDateTime]
+  return formatter
+}()
+
+extension JSONDecoder {
+  public static let goTrue = { () -> JSONDecoder in
+    let decoder = JSONDecoder()
+    decoder.dateDecodingStrategy = .custom { decoder in
+      let container = try decoder.singleValueContainer()
+      let string = try container.decode(String.self)
+
+      let supportedFormatters = [dateFormatterWithFractionalSeconds, dateFormatter]
+
+      for formatter in supportedFormatters {
+        if let date = formatter.date(from: string) {
+          return date
+        }
+      }
+
+      throw DecodingError.dataCorruptedError(
+        in: container, debugDescription: "Invalid date format: \(string)"
+      )
+    }
+    return decoder
+  }()
+}
+
+extension JSONEncoder {
+  public static let goTrue = { () -> JSONEncoder in
+    let encoder = JSONEncoder()
+    encoder.dateEncodingStrategy = .custom { date, encoder in
+      var container = encoder.singleValueContainer()
+      let string = dateFormatter.string(from: date)
+      try container.encode(string)
+    }
+    return encoder
+  }()
 }
