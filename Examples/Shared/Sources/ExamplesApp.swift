@@ -18,7 +18,7 @@ struct ExamplesApp: App {
 }
 
 private enum GoTrueEnvironmentKey: EnvironmentKey {
-  static let defaultValue = GoTrueClient(url: SUPABASE_URL, headers: ["apikey": SUPABASE_API_KEY])
+    static let defaultValue = GoTrueClient(url: SUPABASE_URL, headers: ["apikey": SUPABASE_API_KEY], flowType: .pkce)
 }
 
 extension EnvironmentValues {

@@ -9,6 +9,7 @@ public final class GoTrueClient {
   let env: Environment
 
   private let url: URL
+  private var codeVerifier = ""
 
   private let authEventChangeContinuation: AsyncStream<AuthChangeEvent>.Continuation
   /// Asynchronous sequence of authentication change events emitted during life of `GoTrueClient`.
@@ -23,17 +24,22 @@ public final class GoTrueClient {
       return try await env.sessionManager.session()
     }
   }
+    
+  public let flowType: FlowType!
 
   init(
     url: URL,
     headers: [String: String] = [:],
     localStorage: GoTrueLocalStorage?,
+    flowType: FlowType = .implicit,
     configuration: (inout APIClient.Configuration) -> Void
   ) {
     var headers = headers
     headers["X-Client-Info"] = "gotrue-swift/\(version)"
 
     self.url = url
+      
+    self.flowType = flowType
 
     let env = Environment.live(
       url: url,
@@ -62,12 +68,14 @@ public final class GoTrueClient {
   public convenience init(
     url: URL,
     headers: [String: String] = [:],
-    localStorage: GoTrueLocalStorage? = nil
+    localStorage: GoTrueLocalStorage? = nil,
+    flowType: FlowType = .implicit
   ) {
     self.init(
       url: url,
       headers: headers,
       localStorage: localStorage,
+      flowType: flowType,
       configuration: { _ in }
     )
   }
@@ -275,6 +283,13 @@ public final class GoTrueClient {
     if let redirectTo {
       queryItems.append(URLQueryItem(name: "redirect_to", value: redirectTo.absoluteString))
     }
+      
+    if flowType == .pkce {
+      codeVerifier = PKCE.generateCodeVerifier()
+      let codeChallenge = PKCE.generateCodeChallenge(from: codeVerifier)
+       queryItems.append(.init(name: "code_challenge", value: codeChallenge))
+       queryItems.append(.init(name: "code_challenge_method", value: "S256"))
+    }
 
     queryItems.append(contentsOf: queryParams.map(URLQueryItem.init))
 
@@ -309,15 +324,41 @@ public final class GoTrueClient {
       throw error
     }
   }
+    
+    public func session(from url: URL, storeSession: Bool = true) async throws -> Session {
+        if flowType == .implicit {
+            return try await fetchSession(from: url)
+        } else {
+            guard let code = url.queryParameters?["code"] else {
+                throw GoTrueError.codeNotFound
+            }
+            let session = try await exchangeCodeForSession(code: code)
+            
+            guard let components = URLComponents(url: url, resolvingAgainstBaseURL: false) else {
+              throw URLError(.badURL)
+            }
+
+            let params = extractParams(from: components.fragment ?? "")
+            try await handleStoringSession(storeSession: storeSession, params: params, session: session)
+            
+            return session
+        }
+    }
+    
+    private func exchangeCodeForSession(code: String) async throws -> Session {
+        return try await env.client.send(Paths.token.post(grantType: .pkce, body: .init(authCode: code, codeVerifier: codeVerifier))
+        ).value
+    }
 
   /// Gets the session data from a OAuth2 callback URL.
   @discardableResult
-  public func session(from url: URL, storeSession: Bool = true) async throws -> Session {
+  private func fetchSession(from url: URL, storeSession: Bool = true) async throws -> Session {
     guard let components = URLComponents(url: url, resolvingAgainstBaseURL: false) else {
       throw URLError(.badURL)
     }
 
     let params = extractParams(from: components.fragment ?? "")
+      
 
     if let errorDescription = params.first(where: { $0.name == "error_description" })?.value {
       throw GoTrueError.api(.init(errorDescription: errorDescription))
@@ -348,15 +389,8 @@ public final class GoTrueClient {
       refreshToken: refreshToken,
       user: user
     )
-
-    if storeSession {
-      try await env.sessionManager.update(session)
-      authEventChangeContinuation.yield(.signedIn)
-
-      if let type = params.first(where: { $0.name == "type" })?.value, type == "recovery" {
-        authEventChangeContinuation.yield(.passwordRecovery)
-      }
-    }
+      
+    try await handleStoringSession(storeSession: storeSession, params: params, session: session)
 
     return session
   }
@@ -505,4 +539,15 @@ public final class GoTrueClient {
       )
     ).value
   }
+    
+    private func handleStoringSession(storeSession: Bool, params: [(name: String, value: String)], session: Session) async throws {
+        if storeSession {
+          try await env.sessionManager.update(session)
+          authEventChangeContinuation.yield(.signedIn)
+
+          if let type = params.first(where: { $0.name == "type" })?.value, type == "recovery" {
+            authEventChangeContinuation.yield(.passwordRecovery)
+          }
+        }
+    }
 }

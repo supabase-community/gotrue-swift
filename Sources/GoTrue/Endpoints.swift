@@ -12,6 +12,12 @@ extension Paths {
   struct Token {
     /// Path: `/token`
     let path: String
+      
+    func post(
+      grantType: GrantType,
+      body: PKCEParams) -> Request<GoTrue.Session> {
+        Request(method: "POST", url: path, query: makePKCEPostQuery(), body: body)
+      }
 
     func post(
       grantType: GrantType,
@@ -27,22 +33,32 @@ extension Paths {
       encoder.encode(redirectTo, forKey: "redirect_to")
       return encoder.items
     }
+    
+    private func makePKCEPostQuery() -> [(String, String?)] {
+      let encoder = URLQueryEncoder()
+      encoder.encode(GrantType.pkce, forKey: "grant_type")
+        
+      return encoder.items
+    }
 
     enum GrantType: String, Codable, CaseIterable {
       case password
       case refreshToken = "refresh_token"
       case idToken = "id_token"
+      case pkce
     }
 
     enum PostRequest: Encodable, Equatable {
       case userCredentials(GoTrue.UserCredentials)
       case openIDConnectCredentials(GoTrue.OpenIDConnectCredentials)
+        case pkceCredentials(GoTrue.PKCEParams)
 
       func encode(to encoder: Encoder) throws {
         var container = encoder.singleValueContainer()
         switch self {
         case let .userCredentials(value): try container.encode(value)
         case let .openIDConnectCredentials(value): try container.encode(value)
+        case let .pkceCredentials(value): try container.encode(value)
         }
       }
     }

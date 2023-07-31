@@ -1,4 +1,5 @@
 import Foundation
+import CryptoKit
 
 public enum AnyJSON: Hashable, Codable, Sendable {
   case string(String)
@@ -525,4 +526,40 @@ public struct RecoverParams: Codable, Hashable, Sendable {
     case email
     case gotrueMetaSecurity = "gotrue_meta_security"
   }
+}
+
+public struct PKCEParams: Codable, Hashable, Sendable {
+    public var authCode: String
+    public var codeVerifier: String
+    
+    public init(authCode: String, codeVerifier: String) {
+        self.authCode = authCode
+        self.codeVerifier = codeVerifier
+    }
+    
+    public enum CodingKeys: String, CodingKey {
+        case authCode = "auth_code"
+        case codeVerifier = "code_verifier"
+    }
+}
+
+public enum FlowType {
+    case implicit
+    case pkce
+}
+
+
+enum PKCE {
+    static func generateCodeVerifier() -> String {
+        var buffer = [UInt8](repeating: 0, count: 64)
+        _ = SecRandomCopyBytes(kSecRandomDefault, buffer.count, &buffer)
+        return Data(buffer).base64EncodedString()
+    }
+    
+    static func generateCodeChallenge(from string: String) -> String? {
+        guard let data = string.data(using: .utf8) else { return nil }
+        let hashed = SHA256.hash(data: data)
+        
+        return Data(hashed).pkceBase64EncodedString()
+    }
 }
