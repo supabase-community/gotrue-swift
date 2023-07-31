@@ -385,19 +385,25 @@ public struct OTPParams: Codable, Hashable, Sendable {
   public var createUser: Bool
   public var data: [String: AnyJSON]?
   public var gotrueMetaSecurity: GoTrueMetaSecurity?
+  public var codeChallenge: String?
+  public var codeChallengeMethod: String?
 
   public init(
     email: String? = nil,
     phone: String? = nil,
     createUser: Bool? = nil,
     data: [String: AnyJSON]? = nil,
-    gotrueMetaSecurity: GoTrueMetaSecurity? = nil
+    gotrueMetaSecurity: GoTrueMetaSecurity? = nil,
+    codeChallenge: String? = nil,
+    codeChallengeMethod: String? = nil
   ) {
     self.email = email
     self.phone = phone
     self.createUser = createUser ?? true
     self.data = data
     self.gotrueMetaSecurity = gotrueMetaSecurity
+    self.codeChallenge = codeChallenge
+    self.codeChallengeMethod = codeChallengeMethod
   }
 
   public enum CodingKeys: String, CodingKey {
@@ -406,6 +412,8 @@ public struct OTPParams: Codable, Hashable, Sendable {
     case createUser = "create_user"
     case data
     case gotrueMetaSecurity = "gotrue_meta_security"
+    case codeChallenge = "code_challenge"
+    case codeChallengeMethod = "code_challenge_method"
   }
 }
 

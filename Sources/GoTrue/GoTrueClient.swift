@@ -218,6 +218,15 @@ public final class GoTrueClient {
     captchaToken: String? = nil
   ) async throws {
     await env.sessionManager.remove()
+      var codeChallenge: String? = nil
+      var codeChallengeMethod: String? = nil
+      
+      if flowType == .pkce {
+          codeVerifier = PKCE.generateCodeVerifier()
+          codeChallenge = PKCE.generateCodeChallenge(from: codeVerifier)
+          codeChallengeMethod = "S256"
+      }
+      
     try await env.client.send(
       Paths.otp.post(
         redirectTo: redirectTo,
@@ -225,7 +234,9 @@ public final class GoTrueClient {
           email: email,
           createUser: shouldCreateUser,
           data: data,
-          gotrueMetaSecurity: captchaToken.map(GoTrueMetaSecurity.init(captchaToken:))
+          gotrueMetaSecurity: captchaToken.map(GoTrueMetaSecurity.init(captchaToken:)),
+          codeChallenge: codeChallenge,
+          codeChallengeMethod: codeChallengeMethod
         )
       )
     )
