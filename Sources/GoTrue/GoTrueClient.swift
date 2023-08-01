@@ -25,7 +25,7 @@ public final class GoTrueClient {
     }
   }
     
-  public let flowType: FlowType!
+  public let flowType: FlowType
 
   init(
     url: URL,
@@ -219,12 +219,12 @@ public final class GoTrueClient {
   ) async throws {
     await env.sessionManager.remove()
       var codeChallenge: String? = nil
-      var codeChallengeMethod: String? = nil
+      var codeChallengeMethod: PKCECodeChallengeMethod? = nil
       
       if flowType == .pkce {
           codeVerifier = PKCE.generateCodeVerifier()
           codeChallenge = PKCE.generateCodeChallenge(from: codeVerifier)
-          codeChallengeMethod = "S256"
+          codeChallengeMethod = .sha256
       }
       
     try await env.client.send(
@@ -299,7 +299,7 @@ public final class GoTrueClient {
       codeVerifier = PKCE.generateCodeVerifier()
       let codeChallenge = PKCE.generateCodeChallenge(from: codeVerifier)
        queryItems.append(.init(name: "code_challenge", value: codeChallenge))
-       queryItems.append(.init(name: "code_challenge_method", value: "S256"))
+       queryItems.append(.init(name: "code_challenge_method", value: PKCECodeChallengeMethod.sha256.rawValue))
     }
 
     queryItems.append(contentsOf: queryParams.map(URLQueryItem.init))
@@ -341,14 +341,14 @@ public final class GoTrueClient {
             return try await fetchSession(from: url)
         } else {
             guard let code = url.queryParameters?["code"] else {
-                throw GoTrueError.codeNotFound
+                throw GoTrueError.pkceCodeNotFound
             }
             let session = try await exchangeCodeForSession(code: code)
             
             guard let components = URLComponents(url: url, resolvingAgainstBaseURL: false) else {
-              throw URLError(.badURL)
+                throw URLError(.badURL)
             }
-
+            
             let params = extractParams(from: components.fragment ?? "")
             try await handleStoringSession(storeSession: storeSession, params: params, session: session)
             
@@ -357,199 +357,197 @@ public final class GoTrueClient {
     }
     
     private func exchangeCodeForSession(code: String) async throws -> Session {
-        return try await env.client.send(Paths.token.post(grantType: .pkce, body: .init(authCode: code, codeVerifier: codeVerifier))
+        return try await env.client.send(Paths.token.post(grantType: .pkce, .pkceCredentials(.init(authCode: code, codeVerifier: codeVerifier)))).value
+    }
+    
+    
+    private func fetchSession(from url: URL, storeSession: Bool = true) async throws -> Session {
+        guard let components = URLComponents(url: url, resolvingAgainstBaseURL: false) else {
+            throw URLError(.badURL)
+        }
+        
+        let params = extractParams(from: components.fragment ?? "")
+        
+        
+        if let errorDescription = params.first(where: { $0.name == "error_description" })?.value {
+            throw GoTrueError.api(.init(errorDescription: errorDescription))
+        }
+        
+        guard
+            let accessToken = params.first(where: { $0.name == "access_token" })?.value,
+            let expiresIn = params.first(where: { $0.name == "expires_in" })?.value,
+            let refreshToken = params.first(where: { $0.name == "refresh_token" })?.value,
+            let tokenType = params.first(where: { $0.name == "token_type" })?.value
+        else {
+            throw URLError(.badURL)
+        }
+        
+        let providerToken = params.first(where: { $0.name == "provider_token" })?.value
+        let providerRefreshToken = params.first(where: { $0.name == "provider_refresh_token" })?.value
+        
+        let user = try await env.client.send(
+            Paths.user.get.withAuthorization(accessToken, type: tokenType)
+        ).value
+        
+        let session = Session(
+            providerToken: providerToken,
+            providerRefreshToken: providerRefreshToken,
+            accessToken: accessToken,
+            tokenType: tokenType,
+            expiresIn: Double(expiresIn) ?? 0,
+            refreshToken: refreshToken,
+            user: user
+        )
+        
+        try await handleStoringSession(storeSession: storeSession, params: params, session: session)
+        
+        return session
+    }
+    
+    /// Sets the session data from the current session. If the current session is expired, setSession
+    /// will take care of refreshing it to obtain a new session.
+    ///
+    /// If the refresh token is invalid and the current session has expired, an error will be thrown.
+    /// This method will use the exp claim defined in the access token.
+    /// - Parameters:
+    ///   - accessToken: The current access token.
+    ///   - refreshToken: The current refresh token.
+    /// - Returns: A new valid session.
+    @discardableResult
+    public func setSession(accessToken: String, refreshToken: String) async throws -> Session {
+        let now = Date()
+        var expiresAt = now
+        var hasExpired = true
+        var session: Session?
+        
+        let jwt = try decode(jwt: accessToken)
+        if let exp = jwt["exp"] as? TimeInterval {
+            expiresAt = Date(timeIntervalSince1970: exp)
+            hasExpired = expiresAt <= now
+        } else {
+            throw GoTrueError.missingExpClaim
+        }
+        
+        if hasExpired {
+            session = try await refreshSession(refreshToken: refreshToken)
+        } else {
+            let user = try await env.client.send(
+                Paths.user.get.withAuthorization(accessToken)
+            ).value
+            session = Session(
+                accessToken: accessToken,
+                tokenType: "bearer",
+                expiresIn: expiresAt.timeIntervalSince(now),
+                refreshToken: refreshToken,
+                user: user
+            )
+        }
+        
+        guard let session else {
+            throw GoTrueError.sessionNotFound
+        }
+        
+        try await env.sessionManager.update(session)
+        authEventChangeContinuation.yield(.tokenRefreshed)
+        return session
+    }
+    
+    /// Signs out the current user, if there is a logged in user.
+    public func signOut() async throws {
+        defer { authEventChangeContinuation.yield(.signedOut) }
+        
+        let session = try? await env.sessionManager.session()
+        await env.sessionManager.remove()
+        
+        if let session {
+            try await env.client.send(Paths.logout.post.withAuthorization(session.accessToken)).value
+        }
+    }
+    
+    /// Log in an user given a User supplied OTP received via email.
+    @discardableResult
+    public func verifyOTP(
+        email: String,
+        token: String,
+        type: OTPType,
+        redirectTo: URL? = nil,
+        captchaToken: String? = nil
+    ) async throws -> AuthResponse {
+        try await _verifyOTP(
+            request: Paths.verify.post(
+                redirectTo: redirectTo,
+                .init(
+                    email: email,
+                    token: token,
+                    type: type,
+                    gotrueMetaSecurity: captchaToken.map(GoTrueMetaSecurity.init(captchaToken:))
+                )
+            )
+        )
+    }
+    
+    /// Log in an user given a User supplied OTP received via mobile.
+    @discardableResult
+    public func verifyOTP(
+        phone: String,
+        token: String,
+        type: OTPType,
+        captchaToken: String? = nil
+    ) async throws -> AuthResponse {
+        try await _verifyOTP(
+            request: Paths.verify.post(
+                .init(
+                    phone: phone,
+                    token: token,
+                    type: type,
+                    gotrueMetaSecurity: captchaToken.map(GoTrueMetaSecurity.init(captchaToken:))
+                )
+            )
+        )
+    }
+    
+    private func _verifyOTP(request: Request<AuthResponse>) async throws -> AuthResponse {
+        await env.sessionManager.remove()
+        
+        let response = try await env.client.send(request).value
+        
+        if let session = response.session {
+            try await env.sessionManager.update(session)
+            authEventChangeContinuation.yield(.signedIn)
+        }
+        
+        return response
+    }
+    
+    /// Updates user data, if there is a logged in user.
+    @discardableResult
+    public func update(user: UserAttributes) async throws -> User {
+        var session = try await env.sessionManager.session()
+        let user = try await env.client.send(
+            Paths.user.put(user).withAuthorization(session.accessToken)
+        ).value
+        session.user = user
+        try await env.sessionManager.update(session)
+        authEventChangeContinuation.yield(.userUpdated)
+        return user
+    }
+    
+    /// Sends a reset request to an email address.
+    public func resetPasswordForEmail(
+        _ email: String,
+        redirectTo: URL? = nil,
+        captchaToken: String? = nil
+    ) async throws {
+        try await env.client.send(
+            Paths.recover.post(
+                redirectTo: redirectTo,
+                RecoverParams(
+                    email: email,
+                    gotrueMetaSecurity: captchaToken.map(GoTrueMetaSecurity.init(captchaToken:))
+                )
+            )
         ).value
     }
-
-  /// Gets the session data from a OAuth2 callback URL.
-  @discardableResult
-  private func fetchSession(from url: URL, storeSession: Bool = true) async throws -> Session {
-    guard let components = URLComponents(url: url, resolvingAgainstBaseURL: false) else {
-      throw URLError(.badURL)
-    }
-
-    let params = extractParams(from: components.fragment ?? "")
-      
-
-    if let errorDescription = params.first(where: { $0.name == "error_description" })?.value {
-      throw GoTrueError.api(.init(errorDescription: errorDescription))
-    }
-
-    guard
-      let accessToken = params.first(where: { $0.name == "access_token" })?.value,
-      let expiresIn = params.first(where: { $0.name == "expires_in" })?.value,
-      let refreshToken = params.first(where: { $0.name == "refresh_token" })?.value,
-      let tokenType = params.first(where: { $0.name == "token_type" })?.value
-    else {
-      throw URLError(.badURL)
-    }
-
-    let providerToken = params.first(where: { $0.name == "provider_token" })?.value
-    let providerRefreshToken = params.first(where: { $0.name == "provider_refresh_token" })?.value
-
-    let user = try await env.client.send(
-      Paths.user.get.withAuthorization(accessToken, type: tokenType)
-    ).value
-
-    let session = Session(
-      providerToken: providerToken,
-      providerRefreshToken: providerRefreshToken,
-      accessToken: accessToken,
-      tokenType: tokenType,
-      expiresIn: Double(expiresIn) ?? 0,
-      refreshToken: refreshToken,
-      user: user
-    )
-      
-    try await handleStoringSession(storeSession: storeSession, params: params, session: session)
-
-    return session
-  }
-
-  /// Sets the session data from the current session. If the current session is expired, setSession
-  /// will take care of refreshing it to obtain a new session.
-  ///
-  /// If the refresh token is invalid and the current session has expired, an error will be thrown.
-  /// This method will use the exp claim defined in the access token.
-  /// - Parameters:
-  ///   - accessToken: The current access token.
-  ///   - refreshToken: The current refresh token.
-  /// - Returns: A new valid session.
-  @discardableResult
-  public func setSession(accessToken: String, refreshToken: String) async throws -> Session {
-    let now = Date()
-    var expiresAt = now
-    var hasExpired = true
-    var session: Session?
-
-    let jwt = try decode(jwt: accessToken)
-    if let exp = jwt["exp"] as? TimeInterval {
-      expiresAt = Date(timeIntervalSince1970: exp)
-      hasExpired = expiresAt <= now
-    } else {
-      throw GoTrueError.missingExpClaim
-    }
-
-    if hasExpired {
-      session = try await refreshSession(refreshToken: refreshToken)
-    } else {
-      let user = try await env.client.send(
-        Paths.user.get.withAuthorization(accessToken)
-      ).value
-      session = Session(
-        accessToken: accessToken,
-        tokenType: "bearer",
-        expiresIn: expiresAt.timeIntervalSince(now),
-        refreshToken: refreshToken,
-        user: user
-      )
-    }
-
-    guard let session else {
-      throw GoTrueError.sessionNotFound
-    }
-
-    try await env.sessionManager.update(session)
-    authEventChangeContinuation.yield(.tokenRefreshed)
-    return session
-  }
-
-  /// Signs out the current user, if there is a logged in user.
-  public func signOut() async throws {
-    defer { authEventChangeContinuation.yield(.signedOut) }
-
-    let session = try? await env.sessionManager.session()
-    await env.sessionManager.remove()
-
-    if let session {
-      try await env.client.send(Paths.logout.post.withAuthorization(session.accessToken)).value
-    }
-  }
-
-  /// Log in an user given a User supplied OTP received via email.
-  @discardableResult
-  public func verifyOTP(
-    email: String,
-    token: String,
-    type: OTPType,
-    redirectTo: URL? = nil,
-    captchaToken: String? = nil
-  ) async throws -> AuthResponse {
-    try await _verifyOTP(
-      request: Paths.verify.post(
-        redirectTo: redirectTo,
-        .init(
-          email: email,
-          token: token,
-          type: type,
-          gotrueMetaSecurity: captchaToken.map(GoTrueMetaSecurity.init(captchaToken:))
-        )
-      )
-    )
-  }
-
-  /// Log in an user given a User supplied OTP received via mobile.
-  @discardableResult
-  public func verifyOTP(
-    phone: String,
-    token: String,
-    type: OTPType,
-    captchaToken: String? = nil
-  ) async throws -> AuthResponse {
-    try await _verifyOTP(
-      request: Paths.verify.post(
-        .init(
-          phone: phone,
-          token: token,
-          type: type,
-          gotrueMetaSecurity: captchaToken.map(GoTrueMetaSecurity.init(captchaToken:))
-        )
-      )
-    )
-  }
-
-  private func _verifyOTP(request: Request<AuthResponse>) async throws -> AuthResponse {
-    await env.sessionManager.remove()
-
-    let response = try await env.client.send(request).value
-
-    if let session = response.session {
-      try await env.sessionManager.update(session)
-      authEventChangeContinuation.yield(.signedIn)
-    }
-
-    return response
-  }
-
-  /// Updates user data, if there is a logged in user.
-  @discardableResult
-  public func update(user: UserAttributes) async throws -> User {
-    var session = try await env.sessionManager.session()
-    let user = try await env.client.send(
-      Paths.user.put(user).withAuthorization(session.accessToken)
-    ).value
-    session.user = user
-    try await env.sessionManager.update(session)
-    authEventChangeContinuation.yield(.userUpdated)
-    return user
-  }
-
-  /// Sends a reset request to an email address.
-  public func resetPasswordForEmail(
-    _ email: String,
-    redirectTo: URL? = nil,
-    captchaToken: String? = nil
-  ) async throws {
-    try await env.client.send(
-      Paths.recover.post(
-        redirectTo: redirectTo,
-        RecoverParams(
-          email: email,
-          gotrueMetaSecurity: captchaToken.map(GoTrueMetaSecurity.init(captchaToken:))
-        )
-      )
-    ).value
-  }
     
     private func handleStoringSession(storeSession: Bool, params: [(name: String, value: String)], session: Session) async throws {
         if storeSession {

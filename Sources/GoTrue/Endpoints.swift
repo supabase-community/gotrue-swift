@@ -13,13 +13,7 @@ extension Paths {
     /// Path: `/token`
     let path: String
       
-    func post(
-      grantType: GrantType,
-      body: PKCEParams) -> Request<GoTrue.Session> {
-        Request(method: "POST", url: path, query: makePKCEPostQuery(), body: body)
-      }
-
-    func post(
+      func post(
       grantType: GrantType,
       redirectTo: URL? = nil,
       _ body: PostRequest
@@ -51,7 +45,7 @@ extension Paths {
     enum PostRequest: Encodable, Equatable {
       case userCredentials(GoTrue.UserCredentials)
       case openIDConnectCredentials(GoTrue.OpenIDConnectCredentials)
-        case pkceCredentials(GoTrue.PKCEParams)
+      case pkceCredentials(GoTrue.PKCEParams)
 
       func encode(to encoder: Encoder) throws {
         var container = encoder.singleValueContainer()

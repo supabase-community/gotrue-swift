@@ -5,7 +5,7 @@ public enum GoTrueError: LocalizedError, Sendable {
   case malformedJWT
   case sessionNotFound
   case api(APIError)
-  case codeNotFound
+  case pkceCodeNotFound
 
   public struct APIError: Error, Decodable, Sendable {
     public var message: String?
@@ -29,7 +29,7 @@ public enum GoTrueError: LocalizedError, Sendable {
     case .malformedJWT: return "A malformed JWT received."
     case .sessionNotFound: return "Unable to get a valid session."
     case let .api(error): return error.errorDescription ?? error.message ?? error.msg
-    case .codeNotFound: return "Unable to get a valid code."
+    case .pkceCodeNotFound: return "A valid PKCE code was not found."
     }
   }
 }

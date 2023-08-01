@@ -386,7 +386,7 @@ public struct OTPParams: Codable, Hashable, Sendable {
   public var data: [String: AnyJSON]?
   public var gotrueMetaSecurity: GoTrueMetaSecurity?
   public var codeChallenge: String?
-  public var codeChallengeMethod: String?
+  public var codeChallengeMethod: PKCECodeChallengeMethod?
 
   public init(
     email: String? = nil,
@@ -395,7 +395,7 @@ public struct OTPParams: Codable, Hashable, Sendable {
     data: [String: AnyJSON]? = nil,
     gotrueMetaSecurity: GoTrueMetaSecurity? = nil,
     codeChallenge: String? = nil,
-    codeChallengeMethod: String? = nil
+    codeChallengeMethod: PKCECodeChallengeMethod? = nil
   ) {
     self.email = email
     self.phone = phone
@@ -570,4 +570,8 @@ enum PKCE {
         
         return Data(hashed).pkceBase64EncodedString()
     }
+}
+
+public enum PKCECodeChallengeMethod: String, Codable, Sendable {
+    case sha256 = "S256"
 }
