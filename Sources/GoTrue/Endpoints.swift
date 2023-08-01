@@ -27,13 +27,6 @@ extension Paths {
       encoder.encode(redirectTo, forKey: "redirect_to")
       return encoder.items
     }
-    
-    private func makePKCEPostQuery() -> [(String, String?)] {
-      let encoder = URLQueryEncoder()
-      encoder.encode(GrantType.pkce, forKey: "grant_type")
-        
-      return encoder.items
-    }
 
     enum GrantType: String, Codable, CaseIterable {
       case password
