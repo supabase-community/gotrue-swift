@@ -561,7 +561,7 @@ enum PKCE {
     static func generateCodeVerifier() -> String {
         var buffer = [UInt8](repeating: 0, count: 64)
         _ = SecRandomCopyBytes(kSecRandomDefault, buffer.count, &buffer)
-        return Data(buffer).base64EncodedString()
+        return Data(buffer).pkceBase64EncodedString()
     }
     
     static func generateCodeChallenge(from string: String) -> String? {
