@@ -38,7 +38,7 @@ extension Paths {
     enum PostRequest: Encodable, Equatable {
       case userCredentials(GoTrue.UserCredentials)
       case openIDConnectCredentials(GoTrue.OpenIDConnectCredentials)
-      case pkceCredentials(GoTrue.PKCEParams)
+      case pkceCredentials(GoTrue.PKCECredentials)
 
       func encode(to encoder: Encoder) throws {
         var container = encoder.singleValueContainer()

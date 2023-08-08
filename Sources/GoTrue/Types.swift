@@ -536,7 +536,7 @@ public struct RecoverParams: Codable, Hashable, Sendable {
   }
 }
 
-public struct PKCEParams: Codable, Hashable, Sendable {
+public struct PKCECredentials: Codable, Hashable, Sendable {
     public var authCode: String
     public var codeVerifier: String
     
