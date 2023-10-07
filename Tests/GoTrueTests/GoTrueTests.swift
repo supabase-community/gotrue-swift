@@ -1,4 +1,4 @@
-@_spi(Experimental) import GoTrue
+import GoTrue
 import Mocker
 import XCTest
 
