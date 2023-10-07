@@ -31,7 +31,7 @@ jobs:
         run: PLATFORM="${{ matrix.platform }}" make test-library
 
   example:
-    runs-on: macos-latest
+    runs-on: macos-13
     steps:
       - uses: actions/checkout@v3
       - name: Select Xcode 14.3
