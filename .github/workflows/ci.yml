@@ -32,6 +32,10 @@ jobs:
 
   example:
     runs-on: macos-13
+    strategy:
+      matrix:
+        platform: 
+          - iOS Simulator,name=iPhone 14 Pro Max
     steps:
       - uses: actions/checkout@v3
       - name: Select Xcode 14.3
