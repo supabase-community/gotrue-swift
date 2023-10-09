@@ -12,12 +12,13 @@ import XCTest
 
 struct UnimplementedError: Error {}
 
-final class GoTrueClientTests: XCTestCase {
+final class RequestsTests: XCTestCase {
 
   var localStorage: InMemoryLocalStorage!
 
   func testSignUpWithEmailAndPassword() async {
     let sut = makeSUT()
+
     await assert {
       try await sut.signUp(
         email: "example@mail.com",
