@@ -44,7 +44,7 @@ public enum AnyJSON: Hashable, Codable, Sendable {
     } else if let number = try? container.decode(Double.self) {
       self = .number(number)
     } else if container.decodeNil() {
-        self = .null
+      self = .null
     } else {
       throw DecodingError.dataCorrupted(
         .init(codingPath: decoder.codingPath, debugDescription: "Invalid JSON value.")

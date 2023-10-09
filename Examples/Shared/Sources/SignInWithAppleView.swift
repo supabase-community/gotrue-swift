@@ -7,8 +7,8 @@
 
 import AuthenticationServices
 import CryptoKit
+import GoTrue
 import SwiftUI
-@_spi(Experimental) import GoTrue
 
 struct SignInWithAppleView: View {
   @Environment(\.goTrueClient) private var client
@@ -16,8 +16,9 @@ struct SignInWithAppleView: View {
 
   var body: some View {
     SignInWithAppleButton { request in
-//      self.nonce = sha256(randomString())
-//      request.nonce = nonce
+      let nonce = randomString()
+      self.nonce = nonce
+      request.nonce = sha256(nonce)
       request.requestedScopes = [.email, .fullName]
     } onCompletion: { result in
       Task {
@@ -36,8 +37,8 @@ struct SignInWithAppleView: View {
           try await client.signInWithIdToken(
             credentials: .init(
               provider: .apple,
-              idToken: idToken/*,
-              nonce: self.nonce*/
+              idToken: idToken,
+              nonce: nonce
             )
           )
         } catch {
