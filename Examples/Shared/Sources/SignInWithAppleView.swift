@@ -7,8 +7,8 @@
 
 import AuthenticationServices
 import CryptoKit
+import GoTrue
 import SwiftUI
-@_spi(Experimental) import GoTrue
 
 struct SignInWithAppleView: View {
   @Environment(\.goTrueClient) private var client
@@ -36,8 +36,8 @@ struct SignInWithAppleView: View {
           try await client.signInWithIdToken(
             credentials: .init(
               provider: .apple,
-              idToken: idToken/*,
-              nonce: self.nonce*/
+              idToken: idToken /* ,
+               nonce: self.nonce */
             )
           )
         } catch {
