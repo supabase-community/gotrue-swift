@@ -168,7 +168,28 @@ final class GoTrueClientTests: XCTestCase {
     }
   }
 
-  // TODO: test setSession method.
+  func testSetSessionWithAFutureExpirationDate() async throws {
+    let sut = makeSUT()
+    try localStorage.storeSession(.init(session: .validSession))
+
+    let accessToken =
+      "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhdWQiOiJhdXRoZW50aWNhdGVkIiwiZXhwIjo0ODUyMTYzNTkzLCJzdWIiOiJmMzNkM2VjOS1hMmVlLTQ3YzQtODBlMS01YmQ5MTlmM2Q4YjgiLCJlbWFpbCI6ImhpQGJpbmFyeXNjcmFwaW5nLmNvIiwicGhvbmUiOiIiLCJhcHBfbWV0YWRhdGEiOnsicHJvdmlkZXIiOiJlbWFpbCIsInByb3ZpZGVycyI6WyJlbWFpbCJdfSwidXNlcl9tZXRhZGF0YSI6e30sInJvbGUiOiJhdXRoZW50aWNhdGVkIn0.UiEhoahP9GNrBKw_OHBWyqYudtoIlZGkrjs7Qa8hU7I"
+
+    await assert {
+      try await sut.setSession(accessToken: accessToken, refreshToken: "dummy-refresh-token")
+    }
+  }
+
+  func testSetSessionWithAExpiredToken() async throws {
+    let sut = makeSUT()
+
+    let accessToken =
+      "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhdWQiOiJhdXRoZW50aWNhdGVkIiwiZXhwIjoxNjQ4NjQwMDIxLCJzdWIiOiJmMzNkM2VjOS1hMmVlLTQ3YzQtODBlMS01YmQ5MTlmM2Q4YjgiLCJlbWFpbCI6ImhpQGJpbmFyeXNjcmFwaW5nLmNvIiwicGhvbmUiOiIiLCJhcHBfbWV0YWRhdGEiOnsicHJvdmlkZXIiOiJlbWFpbCIsInByb3ZpZGVycyI6WyJlbWFpbCJdfSwidXNlcl9tZXRhZGF0YSI6e30sInJvbGUiOiJhdXRoZW50aWNhdGVkIn0.CGr5zNE5Yltlbn_3Ms2cjSLs_AW9RKM3lxh7cTQrg0w"
+
+    await assert {
+      try await sut.setSession(accessToken: accessToken, refreshToken: "dummy-refresh-token")
+    }
+  }
 
   func testSignOut() async {
     let sut = makeSUT()
@@ -204,17 +225,7 @@ final class GoTrueClientTests: XCTestCase {
 
   func testUpdateUser() async throws {
     let sut = makeSUT()
-    try localStorage.storeSession(
-      StoredSession(
-        session: Session(
-          accessToken: "accesstoken",
-          tokenType: "bearer",
-          expiresIn: 120,
-          refreshToken: "refreshtoken",
-          user: User(fromMockNamed: "user")
-        )
-      )
-    )
+    try localStorage.storeSession(StoredSession(session: .validSession))
     await assert {
       try await sut.update(
         user: UserAttributes(
@@ -281,3 +292,13 @@ final class GoTrueClientTests: XCTestCase {
 }
 
 let clientURL = URL(string: "http://localhost:54321/auth/v1")!
+
+extension Session {
+  static let validSession = Session(
+    accessToken: "accesstoken",
+    tokenType: "bearer",
+    expiresIn: 120,
+    refreshToken: "refreshtoken",
+    user: User(fromMockNamed: "user")
+  )
+}
