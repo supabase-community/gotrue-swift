@@ -61,17 +61,17 @@ actor SessionManager {
 }
 
 extension GoTrueLocalStorage {
-  fileprivate func getSession() throws -> StoredSession? {
+  func getSession() throws -> StoredSession? {
     try retrieve(key: "supabase.session").flatMap {
       try JSONDecoder.goTrue.decode(StoredSession.self, from: $0)
     }
   }
 
-  fileprivate func storeSession(_ session: StoredSession) throws {
+  func storeSession(_ session: StoredSession) throws {
     try store(key: "supabase.session", value: JSONEncoder.goTrue.encode(session))
   }
 
-  fileprivate func deleteSession() {
+  func deleteSession() {
     try? remove(key: "supabase.session")
   }
 }

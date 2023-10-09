@@ -18,6 +18,7 @@ let package = Package(
   dependencies: [
     .package(url: "https://github.com/kishikawakatsumi/KeychainAccess", from: "4.2.2"),
     .package(url: "https://github.com/WeTransfer/Mocker", from: "3.0.0"),
+    .package(url: "https://github.com/pointfreeco/swift-snapshot-testing", from: "1.0.0"),
   ],
   targets: [
     .target(
@@ -28,7 +29,11 @@ let package = Package(
     ),
     .testTarget(
       name: "GoTrueTests",
-      dependencies: ["GoTrue", "Mocker"],
+      dependencies: [
+        "GoTrue",
+        "Mocker",
+        .product(name: "SnapshotTesting", package: "swift-snapshot-testing"),
+      ],
       resources: [
         .process("Resources")
       ]

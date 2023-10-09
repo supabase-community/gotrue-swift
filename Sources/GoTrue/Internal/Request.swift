@@ -25,7 +25,6 @@ struct Request {
 
     var request = URLRequest(url: url)
     request.httpMethod = method
-    request.httpBody = body
 
     if body != nil, headers["Content-Type"] == nil {
       request.setValue("application/json", forHTTPHeaderField: "Content-Type")
@@ -34,6 +33,8 @@ struct Request {
     for (name, value) in headers {
       request.setValue(value, forHTTPHeaderField: name)
     }
+
+    request.httpBody = body
 
     return request
   }
